@@ -7,7 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 include_once 'config/db.php';
-error_reporting(E_ALL);
+error_reporting(E_AL);
 ini_set('display_errors', 1);
 
 // Get current page for active link highlighting

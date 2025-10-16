@@ -1,0 +1,77 @@
+.btn {
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+}
+
+.nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-left: 20px;
+}
+
+/* Login button */
+.btn-login {
+    color: #6C2E9C;  /* Purple color */
+    background: transparent;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 0;
+    text-decoration: none;
+}
+
+.btn-login:hover {
+    color: #8435BF;  /* Slightly lighter purple on hover */
+}
+
+/* Sign up button */
+.btn-signup {
+    background-color: #006C3B;
+    color: #FFFFFF;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.btn-signup:hover {
+    background-color: #008543;
+}
+
+/* Form submit buttons */
+.submit-btn {
+    background-color: #006C3B;
+    color: #FFFFFF;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 15px;
+    font-weight: 500;
+    width: 100%;
+    margin-top: 8px;
+}
+
+.submit-btn:hover {
+    background-color: #008543;
+}
+
+/* Guest button */
+.guest-btn {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #006C3B;
+    border-radius: 6px;
+    color: #006C3B;
+    background: transparent;
+    font-size: 15px;
+    font-weight: 500;
+    margin: 12px 0;
+}
+
+.guest-btn:hover {
+    background-color: rgba(0, 108, 59, 0.05);
+} 

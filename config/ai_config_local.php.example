@@ -1,0 +1,14 @@
+<?php
+// Local AI Configuration - DO NOT COMMIT THIS FILE
+// Rename this file to ai_config_local.php and add your API key
+
+// Prevent direct access
+if (!defined('AI_CONFIG_LOCAL_INCLUDED')) {
+    define('AI_CONFIG_LOCAL_INCLUDED', true);
+}
+
+// OpenAI API Key Configuration
+class AIConfigLocal {
+    const OPENAI_API_KEY = 'YOUR_API_KEY_HERE';
+}
+?> 

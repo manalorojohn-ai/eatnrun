@@ -1,0 +1,346 @@
+<?php
+require_once '../config/db.php';
+require_once 'includes/auth.php';
+
+// Check if user is logged in and is admin
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    header('Location: ../login.php');
+    exit();
+}
+
+// Get admin user details
+$admin_id = $_SESSION['user_id'];
+$admin_query = "SELECT full_name, profile_image FROM users WHERE id = ? AND role = 'admin'";
+$stmt = mysqli_prepare($conn, $admin_query);
+mysqli_stmt_bind_param($stmt, "i", $admin_id);
+mysqli_stmt_execute($stmt);
+$admin_result = mysqli_stmt_get_result($stmt);
+$admin_data = mysqli_fetch_assoc($admin_result);
+$admin_name = $admin_data['full_name'] ?? 'Administrator';
+$admin_profile_image = $admin_data['profile_image'] ?? '';
+
+// Initialize arrays for both types of ratings
+$local_ratings = [];
+$hotel_ratings = [];
+
+// Fetch local ratings from food_ordering database
+$query = "SELECT 
+            r.id,
+            r.rating,
+            r.comment,
+            r.created_at,
+            u.username as customer,
+            m.name as menu_item,
+            r.order_id
+          FROM ratings r 
+          LEFT JOIN users u ON r.user_id = u.id 
+          LEFT JOIN menu_items m ON r.menu_item_id = m.id 
+          ORDER BY r.created_at DESC";
+$result = mysqli_query($conn, $query);
+
+if ($result) {
+    while ($row = mysqli_fetch_assoc($result)) {
+        $local_ratings[] = $row;
+    }
+    mysqli_free_result($result);
+}
+
+// Fetch hotel ratings
+try {
+    $hotel_db = new mysqli('localhost', 'root', '', 'hotel_management');
+    
+    if (!$hotel_db->connect_error) {
+        $hotel_db->set_charset("utf8mb4");
+        
+        $hotel_query = "SELECT 
+            id,
+            rating,
+            comment,
+            created_at,
+            updated_at,
+            order_id
+            FROM eatrun_rating 
+            ORDER BY created_at DESC";
+            
+        $hotel_result = $hotel_db->query($hotel_query);
+        
+        if ($hotel_result) {
+            while ($row = $hotel_result->fetch_assoc()) {
+                $hotel_ratings[] = [
+                    'id' => $row['id'],
+                    'customer' => 'Hotel Guest',
+                    'menu_item' => 'Hotel Order',
+                    'rating' => $row['rating'],
+                    'comment' => $row['comment'],
+                    'created_at' => $row['created_at'],
+                    'order_id' => $row['order_id'],
+                    'source' => 'hotel'
+                ];
+            }
+            $hotel_result->free();
+        }
+        $hotel_db->close();
+    }
+} catch (Exception $e) {
+    error_log("Error connecting to hotel database: " . $e->getMessage());
+}
+
+// Handle rating deletion
+if (isset($_POST['delete_rating']) && isset($_POST['rating_id'])) {
+    $rating_id = mysqli_real_escape_string($conn, $_POST['rating_id']);
+    $source = $_POST['source'] ?? 'local';
+    
+    if ($source === 'local') {
+        $delete_query = "DELETE FROM ratings WHERE id = ?";
+        $delete_stmt = mysqli_prepare($conn, $delete_query);
+        mysqli_stmt_bind_param($delete_stmt, "i", $rating_id);
+        mysqli_stmt_execute($delete_stmt);
+        mysqli_stmt_close($delete_stmt);
+    } else if ($source === 'hotel') {
+        try {
+            $hotel_db = new mysqli('localhost', 'root', '', 'hotel_management');
+            if (!$hotel_db->connect_error) {
+                $delete_query = "DELETE FROM eatrun_rating WHERE id = ?";
+                $delete_stmt = $hotel_db->prepare($delete_query);
+                $delete_stmt->bind_param("i", $rating_id);
+                $delete_stmt->execute();
+                $delete_stmt->close();
+                $hotel_db->close();
+            }
+        } catch (Exception $e) {
+            error_log("Error deleting hotel rating: " . $e->getMessage());
+        }
+    }
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Ratings - Eat&Run Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .main-content {
+            margin-left: 240px;
+            padding: 20px;
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .profile-image {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .rating-stars {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <?php include 'includes/navbar.php'; ?>
+
+    <div class="main-content">
+        <div class="header-content">
+            <div>
+                <h2>Manage Ratings</h2>
+                <p class="text-muted">View and manage customer ratings</p>
+            </div>
+            <div class="profile-section">
+                <div class="text-end">
+                    <div class="fw-bold"><?php echo htmlspecialchars($admin_name); ?></div>
+                    <div class="text-success">Administrator</div>
+                    <div class="text-muted small">Last updated: <?php echo date('h:i A'); ?></div>
+                </div>
+                <?php if (!empty($admin_profile_image)): ?>
+                    <img src="../uploads/profile_photos/<?php echo htmlspecialchars($admin_profile_image); ?>" alt="Profile" class="profile-image">
+                <?php else: ?>
+                    <img src="../assets/images/default-avatar.png" alt="Profile" class="profile-image">
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs mb-4" id="ratingsTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="database-tab" data-bs-toggle="tab" data-bs-target="#database" type="button">
+                    Database Ratings
+                    <span class="badge bg-primary ms-2"><?php echo count($local_ratings); ?></span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hotel-tab" data-bs-toggle="tab" data-bs-target="#hotel" type="button">
+                    Hotel Ratings
+                    <span class="badge bg-success ms-2"><?php echo count($hotel_ratings); ?></span>
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="ratingsTabContent">
+            <!-- Database Ratings Tab -->
+            <div class="tab-pane fade show active" id="database" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Customer</th>
+                                <th>Menu Item</th>
+                                <th>Order ID</th>
+                                <th>Rating</th>
+                                <th>Comment</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($local_ratings)): ?>
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            No ratings found in the database.
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($local_ratings as $row): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($row['id']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['customer']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['menu_item']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['order_id']); ?></td>
+                                    <td>
+                                        <div class="text-warning">
+                                            <?php 
+                                            $rating = intval($row['rating']);
+                                            echo str_repeat('<i class="fas fa-star"></i>', $rating) . 
+                                                 str_repeat('<i class="far fa-star"></i>', 5 - $rating);
+                                            ?>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($row['comment'] ?? ''); ?></td>
+                                    <td>
+                                        <?php 
+                                        $date = new DateTime($row['created_at']);
+                                        echo $date->format('M d, Y h:i A');
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger delete-rating" data-id="<?php echo $row['id']; ?>" data-source="local">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Hotel Ratings Tab -->
+            <div class="tab-pane fade" id="hotel" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Rating</th>
+                                <th>Comment</th>
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (empty($hotel_ratings)): ?>
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            No ratings found from hotel database.
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php else: ?>
+                                <?php foreach ($hotel_ratings as $row): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($row['id']); ?></td>
+                                    <td>
+                                        <div class="text-warning">
+                                            <?php 
+                                            $rating = intval($row['rating']);
+                                            echo str_repeat('<i class="fas fa-star"></i>', $rating) . 
+                                                 str_repeat('<i class="far fa-star"></i>', 5 - $rating);
+                                            ?>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($row['comment'] ?? ''); ?></td>
+                                    <td><?php echo htmlspecialchars($row['order_id']); ?></td>
+                                    <td>
+                                        <?php 
+                                        $date = new DateTime($row['created_at']);
+                                        echo $date->format('M d, Y h:i A');
+                                        ?>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger delete-rating" data-id="<?php echo $row['id']; ?>" data-source="hotel">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle rating deletion
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.delete-rating')) {
+                const button = e.target.closest('.delete-rating');
+                if (confirm('Are you sure you want to delete this rating?')) {
+                    const id = button.dataset.id;
+                    const source = button.dataset.source;
+                    
+                    const formData = new FormData();
+                    formData.append('delete_rating', '1');
+                    formData.append('rating_id', id);
+                    formData.append('source', source);
+                    
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(() => {
+                        window.location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Failed to delete rating. Please try again.');
+                    });
+                }
+            }
+        });
+    });
+    </script>
+</body>
+</html>

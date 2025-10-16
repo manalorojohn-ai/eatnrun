@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="60" viewBox="0 0 120 60">
+  <rect width="120" height="60" rx="8" ry="8" fill="#4BB543" stroke="#43A33C" stroke-width="1"/>
+  <g transform="translate(10,10)">
+    <circle cx="20" cy="20" r="18" fill="#FFFFFF" opacity="0.9"/>
+    <text x="20" y="27" font-family="Arial, sans-serif" font-size="22" font-weight="bold" fill="#4BB543" text-anchor="middle">₱</text>
+    <g transform="translate(50, 12)">
+      <text x="0" y="5" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="start">Cash On</text>
+      <text x="0" y="22" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#FFFFFF" text-anchor="start">Delivery</text>
+    </g>
+  </g>
+</svg> 

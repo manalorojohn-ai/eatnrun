@@ -1,0 +1,20 @@
+# Redirect handling for admin section
+RewriteEngine On
+
+# Handle direct access to index.php
+RewriteRule ^index\.php$ dashboard.php [R=301,L]
+
+# Handle admin/index.php request
+RewriteRule ^index$ dashboard.php [R=301,L]
+
+# Error document handling
+ErrorDocument 404 /admin/dashboard.php
+
+# Security measures
+<FilesMatch "^\.">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Prevent directory listing
+Options -Indexes 

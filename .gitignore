@@ -1,0 +1,18 @@
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Environment and Configuration
+.env
+config/ai_config_local.php
+*.log
+
+# Operating System
+.DS_Store
+Thumbs.db 

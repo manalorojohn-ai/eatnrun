@@ -1,0 +1,204 @@
+.order-status {
+    margin: 30px 0;
+    padding: 30px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.order-status h3 {
+    margin-bottom: 25px;
+    color: #1a1a1a;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.status-choice {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 25px 20px;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.status-icon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+}
+
+.status-choice i {
+    font-size: 24px;
+    transition: all 0.3s ease;
+}
+
+.status-label {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+}
+
+.status-desc {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.5;
+    transition: all 0.3s ease;
+}
+
+/* Status-specific styles */
+.status-choice[value="Pending"] {
+    background: linear-gradient(145deg, #FFFBEB, #FEF3C7);
+}
+
+.status-choice[value="Pending"] .status-icon {
+    background: rgba(146, 64, 14, 0.1);
+    color: #92400E;
+}
+
+.status-choice[value="Processing"] {
+    background: linear-gradient(145deg, #EFF6FF, #DBEAFE);
+}
+
+.status-choice[value="Processing"] .status-icon {
+    background: rgba(30, 64, 175, 0.1);
+    color: #1E40AF;
+}
+
+.status-choice[value="Completed"] {
+    background: linear-gradient(145deg, #ECFDF5, #D1FAE5);
+}
+
+.status-choice[value="Completed"] .status-icon {
+    background: rgba(6, 95, 70, 0.1);
+    color: #065F46;
+}
+
+.status-choice[value="Cancelled"] {
+    background: linear-gradient(145deg, #FEF2F2, #FEE2E2);
+}
+
+.status-choice[value="Cancelled"] .status-icon {
+    background: rgba(153, 27, 27, 0.1);
+    color: #991B1B;
+}
+
+/* Hover effects */
+.status-choice:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.status-choice:hover .status-icon {
+    transform: scale(1.1);
+}
+
+/* Active state */
+.status-choice.active {
+    border-width: 2px;
+    transform: translateY(-2px);
+}
+
+.status-choice.active::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0.2;
+}
+
+.status-choice.active::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 14px;
+    font-weight: bold;
+    color: currentColor;
+}
+
+/* Progress indicator */
+.status-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.status-choice.active .status-progress {
+    width: 100%;
+    opacity: 0.3;
+}
+
+/* Hover animation for icons */
+.status-choice:hover i {
+    transform: scale(1.2) rotate(10deg);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .status-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+}
+
+@media (max-width: 640px) {
+    .status-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .status-choice {
+        padding: 20px 15px;
+    }
+    
+    .status-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .status-label {
+        font-size: 15px;
+    }
+    
+    .status-desc {
+        font-size: 12px;
+    }
+}
+
+/* Animation for spinner icon */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.fa-spinner {
+    animation: spin 1.5s linear infinite;
+} 

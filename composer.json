@@ -1,0 +1,14 @@
+{
+    "require": {
+        "cboden/ratchet": "*",
+        "react/socket": "*",
+        "react/event-loop": "^1.4",
+        "phpmailer/phpmailer": "*",
+        "tecnickcom/tcpdf": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    }
+}

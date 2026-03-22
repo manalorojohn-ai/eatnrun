@@ -1,0 +1,244 @@
+/* Shared Elegant Styles for Eat&Run */
+:root {
+    /* Premium Food App Color Palette */
+    --primary-color: #00b894; /* Fresh Green */
+    --primary-light: #55efc4;
+    --primary-dark: #008a6d;
+    --accent-color: #fab1a0; /* Soft Peach/Salmon */
+    --text-color: #2d3436;
+    --text-light: #636e72;
+    --bg-color: #ffffff;
+    --bg-alt: #f1f2f6;
+    --white: #ffffff;
+    --danger: #ff7675;
+    
+    /* Premium Depth & Shadows */
+    --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.12);
+    
+    /* Modern Radii */
+    --radius-sm: 12px;
+    --radius-md: 18px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+
+    /* Spacing */
+    --section-padding: 100px 0;
+}
+
+body {
+    font-family: 'Poppins', 'Segoe UI', Roboto, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.7;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Smooth Page Transitions */
+.page-transition {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUp 0.8s ease-out forwards;
+}
+
+/* Elegant Card Design */
+.elegant-card {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: var(--transition-normal);
+    overflow: hidden;
+    position: relative;
+}
+
+.elegant-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Modern Button Styles */
+.btn-elegant {
+    padding: 12px 24px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    transition: var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-elegant::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: 0.6s;
+}
+
+.btn-elegant:hover::before {
+    left: 100%;
+}
+
+/* Section Headers */
+.section-header {
+    position: relative;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+}
+
+.section-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+    border-radius: 2px;
+    transition: var(--transition-normal);
+}
+
+.section-header:hover::after {
+    width: 100px;
+}
+
+/* Smooth Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Table Styles */
+.elegant-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 1rem 0;
+}
+
+.elegant-table th,
+.elegant-table td {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    transition: var(--transition-fast);
+}
+
+.elegant-table tr:hover td {
+    background: rgba(0, 108, 59, 0.02);
+}
+
+/* Form Styles */
+.elegant-form {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.form-group {
+    position: relative;
+}
+
+.elegant-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-md);
+    transition: var(--transition-fast);
+}
+
+.elegant-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 108, 59, 0.1);
+    outline: none;
+}
+
+/* Loading States */
+.elegant-loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.elegant-loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    from { left: -100%; }
+    to { left: 200%; }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .elegant-card {
+        margin: 1rem 0;
+    }
+    
+    .btn-elegant {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .section-header {
+        text-align: center;
+    }
+    
+    .section-header::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+/* Removed forced dark mode background to keep it white as requested by USER */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #ffffff; /* Override to white */
+        --bg-alt: #f8f9fa;
+    }
+    
+    .elegant-card {
+        background: #2a2a2a;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .elegant-table td {
+        border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    .elegant-input {
+        background: #2a2a2a;
+        border-color: rgba(255, 255, 255, 0.1);
+        color: var(--text-color);
+    }
+}

@@ -103,6 +103,13 @@ if (!function_exists('mysqli_begin_transaction')) { function mysqli_begin_transa
 if (!function_exists('mysqli_commit')) { function mysqli_commit($c) { return ($c instanceof PDO_Conn_Wrapper) ? $c->commit() : false; } }
 if (!function_exists('mysqli_rollback')) { function mysqli_rollback($c) { return ($c instanceof PDO_Conn_Wrapper) ? $c->rollback() : false; } }
 if (!function_exists('mysqli_real_escape_string')) { function mysqli_real_escape_string($c, $s) { return ($c instanceof PDO_Conn_Wrapper) ? $c->real_escape_string($s) : str_replace("'", "''", $s); } }
+if (!function_exists('mysqli_error')) { function mysqli_error($c) { return ($c instanceof PDO_Conn_Wrapper) ? ($c->connect_error ?? 'Unknown error') : ''; } }
+if (!function_exists('mysqli_fetch_array')) { function mysqli_fetch_array($r) { return ($r instanceof PDO_Result_Wrapper) ? $r->fetch_array() : false; } }
+if (!function_exists('mysqli_close')) { function mysqli_close($c) { return true; } }
+if (!function_exists('mysqli_report')) { function mysqli_report($flags) { return true; } }
+if (!function_exists('mysqli_stmt_affected_rows')) { function mysqli_stmt_affected_rows($s) { return 0; } }
+if (!function_exists('mysqli_stmt_error')) { function mysqli_stmt_error($s) { return ''; } }
+if (!function_exists('mysqli_data_seek')) { function mysqli_data_seek($r, $o) { return true; } }
 
 return $conn;
 ?>

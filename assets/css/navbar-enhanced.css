@@ -686,21 +686,22 @@
 
     .nav-menu {
         position: fixed;
-        top: 80px;
+        top: 60px; /* Adjusted for compact navbar */
         left: 0;
         right: 0;
         background: #ffffff;
         flex-direction: column;
-        padding: 1.5rem 1rem 2rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         transform: translateY(-100%);
         opacity: 0;
         visibility: hidden;
         transition: all 0.3s ease;
         z-index: 1000;
-        gap: 0.75rem;
-        height: calc(100vh - 80px);
+        height: auto; /* Match content height */
+        max-height: 80vh;
         overflow-y: auto;
+        border-radius: 0 0 20px 20px;
     }
 
     .nav-menu.active {
@@ -720,8 +721,9 @@
     .nav-links-container {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
+        gap: 8px; /* Tighter gap */
         width: 100%;
+        margin: 0;
     }
 
     .nav-links-container li {
@@ -734,11 +736,12 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        padding: 15px 5px;
-        font-size: 0.85rem;
-        border-radius: 12px;
+        padding: 10px 5px; /* Compact padding */
+        font-size: 0.75rem;
+        border-radius: 10px;
         text-align: center;
-        gap: 8px;
+        gap: 4px;
+        color: #333;
     }
 
     .nav-link i {
@@ -778,10 +781,10 @@
     }
 
     .nav-text {
-        font-weight: 500;
-        font-size: 0.75rem;
-        white-space: normal;
-        line-height: 1.2;
+        font-weight: 600;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        line-height: 1;
     }
 
     .nav-link:active {
@@ -890,12 +893,12 @@ body.login-page .mobile-menu-toggle {
 
 /* Add padding to body to account for fixed navbar */
 body {
-    padding-top: 90px;
+    padding-top: 70px;
     transition: padding-top 0.3s ease;
 }
 
 body.scrolled {
-    padding-top: 80px;
+    padding-top: 60px;
 }
 
 /* Add smooth scrolling to page */

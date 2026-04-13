@@ -16,10 +16,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
     
-    // Case-insensitive query for PostgreSQL compatibility
-    $query = "SELECT * FROM users WHERE LOWER(email) = LOWER(?) AND status = 'active'";
+    // Check for user by email OR username
+    $query = "SELECT * FROM users WHERE (LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)) AND status = 'active'";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("s", $email);
+    $stmt->bind_param("ss", $email, $email); // Use the same input for both placeholders
     $stmt->execute();
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
@@ -56,8 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['role'] = $user['role'];
             $_SESSION['full_name'] = $user['full_name'];
             
-            // Redirect customer to main page
-            header("Location: index");
+            // Redirect customer to dashboard
+            header("Location: dashboard");
             exit();
         } else {
             // Document status is null or invalid - redirect to document submission

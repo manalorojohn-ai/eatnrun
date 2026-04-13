@@ -2,31 +2,35 @@
 // Remove any whitespace before opening PHP tag
 ob_start(); // Add output buffering
 session_start();
-require_once "config/database.php";
+require_once "config/db.php";
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: login");
     exit();
 }
 
 // Get user information
-$database = new Database();
-$db = $database->getConnection();
+$user_id = mysqli_real_escape_string($conn, $_SESSION['user_id']);
+$query = "SELECT * FROM users WHERE id = '$user_id'";
+$result = mysqli_query($conn, $query);
+$user = mysqli_fetch_assoc($result);
 
-$user_id = $_SESSION['user_id'];
-$query = "SELECT * FROM users WHERE id = :user_id";
-$stmt = $db->prepare($query);
-$stmt->bindParam(":user_id", $user_id);
-$stmt->execute();
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$user) {
+    session_destroy();
+    header("Location: login");
+    exit();
+}
 
 // Get recent orders
-$query = "SELECT * FROM orders WHERE user_id = :user_id ORDER BY created_at DESC LIMIT 5";
-$stmt = $db->prepare($query);
-$stmt->bindParam(":user_id", $user_id);
-$stmt->execute();
-$recent_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$query = "SELECT * FROM orders WHERE user_id = '$user_id' ORDER BY created_at DESC LIMIT 5";
+$recent_orders_result = mysqli_query($conn, $query);
+$recent_orders = [];
+if ($recent_orders_result) {
+    while ($row = mysqli_fetch_assoc($recent_orders_result)) {
+        $recent_orders[] = $row;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -273,7 +277,7 @@ $recent_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </style>
 </head>
 <body>
-    <?php include 'navbar.php'; ?>
+    <?php include 'includes/ui/navbar.php'; ?>
 
     <div class="dashboard">
         <div class="dashboard-container">
@@ -283,11 +287,11 @@ $recent_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <p>Manage your orders and account settings</p>
                 </div>
                 <div class="dashboard-actions">
-                    <a href="menu.php" class="action-btn primary">
+                    <a href="menu" class="action-btn primary">
                         <i class="fas fa-plus"></i>
                         New Order
                     </a>
-                    <a href="profile.php" class="action-btn secondary">
+                    <a href="profile" class="action-btn secondary">
                         <i class="fas fa-user"></i>
                         Edit Profile
                     </a>
@@ -298,7 +302,7 @@ $recent_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h2>Recent Orders</h2>
-                        <a href="orders.php" class="action-btn secondary">View All</a>
+                        <a href="my_orders" class="action-btn secondary">View All</a>
                     </div>
                     <div class="order-list" id="order-list">
                         <div id="loading-spinner" style="display: none;">Loading...</div>
@@ -316,7 +320,7 @@ $recent_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <p><?php echo date('M d, Y', strtotime($order['created_at'])); ?></p>
                                         </div>
                                     </div>
-                                    <span class="order-status <?php echo htmlspecialchars($order['status'] == 'delivered' ? 'status-delivered' : 'status-processing'); ?>">
+                                    <span class="order-status <?php echo htmlspecialchars($order['status'] == 'completed' ? 'status-delivered' : 'status-processing'); ?>">
                                         <?php echo ucfirst(htmlspecialchars($order['status'])); ?>
                                     </span>
                                 </div>
@@ -363,7 +367,7 @@ $recent_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 
-    <?php include 'footer.php'; ?>
+    <?php include 'includes/ui/footer.php'; ?>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {

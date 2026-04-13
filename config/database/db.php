@@ -256,6 +256,27 @@ if ($using_postgres) {
             return $s->close();
         }
     }
+
+    if (!function_exists('mysqli_begin_transaction')) {
+        function mysqli_begin_transaction($c) {
+            $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
+            return $pdo->beginTransaction();
+        }
+    }
+
+    if (!function_exists('mysqli_commit')) {
+        function mysqli_commit($c) {
+            $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
+            return $pdo->commit();
+        }
+    }
+
+    if (!function_exists('mysqli_rollback')) {
+        function mysqli_rollback($c) {
+            $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
+            return $pdo->rollBack();
+        }
+    }
 }
 
 // ---------------------------------------------------------
@@ -431,6 +452,45 @@ $notifications_table = $using_postgres ?
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 mysqli_query($conn, $notifications_table);
+
+$cart_table = $using_postgres ? 
+    "CREATE TABLE IF NOT EXISTS cart (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        menu_item_id INTEGER NOT NULL REFERENCES menu_items(id) ON DELETE CASCADE,
+        quantity INTEGER NOT NULL DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )" : 
+    "CREATE TABLE IF NOT EXISTS cart (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        menu_item_id INT NOT NULL,
+        quantity INT NOT NULL DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (menu_item_id) REFERENCES menu_items(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+mysqli_query($conn, $cart_table);
+
+$email_verifications_table = $using_postgres ? 
+    "CREATE TABLE IF NOT EXISTS email_verifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        email VARCHAR(255) NOT NULL,
+        otp VARCHAR(10) NOT NULL,
+        expiry TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )" : 
+    "CREATE TABLE IF NOT EXISTS email_verifications (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        otp VARCHAR(10) NOT NULL,
+        expiry DATETIME NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+mysqli_query($conn, $email_verifications_table);
 
 return $conn;
 ?>

@@ -1,54 +1,50 @@
 /* Shared Elegant Styles for Eat&Run */
 :root {
-    /* Edgy Food App Color Palette - Keeping original green but with modern nuances */
-    --primary-color: #00b894; /* Fresh Green */
-    --primary-light: #00e6b8;
+    /* Premium Food App Color Palette */
+    --primary-color: #00b894;
+    /* Fresh Green */
+    --primary-light: #55efc4;
     --primary-dark: #008a6d;
-    --accent-color: #ff9f89; /* A more vibrant salmon/peach */
-    --text-color: #1a1c1d; /* Slightly darker slate for edge */
-    --text-light: #94a3b8; /* Modern slate 400 */
-    --bg-color: #fbfbfb; /* Clean studio white */
-    --bg-alt: #f3f4f6;
+    --accent-color: #fab1a0;
+    /* Soft Peach/Salmon */
+    --text-color: #2d3436;
+    --text-light: #636e72;
+    --bg-color: #ffffff;
+    --bg-alt: #f1f2f6;
     --white: #ffffff;
-    --danger: #ff6b6b;
-    
-    /* Edgy Depth & Glassmorphism Properties */
-    --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 12px 24px -4px rgba(0, 184, 148, 0.12);
-    --shadow-lg: 0 20px 40px -8px rgba(0, 0, 0, 0.15);
-    --neon-glow: 0 0 15px rgba(0, 184, 148, 0.4);
-    
-    /* Sharp & Aesthetic Geometry */
-    --radius-sm: 8px;
-    --radius-md: 12px;
-    --radius-lg: 20px;
+    --danger: #ff7675;
+
+    /* Premium Depth & Shadows */
+    --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.12);
+
+    /* Modern Radii */
+    --radius-sm: 12px;
+    --radius-md: 18px;
+    --radius-lg: 24px;
     --radius-xl: 32px;
 
-    /* Spacing & Motion */
+    /* Spacing */
     --section-padding: 100px 0;
-    --transition-sharp: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    --transition-fast: 0.2s ease;
 }
 
 body {
-    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Poppins', 'Segoe UI', Roboto, sans-serif;
     background-color: var(--bg-color);
     color: var(--text-color);
-    line-height: 1.6;
+    line-height: 1.7;
     overflow-x: hidden;
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;
 }
 
-/* Base Page Fade-in (Aesthetic entry) */
-@keyframes pageEntry {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
+/* Smooth Page Transitions */
 .page-transition {
-    animation: pageEntry 0.8s var(--transition-sharp) forwards;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: slideUp 0.8s ease-out forwards;
 }
 
 /* Elegant Card Design */

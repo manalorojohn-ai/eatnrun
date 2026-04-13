@@ -54,13 +54,122 @@ if (!$using_postgres && !$is_render) {
 }
 
 // ---------------------------------------------------------
-// REPLACEMENT FOR MYSQLI FUNCTIONS (SMOOTH MIGRATION)
+// OO COMPATIBILITY WRAPPER (FOR ->prepare, ->bind_param, etc.)
+// ---------------------------------------------------------
+
+if ($using_postgres) {
+    class PDO_Stmt_Wrapper {
+        private $stmt;
+        private $params = [];
+        private $types = "";
+
+        public function __construct($stmt) {
+            $this->stmt = $stmt;
+        }
+
+        public function bind_param($types, ...$vars) {
+            $this->types = $types;
+            $this->params = $vars;
+            return true;
+        }
+
+        public function execute() {
+            try {
+                return $this->stmt->execute($this->params);
+            } catch (Exception $e) {
+                error_log("Execute Error: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function get_result() {
+            return new PDO_Result_Wrapper($this->stmt);
+        }
+
+        public function close() { return true; }
+        
+        // Handle metadata or other props if needed
+        public function __get($name) {
+            if ($name === 'num_rows') return $this->stmt->rowCount();
+            return null;
+        }
+    }
+
+    class PDO_Result_Wrapper {
+        private $stmt;
+        public $num_rows = 0;
+
+        public function __construct($stmt) {
+            $this->stmt = $stmt;
+            $this->num_rows = $stmt->rowCount();
+        }
+
+        public function fetch_assoc() {
+            return $this->stmt->fetch(PDO::FETCH_ASSOC);
+        }
+
+        public function fetch_all($mode = 1) {
+            return $this->stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        public function free() { return true; }
+        public function close() { return true; }
+    }
+
+    class PDO_Conn_Wrapper {
+        private $pdo;
+        public $connect_error = null;
+
+        public function __construct($pdo) {
+            $this->pdo = $pdo;
+        }
+
+        public function prepare($query) {
+            // Translate MySQL syntax to PG ($1, $2 instead of ?)
+            $i = 1;
+            $query = preg_replace_callback('/\?/', function($m) use (&$i) {
+                return '$' . $i++;
+            }, $query);
+
+            // Clean backticks
+            $query = str_replace('`', '"', $query);
+
+            try {
+                $stmt = $this->pdo->prepare($query);
+                return new PDO_Stmt_Wrapper($stmt);
+            } catch (Exception $e) {
+                error_log("Prepare Error: " . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function query($query) {
+            return mysqli_query($this, $query);
+        }
+
+        public function real_escape_string($s) {
+            return mysqli_real_escape_string($this, $s);
+        }
+
+        public function close() { return true; }
+        public function set_charset($c) { return true; }
+        
+        // Internal PDO access
+        public function getPDO() { return $this->pdo; }
+    }
+
+    // Replace the global $conn with the wrapper
+    $conn = new PDO_Conn_Wrapper($conn);
+}
+
+// ---------------------------------------------------------
+// PROCEDURAL SHIM (FOR mysqli_query, etc.)
 // ---------------------------------------------------------
 if ($using_postgres) {
     if (!function_exists('mysqli_query')) {
         function mysqli_query($c, $q) {
+            $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
             try {
-                // MySQL to PG Syntax Translation
                 $q = str_ireplace('AUTO_INCREMENT', 'SERIAL', $q);
                 $q = str_ireplace('INT ', 'INTEGER ', $q);
                 $q = str_ireplace('TINYINT(1)', 'BOOLEAN', $q);
@@ -68,13 +177,12 @@ if ($using_postgres) {
                 $q = str_ireplace('`', '"', $q);
                 $q = str_ireplace('ENGINE=InnoDB', '', $q);
                 $q = str_ireplace('DEFAULT CHARSET=utf8mb4', '', $q);
-                $q = str_ireplace('COLLATE=utf8mb4_unicode_ci', '', $q);
                 $q = str_ireplace('SET SESSION sql_mode', '-- SET SESSION sql_mode', $q);
-                $q = str_ireplace('SET NAMES', '-- SET NAMES', $q);
                 
-                return $c->query($q);
+                $res = $pdo->query($q);
+                return $res ? new PDO_Result_Wrapper($res) : false;
             } catch (Exception $e) { 
-                error_log("Shim Query Error: " . $e->getMessage() . " Query: " . $q);
+                error_log("Query Error: " . $e->getMessage());
                 return false; 
             }
         }
@@ -82,43 +190,35 @@ if ($using_postgres) {
 
     if (!function_exists('mysqli_fetch_assoc')) {
         function mysqli_fetch_assoc($res) {
-            if (!$res) return false;
-            return $res->fetch(PDO::FETCH_ASSOC);
+            return ($res instanceof PDO_Result_Wrapper) ? $res->fetch_assoc() : false;
         }
     }
 
     if (!function_exists('mysqli_num_rows')) {
         function mysqli_num_rows($res) {
-            if (!$res) return 0;
-            return $res->rowCount();
+            return ($res instanceof PDO_Result_Wrapper) ? $res->num_rows : 0;
         }
     }
 
     if (!function_exists('mysqli_real_escape_string')) {
         function mysqli_real_escape_string($c, $s) {
-            if ($s === null) return '';
-            // Manual escaping for PG
             return str_replace("'", "''", $s);
         }
     }
 
     if (!function_exists('mysqli_insert_id')) {
         function mysqli_insert_id($c) {
-            return $c->lastInsertId();
-        }
-    }
-
-    if (!function_exists('mysqli_error')) {
-        function mysqli_error($c) {
-            $err = $c->errorInfo();
-            return $err[2] ?? '';
+            $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
+            return $pdo->lastInsertId();
         }
     }
 }
 
 // ---------------------------------------------------------
-// SCHEMA INITIALIZATION
+// SCHEMA INITIALIZATION (Using original $conn or wrapper)
 // ---------------------------------------------------------
+// No changes needed here, mysqli_query shim handles it.
+
 $users_table = $using_postgres ? 
     "CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -149,7 +249,7 @@ $users_table = $using_postgres ?
 
 mysqli_query($conn, $users_table);
 
-// Create categories table
+// categories, menu_items, orders, etc... (The rest of the file)
 $categories_table = $using_postgres ? 
     "CREATE TABLE IF NOT EXISTS categories (
         id SERIAL PRIMARY KEY,
@@ -169,7 +269,6 @@ $categories_table = $using_postgres ?
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 mysqli_query($conn, $categories_table);
 
-// Create menu_items table
 $menu_items_table = $using_postgres ? 
     "CREATE TABLE IF NOT EXISTS menu_items (
         id SERIAL PRIMARY KEY,
@@ -196,7 +295,6 @@ $menu_items_table = $using_postgres ?
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 mysqli_query($conn, $menu_items_table);
 
-// Create orders table
 $orders_table = $using_postgres ? 
     "CREATE TABLE IF NOT EXISTS orders (
         id SERIAL PRIMARY KEY,
@@ -243,7 +341,6 @@ $orders_table = $using_postgres ?
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 mysqli_query($conn, $orders_table);
 
-// Create order_details table
 $order_details_table = $using_postgres ? 
     "CREATE TABLE IF NOT EXISTS order_details (
         id SERIAL PRIMARY KEY,
@@ -265,7 +362,6 @@ $order_details_table = $using_postgres ?
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 mysqli_query($conn, $order_details_table);
 
-// Create notifications table
 $notifications_table = $using_postgres ? 
     "CREATE TABLE IF NOT EXISTS notifications (
         id SERIAL PRIMARY KEY,

@@ -5,26 +5,44 @@
     box-sizing: border-box;
 }
 
-/* Navbar container */
+/* Navbar container - Edgy Floating Pill */
 .navbar {
-    background: rgba(255, 253, 245, 0.9); /* Warm Cream */
-    padding: 0.6rem 2rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    background: rgba(10, 10, 10, 0.7) !important;
+    padding: 0.8rem 1.5rem !important;
+    box-shadow: 0 8px 32px rgba(0, 184, 148, 0.15), inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 95%;
+    max-width: 1100px;
+    border-radius: 50px;
     z-index: 1000;
-    -webkit-backdrop-filter: blur(15px);
-    backdrop-filter: blur(15px);
-    transition: all 0.4s ease;
-    border-bottom: 1px solid rgba(74, 103, 65, 0.1); /* Soft Sage Green */
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    backdrop-filter: blur(24px) saturate(150%);
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    border: 1px solid rgba(0, 184, 148, 0.3) !important;
 }
 
 .navbar.scrolled {
-    padding: 0.4rem 2rem;
-    background: rgba(255, 253, 245, 0.98);
+    padding: 0.6rem 1.5rem !important;
+    background: rgba(5, 5, 5, 0.85) !important;
+    box-shadow: 0 15px 40px rgba(0, 184, 148, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(0, 184, 148, 0.5) !important;
+    top: 15px;
 }
+
+.navbar-brand span {
+    font-family: 'Unbounded', sans-serif !important;
+    font-size: 1.4rem !important;
+    font-weight: 800;
+    color: #fff !important;
+    letter-spacing: -0.5px;
+    text-transform: uppercase;
+    text-shadow: 0 0 12px var(--primary-color), 0 0 24px rgba(0, 184, 148, 0.3);
+    -webkit-text-stroke: 1.5px var(--primary-color);
+}
+
 
 /* Main navigation container */
 .nav-container {

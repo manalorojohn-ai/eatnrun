@@ -162,13 +162,15 @@ if ($using_postgres) {
 }
 
 // ---------------------------------------------------------
-// PROCEDURAL SHIM (FOR mysqli_query, etc.)
+// PROCEDURAL SHIM (UNIVERSAL FALLBACK)
 // ---------------------------------------------------------
-if ($using_postgres) {
-    if (!function_exists('mysqli_query')) {
-        function mysqli_query($c, $q) {
-            $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
-            try {
+if (!function_exists('mysqli_query')) {
+    function mysqli_query($c, $q) {
+        if (!($c instanceof PDO_Conn_Wrapper)) return false;
+        $pdo = $c->getPDO();
+        try {
+            // Postgres compatibility transforms only if using postgres wrapper
+            if (strpos($pdo->getAttribute(PDO::ATTR_DRIVER_NAME), 'pgsql') !== false) {
                 $q = str_ireplace('AUTO_INCREMENT', 'SERIAL', $q);
                 $q = str_ireplace('INT ', 'INTEGER ', $q);
                 $q = str_ireplace('TINYINT(1)', 'BOOLEAN', $q);
@@ -177,107 +179,125 @@ if ($using_postgres) {
                 $q = str_ireplace('ENGINE=InnoDB', '', $q);
                 $q = str_ireplace('DEFAULT CHARSET=utf8mb4', '', $q);
                 $q = str_ireplace('SET SESSION sql_mode', '-- SET SESSION sql_mode', $q);
-                
-                $res = $pdo->query($q);
-                return $res ? new PDO_Result_Wrapper($res) : false;
-            } catch (Exception $e) { 
-                error_log("Query Error: " . $e->getMessage());
-                return false; 
             }
-        }
-    }
-
-    if (!function_exists('mysqli_fetch_assoc')) {
-        function mysqli_fetch_assoc($res) {
-            return ($res instanceof PDO_Result_Wrapper) ? $res->fetch_assoc() : false;
-        }
-    }
-
-    if (!function_exists('mysqli_fetch_array')) {
-        function mysqli_fetch_array($res) {
-            return ($res instanceof PDO_Result_Wrapper) ? $res->fetch_array() : false;
-        }
-    }
-
-    if (!function_exists('mysqli_num_rows')) {
-        function mysqli_num_rows($res) {
-            return ($res instanceof PDO_Result_Wrapper) ? $res->num_rows : 0;
-        }
-    }
-
-    if (!function_exists('mysqli_free_result')) {
-        function mysqli_free_result($res) { return true; }
-    }
-
-    if (!function_exists('mysqli_error')) {
-        function mysqli_error($c) { return "Database error (check logs)"; }
-    }
-
-    if (!function_exists('mysqli_real_escape_string')) {
-        function mysqli_real_escape_string($c, $s) {
-            return str_replace("'", "''", $s);
-        }
-    }
-
-    if (!function_exists('mysqli_insert_id')) {
-        function mysqli_insert_id($c) {
-            $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
-            return $pdo->lastInsertId();
-        }
-    }
-
-    if (!function_exists('mysqli_prepare')) {
-        function mysqli_prepare($c, $q) {
-            $q = str_replace('`', '"', $q);
-            return $c->prepare($q);
-        }
-    }
-
-    if (!function_exists('mysqli_stmt_bind_param')) {
-        function mysqli_stmt_bind_param($s, $t, ...$v) {
-            return $s->bind_param($t, ...$v);
-        }
-    }
-
-    if (!function_exists('mysqli_stmt_execute')) {
-        function mysqli_stmt_execute($s) {
-            return $s->execute();
-        }
-    }
-
-    if (!function_exists('mysqli_stmt_get_result')) {
-        function mysqli_stmt_get_result($s) {
-            return $s->get_result();
-        }
-    }
-
-    if (!function_exists('mysqli_stmt_close')) {
-        function mysqli_stmt_close($s) {
-            return $s->close();
-        }
-    }
-
-    if (!function_exists('mysqli_begin_transaction')) {
-        function mysqli_begin_transaction($c) {
-            $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
-            return $pdo->beginTransaction();
-        }
-    }
-
-    if (!function_exists('mysqli_commit')) {
-        function mysqli_commit($c) {
-            $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
-            return $pdo->commit();
-        }
-    }
-
-    if (!function_exists('mysqli_rollback')) {
-        function mysqli_rollback($c) {
-            $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
-            return $pdo->rollBack();
+            
+            $res = $pdo->query($q);
+            return $res ? new PDO_Result_Wrapper($res) : false;
+        } catch (Exception $e) { 
+            error_log("Query Error: " . $e->getMessage());
+            return false; 
         }
     }
 }
+
+if (!function_exists('mysqli_fetch_assoc')) {
+    function mysqli_fetch_assoc($res) {
+        return ($res instanceof PDO_Result_Wrapper) ? $res->fetch_assoc() : false;
+    }
+}
+
+if (!function_exists('mysqli_fetch_array')) {
+    function mysqli_fetch_array($res) {
+        return ($res instanceof PDO_Result_Wrapper) ? $res->fetch_array() : false;
+    }
+}
+
+if (!function_exists('mysqli_num_rows')) {
+    function mysqli_num_rows($res) {
+        return ($res instanceof PDO_Result_Wrapper) ? $res->num_rows : 0;
+    }
+}
+
+if (!function_exists('mysqli_free_result')) {
+    function mysqli_free_result($res) { return true; }
+}
+
+if (!function_exists('mysqli_error')) {
+    function mysqli_error($c) { return "Database error (check logs)"; }
+}
+
+if (!function_exists('mysqli_real_escape_string')) {
+    function mysqli_real_escape_string($c, $s) {
+        if ($c instanceof PDO_Conn_Wrapper) {
+            return $c->real_escape_string($s);
+        }
+        return str_replace("'", "''", $s);
+    }
+}
+
+if (!function_exists('mysqli_insert_id')) {
+    function mysqli_insert_id($c) {
+        $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
+        if ($pdo instanceof PDO) return $pdo->lastInsertId();
+        return 0;
+    }
+}
+
+if (!function_exists('mysqli_prepare')) {
+    function mysqli_prepare($c, $q) {
+        if ($c instanceof PDO_Conn_Wrapper) {
+            $pdo = $c->getPDO();
+            if (strpos($pdo->getAttribute(PDO::ATTR_DRIVER_NAME), 'pgsql') !== false) {
+                $q = str_replace('`', '"', $q);
+            }
+            return $c->prepare($q);
+        }
+        return false;
+    }
+}
+
+if (!function_exists('mysqli_stmt_bind_param')) {
+    function mysqli_stmt_bind_param($s, $t, ...$v) {
+        if (method_exists($s, 'bind_param')) return $s->bind_param($t, ...$v);
+        return false;
+    }
+}
+
+if (!function_exists('mysqli_stmt_execute')) {
+    function mysqli_stmt_execute($s) {
+        if (method_exists($s, 'execute')) return $s->execute();
+        return false;
+    }
+}
+
+if (!function_exists('mysqli_stmt_get_result')) {
+    function mysqli_stmt_get_result($s) {
+        if (method_exists($s, 'get_result')) return $s->get_result();
+        return false;
+    }
+}
+
+if (!function_exists('mysqli_stmt_close')) {
+    function mysqli_stmt_close($s) {
+        if (method_exists($s, 'close')) return $s->close();
+        return true;
+    }
+}
+
+if (!function_exists('mysqli_begin_transaction')) {
+    function mysqli_begin_transaction($c) {
+        $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
+        if ($pdo instanceof PDO) return $pdo->beginTransaction();
+        return false;
+    }
+}
+
+if (!function_exists('mysqli_commit')) {
+    function mysqli_commit($c) {
+        $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
+        if ($pdo instanceof PDO) return $pdo->commit();
+        return false;
+    }
+}
+
+if (!function_exists('mysqli_rollback')) {
+    function mysqli_rollback($c) {
+        $pdo = ($c instanceof PDO_Conn_Wrapper) ? $c->getPDO() : $c;
+        if ($pdo instanceof PDO) return $pdo->rollBack();
+        return false;
+    }
+}
+
 
 // ---------------------------------------------------------
 // SCHEMA INITIALIZATION (Using original $conn or wrapper)

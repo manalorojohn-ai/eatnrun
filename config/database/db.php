@@ -142,12 +142,30 @@ if ($using_postgres) {
             }
         }
 
-        public function query($query) {
-            return mysqli_query($this, $query);
+        public function query($q) {
+            $pdo = $this->pdo;
+            $using_pg = (strpos($pdo->getAttribute(PDO::ATTR_DRIVER_NAME), 'pgsql') !== false);
+            if ($using_pg) {
+                $q = str_ireplace('AUTO_INCREMENT', 'SERIAL', $q);
+                $q = str_ireplace('INT ', 'INTEGER ', $q);
+                $q = str_ireplace('TINYINT(1)', 'BOOLEAN', $q);
+                $q = str_ireplace('DATETIME', 'TIMESTAMP', $q);
+                $q = str_ireplace('`', '"', $q);
+                $q = str_ireplace('ENGINE=InnoDB', '', $q);
+                $q = str_ireplace('DEFAULT CHARSET=utf8mb4', '', $q);
+                $q = str_ireplace('SET SESSION sql_mode', '-- SET SESSION sql_mode', $q);
+            }
+            try {
+                $res = $pdo->query($q);
+                return $res ? new PDO_Result_Wrapper($res) : false;
+            } catch (Exception $e) {
+                error_log("Query Error: " . $e->getMessage());
+                return false;
+            }
         }
 
         public function real_escape_string($s) {
-            return mysqli_real_escape_string($this, $s);
+            return str_replace("'", "''", $s);
         }
 
         public function close() { return true; }
@@ -166,27 +184,10 @@ if ($using_postgres) {
 // ---------------------------------------------------------
 if (!function_exists('mysqli_query')) {
     function mysqli_query($c, $q) {
-        if (!($c instanceof PDO_Conn_Wrapper)) return false;
-        $pdo = $c->getPDO();
-        try {
-            // Postgres compatibility transforms only if using postgres wrapper
-            if (strpos($pdo->getAttribute(PDO::ATTR_DRIVER_NAME), 'pgsql') !== false) {
-                $q = str_ireplace('AUTO_INCREMENT', 'SERIAL', $q);
-                $q = str_ireplace('INT ', 'INTEGER ', $q);
-                $q = str_ireplace('TINYINT(1)', 'BOOLEAN', $q);
-                $q = str_ireplace('DATETIME', 'TIMESTAMP', $q);
-                $q = str_ireplace('`', '"', $q);
-                $q = str_ireplace('ENGINE=InnoDB', '', $q);
-                $q = str_ireplace('DEFAULT CHARSET=utf8mb4', '', $q);
-                $q = str_ireplace('SET SESSION sql_mode', '-- SET SESSION sql_mode', $q);
-            }
-            
-            $res = $pdo->query($q);
-            return $res ? new PDO_Result_Wrapper($res) : false;
-        } catch (Exception $e) { 
-            error_log("Query Error: " . $e->getMessage());
-            return false; 
+        if ($c instanceof PDO_Conn_Wrapper) {
+            return $c->query($q);
         }
+        return false;
     }
 }
 

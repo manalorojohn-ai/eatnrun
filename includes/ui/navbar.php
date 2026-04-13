@@ -76,12 +76,12 @@ if ($is_logged_in && !$is_admin) {
         <div class="nav-menu" id="navMenu">
             <ul class="nav-links-container" id="navbar-menu">
                 <?php if(!$is_admin): ?>
-                    <li id="mobile-background-icons"><a href="index" class="nav-link"><i class="fas fa-home"></i> <span class="nav-text">Home</span></a></li>
-                    <li id="mobile-background-icons"><a href="menu" class="nav-link"><i class="fas fa-utensils"></i> <span class="nav-text">Menu</span></a></li>
-                    <li id="mobile-background-icons" class="mobile-only"><a href="orders" class="nav-link"><i class="fas fa-list-alt"></i> <span class="nav-text">My Orders</span></a></li>
-                    <li id="mobile-background-icons"><a href="about" class="nav-link"><i class="fas fa-info-circle"></i> <span class="nav-text">About</span></a></li>
+                    <li class="mobile-background-icons"><a href="index" class="nav-link"><i class="fas fa-home"></i> <span class="nav-text">Home</span></a></li>
+                    <li class="mobile-background-icons"><a href="menu" class="nav-link"><i class="fas fa-utensils"></i> <span class="nav-text">Menu</span></a></li>
+                    <li class="mobile-background-icons mobile-only"><a href="orders" class="nav-link"><i class="fas fa-list-alt"></i> <span class="nav-text">My Orders</span></a></li>
+                    <li class="mobile-background-icons"><a href="about" class="nav-link"><i class="fas fa-info-circle"></i> <span class="nav-text">About</span></a></li>
                 <?php else: ?>
-                    <li id="mobile-background-icons"><a href="admin/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> <span class="nav-text">Admin</span></a></li>
+                    <li class="mobile-background-icons"><a href="admin/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> <span class="nav-text">Admin</span></a></li>
                 <?php endif; ?>
 
                 <?php if($is_logged_in): ?>
@@ -95,7 +95,7 @@ if ($is_logged_in && !$is_admin) {
                                     <span class="notification-counter"><?php echo $unread_count; ?></span>
                                 <?php endif; ?>
                             </button>
-                            <div class="dropdown-menu dropdown-menu-end notif-box animate__animated animate__fadeIn" aria-labelledby="notifDropdown">
+                            <div class="dropdown-menu dropdown-menu-end notif-box animate__animated animate__fadeIn" id="notificationDropdown" aria-labelledby="notifDropdown">
                                 <div class="notif-header">
                                     <span>Notifications</span>
                                     <?php if($unread_count > 0): ?>
@@ -134,7 +134,7 @@ if ($is_logged_in && !$is_admin) {
                     </li>
 
                     <?php if(!$is_admin): ?>
-                        <li id="mobile-background-icons"><a href="cart" class="nav-link"><i class="fas fa-shopping-cart"></i> <span class="nav-text">Cart</span></a></li>
+                        <li class="mobile-background-icons"><a href="cart" class="nav-link"><i class="fas fa-shopping-cart"></i> <span class="nav-text">Cart</span></a></li>
                     <?php endif; ?>
                     <li><a href="profile" class="nav-link"><i class="fas fa-user"></i> <span class="nav-text">Profile</span></a></li>
                     <li><a href="logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Logout</span></a></li>

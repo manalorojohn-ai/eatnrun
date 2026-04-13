@@ -57,6 +57,10 @@
     touch-action: manipulation;
     position: relative;
     outline: none;
+    display: flex; /* Ensure it's flex for alignment */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 /* Active state visuals */
@@ -456,6 +460,12 @@
     margin-top: 0.5rem;
 }
 
+/* Explicit width for the notif box itself to ensure it fits desktop well */
+.notif-box.dropdown-menu {
+    min-width: 320px;
+    width: 380px !important;
+}
+
 .notif-box .dropdown-title {
     padding: .75rem 1rem;
     background: #f8f9fa !important;
@@ -669,7 +679,7 @@
 /* Android-Optimized Responsive Design */
 /* Visibility Utilities */
 .mobile-only { display: none !important; }
-.desktop-only { display: flex !important; }
+.desktop-only { display: inline-block !important; position: relative; }
 
 @media (max-width: 991px) {
     .mobile-only { display: flex !important; }
@@ -701,6 +711,7 @@
         max-height: 80vh;
         overflow-y: auto;
         border-radius: 0 0 20px 20px;
+        border: 1px solid rgba(0, 0, 0, 0.05);
     }
 
     .nav-menu.active {
@@ -741,10 +752,11 @@
         text-align: center;
         gap: 4px;
         color: #333;
+        height: 100%; /* Ensure it fills parent li */
     }
 
     .nav-link i {
-        font-size: 1.8rem;
+        font-size: 1.5rem; /* Slightly smaller for better fit */
         margin: 0 !important;
     }
 
@@ -765,7 +777,7 @@
     }
 
     /* Specific styles for requested mobile structure */
-    #mobile-background-icons, .nav-links-container > li {
+    .mobile-background-icons, .nav-links-container > li {
         background: rgba(0, 108, 59, 0.08); /* Eat&Run Green Theme */
         border: 1px solid rgba(0, 108, 59, 0.15);
         border-radius: 12px;
@@ -774,7 +786,7 @@
         display: flex;
     }
 
-    #mobile-background-icons:hover, .nav-links-container > li:hover {
+    .mobile-background-icons:hover, .nav-links-container > li:hover {
         background: rgba(0, 108, 59, 0.15);
         border-color: rgba(0, 108, 59, 0.3);
     }
@@ -931,7 +943,4 @@ html {
 .notification-link {
     text-decoration: none;
     color: inherit;
-}
-
-color: inherit;
 }

@@ -7,24 +7,23 @@
 
 /* Navbar container */
 .navbar {
-    background: rgba(255, 255, 255, 0.85);
-    padding: 0.5rem 1.5rem;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
+    background: rgba(255, 253, 245, 0.9); /* Warm Cream */
+    padding: 0.6rem 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     z-index: 1000;
-    -webkit-backdrop-filter: blur(20px);
-    backdrop-filter: blur(20px);
-    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    -webkit-backdrop-filter: blur(15px);
+    backdrop-filter: blur(15px);
+    transition: all 0.4s ease;
+    border-bottom: 1px solid rgba(74, 103, 65, 0.1); /* Soft Sage Green */
 }
 
 .navbar.scrolled {
-    padding: 0.3rem 1.5rem;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    padding: 0.4rem 2rem;
+    background: rgba(255, 253, 245, 0.98);
 }
 
 /* Main navigation container */
@@ -281,7 +280,7 @@
 .navbar-brand span {
     font-size: 1.6rem;
     font-weight: 800;
-    color: var(--primary-color);
+    color: #4A6741; /* Sage Green */
     letter-spacing: -0.5px;
 }
 
@@ -328,10 +327,10 @@
 }
 
 .nav-link.active {
-    background: var(--primary-color);
+    background: #4A6741; /* Sage Green */
     color: white;
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0, 184, 148, 0.2);
+    box-shadow: 0 10px 20px rgba(74, 103, 65, 0.2);
 }
 
 .nav-link::before {

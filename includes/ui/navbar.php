@@ -79,7 +79,6 @@ if ($is_logged_in && !$is_admin) {
                     <li id="mobile-background-icons"><a href="index" class="nav-link"><i class="fas fa-home"></i> <span class="nav-text">Home</span></a></li>
                     <li id="mobile-background-icons"><a href="menu" class="nav-link"><i class="fas fa-utensils"></i> <span class="nav-text">Menu</span></a></li>
                     <li id="mobile-background-icons"><a href="about" class="nav-link"><i class="fas fa-info-circle"></i> <span class="nav-text">About</span></a></li>
-                    <li id="mobile-background-icons"><a href="mission-vision" class="nav-link"><i class="fas fa-bullseye"></i> <span class="nav-text">Vision</span></a></li>
                 <?php else: ?>
                     <li id="mobile-background-icons"><a href="admin/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> <span class="nav-text">Admin</span></a></li>
                 <?php endif; ?>

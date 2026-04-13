@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd mysqli pdo pdo_mysql pdo_pgsql
+    && docker-php-ext-install gd pdo pdo_pgsql
 
 # Copy the application files to the Apache document root
 COPY . /var/www/html/

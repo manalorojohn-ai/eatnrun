@@ -56,7 +56,6 @@ if (!$using_postgres && !$is_render) {
 // ---------------------------------------------------------
 // REPLACEMENT FOR MYSQLI FUNCTIONS (SMOOTH MIGRATION)
 // ---------------------------------------------------------
-// If we ARE using Postgres, we need the shim for mysqli_ functions
 if ($using_postgres) {
     if (!function_exists('mysqli_query')) {
         function mysqli_query($c, $q) {
@@ -70,26 +69,35 @@ if ($using_postgres) {
                 $q = str_ireplace('ENGINE=InnoDB', '', $q);
                 $q = str_ireplace('DEFAULT CHARSET=utf8mb4', '', $q);
                 $q = str_ireplace('COLLATE=utf8mb4_unicode_ci', '', $q);
+                $q = str_ireplace('SET SESSION sql_mode', '-- SET SESSION sql_mode', $q);
+                $q = str_ireplace('SET NAMES', '-- SET NAMES', $q);
                 
                 return $c->query($q);
-            } catch (Exception $e) { return false; }
+            } catch (Exception $e) { 
+                error_log("Shim Query Error: " . $e->getMessage() . " Query: " . $q);
+                return false; 
+            }
         }
     }
 
     if (!function_exists('mysqli_fetch_assoc')) {
         function mysqli_fetch_assoc($res) {
-            return $res ? $res->fetch(PDO::FETCH_ASSOC) : false;
+            if (!$res) return false;
+            return $res->fetch(PDO::FETCH_ASSOC);
         }
     }
 
     if (!function_exists('mysqli_num_rows')) {
         function mysqli_num_rows($res) {
-            return $res ? $res->rowCount() : 0;
+            if (!$res) return 0;
+            return $res->rowCount();
         }
     }
 
     if (!function_exists('mysqli_real_escape_string')) {
         function mysqli_real_escape_string($c, $s) {
+            if ($s === null) return '';
+            // Manual escaping for PG
             return str_replace("'", "''", $s);
         }
     }
@@ -97,6 +105,13 @@ if ($using_postgres) {
     if (!function_exists('mysqli_insert_id')) {
         function mysqli_insert_id($c) {
             return $c->lastInsertId();
+        }
+    }
+
+    if (!function_exists('mysqli_error')) {
+        function mysqli_error($c) {
+            $err = $c->errorInfo();
+            return $err[2] ?? '';
         }
     }
 }

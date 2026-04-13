@@ -24,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
 
-    // Verify password using password_verify
-    if ($user && password_verify($password, $user['password'])) {
+    // Verify password (supports both plain text for migration/dev and hashes for security)
+    if ($user && ($password === $user['password'] || password_verify($password, $user['password']))) {
         // Admin users bypass document verification checks
         if ($user['role'] === 'admin') {
             // Login successful for admin
@@ -50,8 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         elseif ($user['document_status'] === 'rejected') {
             $error_message = "Your documents were rejected. Please contact support for more information.";
         }
-        elseif ($user['document_status'] === 'approved') {
-            // Login successful
+        elseif ($user['document_status'] === 'approved' || $user['document_status'] === 'none' || empty($user['document_status'])) {
+            // Login successful - allowing entry even if document_status is empty for now
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['full_name'] = $user['full_name'];
@@ -448,12 +448,12 @@ include 'includes/ui/navbar.php';
             // Navbar scroll effect
             window.addEventListener('scroll', function() {
                 const navbar = document.querySelector('.navbar');
-                if (window.scrollY > 50) {
+                if (navbar && window.scrollY > 50) {
                     navbar.classList.add('scrolled');
                 } else {
-                    navbar.classList.remove('scrolled');
+                    if(navbar) navbar.classList.remove('scrolled');
                 }
             });
-            
+        });
     </script>
 <?php // Footer already included above ?>

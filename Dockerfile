@@ -3,8 +3,16 @@ FROM php:8.0-apache
 # Enable Apache mod_rewrite for URL routing
 RUN a2enmod rewrite
 
-# Install required PHP extensions (MySQLi, PDO MySQL, etc.)
-RUN docker-php-ext-install mysqli pdo pdo_mysql
+# Install required PHP extensions (MySQLi, PDO MySQL, PostgreSQL, etc.)
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libpq-dev \
+    zip \
+    unzip \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd mysqli pdo pdo_mysql pdo_pgsql
 
 # Copy the application files to the Apache document root
 COPY . /var/www/html/

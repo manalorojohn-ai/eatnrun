@@ -112,6 +112,10 @@ if ($using_postgres) {
             return $this->stmt->fetchAll(PDO::FETCH_ASSOC);
         }
 
+        public function fetch_array() {
+            return $this->stmt->fetch(PDO::FETCH_BOTH);
+        }
+
         public function free() { return true; }
         public function close() { return true; }
     }
@@ -189,10 +193,24 @@ if ($using_postgres) {
         }
     }
 
+    if (!function_exists('mysqli_fetch_array')) {
+        function mysqli_fetch_array($res) {
+            return ($res instanceof PDO_Result_Wrapper) ? $res->fetch_array() : false;
+        }
+    }
+
     if (!function_exists('mysqli_num_rows')) {
         function mysqli_num_rows($res) {
             return ($res instanceof PDO_Result_Wrapper) ? $res->num_rows : 0;
         }
+    }
+
+    if (!function_exists('mysqli_free_result')) {
+        function mysqli_free_result($res) { return true; }
+    }
+
+    if (!function_exists('mysqli_error')) {
+        function mysqli_error($c) { return "Database error (check logs)"; }
     }
 
     if (!function_exists('mysqli_real_escape_string')) {

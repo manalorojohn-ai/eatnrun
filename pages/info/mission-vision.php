@@ -624,7 +624,7 @@ session_start();
     </style>
 </head>
 <body>
-    <?php include 'navbar.php'; ?>
+    <?php include 'includes/ui/navbar.php'; ?>
 
     <header class="page-header">
         <div class="container">
@@ -750,7 +750,7 @@ session_start();
         </div>
     </section>
 
-    <?php include 'footer.php'; ?>
+    <?php include 'includes/ui/footer.php'; ?>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

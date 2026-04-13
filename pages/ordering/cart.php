@@ -6,7 +6,7 @@ ini_set('display_errors', 1);
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: login");
     exit();
 }
 
@@ -52,13 +52,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     // Redirect to prevent form resubmission
-    header("Location: cart.php");
+    header("Location: cart");
     exit();
 }
 
 // Add a checkout handler
 if (isset($_GET['checkout']) && !empty($cart_items)) {
-    header("Location: checkout.php");
+    header("Location: checkout");
     exit();
 }
 ?>
@@ -315,7 +315,7 @@ if (isset($_GET['checkout']) && !empty($cart_items)) {
     </style>
 </head>
 <body>
-    <?php include 'navbar.php'; ?>
+    <?php include 'includes/ui/navbar.php'; ?>
 
     <div class="container py-5">
         <div class="cart-container">
@@ -328,7 +328,7 @@ if (isset($_GET['checkout']) && !empty($cart_items)) {
                     <i class="fas fa-shopping-cart empty-cart-icon"></i>
                     <h2 class="mb-3">Your cart is empty</h2>
                     <p class="text-muted mb-4">Add some delicious items to your cart!</p>
-                    <a href="menu.php" class="btn-continue-shopping">
+                    <a href="menu" class="btn-continue-shopping">
                         <i class="fas fa-arrow-left"></i>
                         Continue Shopping
                     </a>
@@ -379,7 +379,7 @@ if (isset($_GET['checkout']) && !empty($cart_items)) {
                         <span>Total</span>
                         <span>₱<span id="total"><?php echo number_format($total + 50, 2); ?></span></span>
                     </div>
-                    <button class="checkout-btn" onclick="window.location.href='checkout.php'">
+                    <button class="checkout-btn" onclick="window.location.href='checkout'">
                         Proceed to Checkout
                     </button>
             </div>
@@ -387,7 +387,7 @@ if (isset($_GET['checkout']) && !empty($cart_items)) {
         </div>
     </div>
 
-    <?php include 'footer.php'; ?>
+    <?php include 'includes/ui/footer.php'; ?>
     
     <!-- Bootstrap 5 JS - Removed duplicate, navbar.php already includes Bootstrap 5.3.2 -->
 

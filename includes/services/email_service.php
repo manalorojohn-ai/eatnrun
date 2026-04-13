@@ -110,7 +110,7 @@ class EmailService {
             $this->mailer->addAddress($to_email, $name);
             
             // Create verification link
-            $verification_link = "http://localhost:3000/verify.php?token=" . $token;
+            $verification_link = SITE_URL . "/verify.php?token=" . $token;
             
             // Set email content
             $this->mailer->isHTML(true);

@@ -4,28 +4,36 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // Session configuration
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // Database configuration
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'food_ordering');
+if (!defined('DB_HOST')) define('DB_HOST', 'localhost');
+if (!defined('DB_USER')) define('DB_USER', 'root');
+if (!defined('DB_PASS')) define('DB_PASS', '');
+if (!defined('DB_NAME')) define('DB_NAME', 'food_ordering');
 
-// Create database connection
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+// Create database connection (without DB name first)
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
 
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
+// Create database if it doesn't exist
+$conn->query("CREATE DATABASE IF NOT EXISTS " . DB_NAME);
+
+// Select database
+$conn->select_db(DB_NAME);
+
 // Set charset
 $conn->set_charset("utf8mb4");
 
 // Site configuration
 define('SITE_NAME', 'Eat&Run');
-define('SITE_URL', 'http://localhost:3000');
+define('SITE_URL', 'http://192.168.123.44:3000');
 
 // CSS Variables
 define('CSS_VARS', [

@@ -5,8 +5,9 @@ if (!defined('DB_USER')) define('DB_USER', 'root');
 if (!defined('DB_PASS')) define('DB_PASS', '');
 if (!defined('DB_NAME')) define('DB_NAME', 'food_ordering');
 
-// Create connection
-$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+// Step 1: Create connection without database name first to ensure we can create it if it doesn't exist
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS);
+
 // Check connection
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
@@ -38,8 +39,10 @@ $users_table = "CREATE TABLE IF NOT EXISTS users (
     password VARCHAR(255) NOT NULL,
     full_name VARCHAR(100),
     phone VARCHAR(20),
-    role ENUM('admin', 'user') DEFAULT 'user',
+    role ENUM('admin', 'customer', 'rider') DEFAULT 'customer',
     status ENUM('active', 'inactive') DEFAULT 'active',
+    is_verified TINYINT(1) DEFAULT 0,
+    document_status ENUM('none', 'pending', 'approved', 'rejected') DEFAULT 'none',
     reset_otp VARCHAR(6) DEFAULT NULL,
     reset_otp_expiry DATETIME DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

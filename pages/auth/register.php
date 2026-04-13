@@ -1,11 +1,15 @@
 <?php
 session_start();
-require_once 'config/db.php';
+require_once dirname(__DIR__, 2) . '/config/db.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-require 'vendor/autoload.php';
+$composerAutoload = dirname(__DIR__, 2) . '/vendor/autoload.php';
+if (!file_exists($composerAutoload)) {
+    die('Composer dependencies are missing. Run "composer install" from the project root and ensure the vendor directory exists.');
+}
+require_once $composerAutoload;
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -906,7 +910,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
-    <?php include 'navbar.php'; ?>
+    <?php include 'includes/ui/navbar.php'; ?>
     
     <main class="flex-grow-1">
     <div class="d-flex align-items-center py-4">

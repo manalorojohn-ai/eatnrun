@@ -124,7 +124,7 @@ include 'includes/ui/navbar.php';
         <div class="popup-text-content">
             <h3 class="popup-title" id="popupTitle">Get 25% OFF</h3>
             <p class="popup-description">Book now and enjoy an exclusive discount on your first stay at FAWNA Hotel! Limited time offer package for new customers.</p>
-            <a href="#" class="popup-cta" id="signupButton" target="_blank">
+            <a href="https://fawna-hotel.onrender.com/" class="popup-cta" id="signupButton" target="_blank">
                 <i class="fas fa-bed" style="margin-right: 8px;"></i>
                 Book Now & Save
             </a>

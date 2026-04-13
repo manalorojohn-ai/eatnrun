@@ -39,34 +39,30 @@
     height: 60px;
 }
 
-/* Enhanced Mobile Menu Toggle Design */
+/* Enhanced Mobile Menu Toggle Design - made PLAIN as per USER request */
 .mobile-menu-toggle {
-    display: none; /* hidden by default; shown only in burger/mobile mode */
+    display: none;
+    /* hidden by default; shown only in burger/mobile mode */
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 56px;
-    height: 56px;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    width: 44px; /* Standard Android touch target */
+    height: 44px;
+    background: transparent;
+    border: none;
     cursor: pointer;
-    padding: 12px;
-    border-radius: 16px;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
-    box-shadow: 0 4px 12px rgba(0, 108, 59, 0.3);
     position: relative;
-    overflow: hidden;
     outline: none;
 }
 
-/* Active state visuals (visibility handled by media queries) */
+/* Active state visuals */
 .mobile-menu-toggle.active {
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 6px 20px rgba(0, 108, 59, 0.4);
-    transform: scale(1.05);
+    background: rgba(0, 0, 0, 0.05);
 }
 
 /* Hover Effects */
@@ -89,81 +85,39 @@
 /* Enhanced Hamburger Lines */
 .hamburger-line {
     width: 28px;
-    height: 4px;
-    background: white;
+    height: 3px;
+    background: #333;
     margin: 3px 0;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
     border-radius: 3px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* Animated X Transformation */
+/* Animated X Transformation disabled as per USER request - keeping plain three lines */
 .mobile-menu-toggle.active .hamburger-line:nth-child(1) {
-    transform: rotate(45deg) translate(8px, 8px);
-    background: white;
+    transform: none;
 }
 
 .mobile-menu-toggle.active .hamburger-line:nth-child(2) {
-    opacity: 0;
-    transform: scale(0);
+    opacity: 1;
+    transform: none;
 }
 
 .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
-    transform: rotate(-45deg) translate(8px, -8px);
-    background: white;
+    transform: none;
 }
 
-/* Shimmer Effect */
-.mobile-menu-toggle::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.2),
-        transparent
-    );
-    transition: left 0.5s;
+/* Hover Effects */
+.mobile-menu-toggle:hover {
+    background: rgba(0, 0, 0, 0.03);
 }
 
-.mobile-menu-toggle:hover::before {
-    left: 100%;
-}
-
-/* Pulse Animation for Active State */
-.mobile-menu-toggle.active::after {
-    content: '';
-    position: absolute;
-    top: -4px;
-    left: -4px;
-    right: -4px;
-    bottom: -4px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 20px;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-        opacity: 1;
-    }
-    50% {
-        transform: scale(1.1);
-        opacity: 0.7;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
+.mobile-menu-toggle:active {
+    background: rgba(0, 0, 0, 0.08);
 }
 
 /* Respect reduced-motion preferences */
 @media (prefers-reduced-motion: reduce) {
+
     .mobile-menu-toggle,
     .hamburger-line,
     .nav-menu,
@@ -194,7 +148,8 @@
     color: var(--text-color);
     border-radius: 8px;
     transition: all 0.3s ease;
-    min-height: 44px; /* Android minimum touch target */
+    min-height: 44px;
+    /* Android minimum touch target */
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
     position: relative;
@@ -253,7 +208,8 @@
     gap: 1rem;
 }
 
-.login-btn, .register-btn {
+.login-btn,
+.register-btn {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -262,7 +218,8 @@
     text-decoration: none;
     font-weight: 500;
     transition: all 0.3s ease;
-    min-height: 44px; /* Android minimum touch target */
+    min-height: 44px;
+    /* Android minimum touch target */
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
     border: 2px solid transparent;
@@ -292,7 +249,8 @@
     box-shadow: 0 4px 8px rgba(0, 108, 59, 0.3);
 }
 
-.login-btn:active, .register-btn:active {
+.login-btn:active,
+.register-btn:active {
     transform: translateY(0);
 }
 
@@ -328,7 +286,7 @@
 }
 
 /* Navigation links */
-.nav-links {
+.nav-links-container {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -383,12 +341,10 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent,
-        rgba(255, 255, 255, 0.2),
-        transparent
-    );
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.2),
+            transparent);
     transition: 0.5s;
 }
 
@@ -471,24 +427,28 @@
     0% {
         transform: scale(1);
     }
+
     50% {
         transform: scale(1.1);
     }
+
     100% {
         transform: scale(1);
     }
 }
 
 /* Notification styles */
-.notification-dropdown { position: relative; }
+.notification-dropdown {
+    position: relative;
+}
 
 /* New Bootstrap-like notif dropdown */
 #notificationDropdown.dropdown-menu {
     width: 380px;
     max-width: 90vw;
     border-radius: 15px;
-    border: 1px solid rgba(0,0,0,.08);
-    box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    border: 1px solid rgba(0, 0, 0, .08);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
     padding: 0;
     overflow: hidden;
     right: 0;
@@ -499,7 +459,8 @@
 
 .notif-box .dropdown-title {
     padding: .75rem 1rem;
-    background: #f8f9fa !important; /* solid */
+    background: #f8f9fa !important;
+    /* solid */
     border-bottom: 1px solid #eef0f2;
     font-weight: 600;
     position: sticky;
@@ -507,12 +468,28 @@
     z-index: 2;
 }
 
-.notif-scroll { max-height: 320px; overflow-y: auto; }
-.notif-scroll::-webkit-scrollbar { width: 8px; }
-.notif-scroll::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 8px; }
-.notif-scroll::-webkit-scrollbar-track { background: transparent; }
+.notif-scroll {
+    max-height: 320px;
+    overflow-y: auto;
+}
 
-.notif-center { padding: .25rem 0; }
+.notif-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.notif-scroll::-webkit-scrollbar-thumb {
+    background: #dee2e6;
+    border-radius: 8px;
+}
+
+.notif-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.notif-center {
+    padding: .25rem 0;
+}
+
 .notif-center .notification-item {
     display: flex;
     gap: .75rem;
@@ -523,13 +500,18 @@
     border-bottom: 1px solid #f1f3f5;
     transition: all 0.3s ease;
 }
-.notif-center .notification-item:last-child { border-bottom: 0; }
-.notif-center .notification-item:hover { 
-    background: #f8f9fa; 
+
+.notif-center .notification-item:last-child {
+    border-bottom: 0;
+}
+
+.notif-center .notification-item:hover {
+    background: #f8f9fa;
     transform: translateX(2px);
 }
-.notif-center .notification-item.unread { 
-    background: #f4fff6; 
+
+.notif-center .notification-item.unread {
+    background: #f4fff6;
     border-left: 3px solid #006C3B;
 }
 
@@ -545,43 +527,87 @@
     flex: 0 0 40px;
     font-size: 1.1rem;
 }
-.notification-item[data-type="order"] .notif-icon { background:#e8fff1; color:#198754; }
-.notification-item[data-type="payment"] .notif-icon { background:#e7f1ff; color:#0d6efd; }
-.notification-item[data-type="system"] .notif-icon { background:#f1f8ff; color:#0d6efd; }
 
-.notif-content { padding: 0; line-height: 1.2; }
-.notif-content .block { display: block; font-weight: 600; color: #212529; }
-.notif-content .time { display: block; font-size: .8rem; color: #6c757d; margin-top: .25rem; }
+.notification-item[data-type="order"] .notif-icon {
+    background: #e8fff1;
+    color: #198754;
+}
 
-.notif-box .see-all { 
-    display: block; 
-    padding: 1rem; 
-    text-align: center; 
-    border-top: 1px solid #eef0f2; 
-    color: #006C3B; 
-    text-decoration: none; 
-    position: sticky; 
-    bottom: 0; 
-    background: #ffffff !important; 
-    z-index: 1; 
+.notification-item[data-type="payment"] .notif-icon {
+    background: #e7f1ff;
+    color: #0d6efd;
+}
+
+.notification-item[data-type="system"] .notif-icon {
+    background: #f1f8ff;
+    color: #0d6efd;
+}
+
+.notif-content {
+    padding: 0;
+    line-height: 1.2;
+}
+
+.notif-content .block {
+    display: block;
+    font-weight: 600;
+    color: #212529;
+}
+
+.notif-content .time {
+    display: block;
+    font-size: .8rem;
+    color: #6c757d;
+    margin-top: .25rem;
+}
+
+.notif-box .see-all {
+    display: block;
+    padding: 1rem;
+    text-align: center;
+    border-top: 1px solid #eef0f2;
+    color: #006C3B;
+    text-decoration: none;
+    position: sticky;
+    bottom: 0;
+    background: #ffffff !important;
+    z-index: 1;
     font-weight: 500;
     transition: all 0.3s ease;
 }
-.notif-box .see-all:hover { 
-    background: #f8f9fa; 
+
+.notif-box .see-all:hover {
+    background: #f8f9fa;
     color: #005530;
 }
 
 /* Simple fade-in for .animated.fadeIn at full opacity */
-.animated.fadeIn { animation: fadeIn .12s ease-in forwards; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+.animated.fadeIn {
+    animation: fadeIn .12s ease-in forwards;
+}
 
-.nowrap { white-space: nowrap; }
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
 .text-truncate-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
-    line-clamp: 2; /* standard */
+    line-clamp: 2;
+    /* standard */
     overflow: hidden;
 }
 
@@ -625,8 +651,14 @@
 }
 
 /* hide by default; show when .show present (works with BS 5) */
-#notificationDropdown { display: none; position: absolute; }
-#notificationDropdown.show { display: block; }
+#notificationDropdown {
+    display: none;
+    position: absolute;
+}
+
+#notificationDropdown.show {
+    display: block;
+}
 
 /* Responsive design */
 @media (max-width: 1024px) {
@@ -636,9 +668,19 @@
 }
 
 /* Android-Optimized Responsive Design */
-@media (max-width: 768px) {
+/* Visibility Utilities */
+.mobile-only { display: none !important; }
+.desktop-only { display: flex !important; }
+
+@media (max-width: 991px) {
+    .mobile-only { display: flex !important; }
+    .desktop-only { display: none !important; }
+}
+
+@media (max-width: 991px) {
     .mobile-menu-toggle {
-        display: flex !important; /* ensure visible on all pages in mobile */
+        display: flex !important;
+        /* ensure visible on all pages in mobile */
         margin-left: auto;
     }
 
@@ -668,28 +710,41 @@
     }
 
     /* Ensure nav links show when menu is open */
-    .nav-menu.active .nav-links {
-        display: flex;
+    .nav-menu.active .nav-links-container {
+        display: grid;
         position: static;
-    padding: 0;
+        padding: 0;
         box-shadow: none;
     }
 
-    .nav-links { flex-direction: column; width: 100%; gap: 0.25rem; }
+    .nav-links-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        width: 100%;
+    }
 
-    .nav-links li {
+    .nav-links-container li {
         width: 100%;
     }
 
     .nav-link {
         width: 100%;
-        justify-content: flex-start;
-        padding: 18px 20px; /* bigger tap target */
-        font-size: 1.05rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 15px 5px;
+        font-size: 0.85rem;
         border-radius: 12px;
+        text-align: center;
+        gap: 8px;
     }
 
-    .nav-link i { font-size: 1.2rem; }
+    .nav-link i {
+        font-size: 1.8rem;
+        margin: 0 !important;
+    }
 
     .auth-buttons {
         flex-direction: column;
@@ -698,7 +753,8 @@
         margin-top: 0.75rem;
     }
 
-    .login-btn, .register-btn {
+    .login-btn,
+    .register-btn {
         width: 100%;
         justify-content: center;
         padding: 16px 20px;
@@ -706,30 +762,57 @@
         border-radius: 12px;
     }
 
-    /* Android-specific optimizations */
-    .nav-link:active {
+    /* Specific styles for requested mobile structure */
+    #mobile-background-icons, .nav-links-container > li {
+        background: rgba(0, 108, 59, 0.08); /* Eat&Run Green Theme */
+        border: 1px solid rgba(0, 108, 59, 0.15);
+        border-radius: 12px;
+        margin-bottom: 0;
+        transition: all 0.3s ease;
+        display: flex;
+    }
+
+    #mobile-background-icons:hover, .nav-links-container > li:hover {
         background: rgba(0, 108, 59, 0.15);
+        border-color: rgba(0, 108, 59, 0.3);
+    }
+
+    .nav-text {
+        font-weight: 500;
+        font-size: 0.75rem;
+        white-space: normal;
+        line-height: 1.2;
+    }
+
+    .nav-link:active {
+        background: rgba(0, 108, 59, 0.2);
         transform: scale(0.98);
     }
 
-    .login-btn:active, .register-btn:active {
+    .login-btn:active,
+    .register-btn:active {
         transform: scale(0.98);
     }
 
     /* Improve touch targets for Android */
-    .nav-link, .login-btn, .register-btn {
+    .nav-link,
+    .login-btn,
+    .register-btn {
         min-height: 48px;
     }
 
     /* Notifications dropdown fit on mobile */
-    #notificationDropdown.dropdown-menu { 
-        width: 94vw; 
-        max-width: 94vw; 
-        right: 3vw; 
-        left: 3vw; 
+    #notificationDropdown.dropdown-menu {
+        width: 94vw;
+        max-width: 94vw;
+        right: 3vw;
+        left: 3vw;
         margin-top: 0.5rem;
     }
-    .notif-scroll { max-height: 50vh; }
+
+    .notif-scroll {
+        max-height: 50vh;
+    }
 }
 
 @media (max-width: 480px) {
@@ -750,13 +833,16 @@
         font-size: 1.2rem;
     }
 
-    .login-btn, .register-btn {
+    .login-btn,
+    .register-btn {
         padding: 18px 24px;
         font-size: 1.2rem;
     }
 
     /* Extra large touch targets for small Android devices */
-    .nav-link, .login-btn, .register-btn {
+    .nav-link,
+    .login-btn,
+    .register-btn {
         min-height: 52px;
     }
 
@@ -787,10 +873,20 @@ body.login-page .mobile-menu-toggle {
     z-index: 1000;
     position: relative;
 }
+
 /* Desktop default: show nav links inline */
-.nav-links { position: static; box-shadow: none; }
-.mobile-menu-btn { display: block; }
-.auth-buttons { margin-left: auto; }
+.nav-links {
+    position: static;
+    box-shadow: none;
+}
+
+.mobile-menu-btn {
+    display: block;
+}
+
+.auth-buttons {
+    margin-left: auto;
+}
 
 /* Add padding to body to account for fixed navbar */
 body {
@@ -833,4 +929,7 @@ html {
 .notification-link {
     text-decoration: none;
     color: inherit;
+}
+
+color: inherit;
 }

@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../includes/connection.php';
+require_once 'config/db.php';
 
 $data = json_decode(file_get_contents('php://input'), true);
 $item_id = $data['item_id'];

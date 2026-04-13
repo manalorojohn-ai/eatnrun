@@ -4,7 +4,7 @@ require_once 'config/db.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: login");
     exit();
 }
 
@@ -362,7 +362,7 @@ function getStatusBadgeClass($status) {
     </style>
 </head>
 <body>
-    <?php include 'navbar.php'; ?>
+    <?php include 'includes/ui/navbar.php'; ?>
 
     <div class="orders-hero">
         <h1 class="orders-title">My Orders</h1>
@@ -389,7 +389,7 @@ function getStatusBadgeClass($status) {
         </div>
     </div>
 
-    <?php include 'footer.php'; ?>
+    <?php include 'includes/ui/footer.php'; ?>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -465,7 +465,7 @@ function getStatusBadgeClass($status) {
                                 <i class="fas fa-shopping-bag no-orders-icon"></i>
                                 <h3 class="no-orders-text">No orders yet</h3>
                                 <p class="no-orders-subtext">You haven't placed any orders yet. Start ordering your favorite meals!</p>
-                                <a href="menu.php" class="browse-menu-btn">
+                                <a href="menu" class="browse-menu-btn">
                                     <i class="fas fa-utensils"></i>
                                     Browse Menu
                                 </a>

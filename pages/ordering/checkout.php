@@ -18,7 +18,7 @@ if (!empty($db_issues) && array_filter($db_issues, function($issue) {
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: login");
     exit();
 }
 
@@ -39,7 +39,7 @@ try {
     // Check if user profile is complete
     if (empty($user['full_name']) || empty($user['email'])) {
         $_SESSION['error'] = "Please complete your profile before checkout. We need your full name and email address.";
-        header("Location: profile.php");
+        header("Location: profile");
         exit();
     }
 
@@ -68,7 +68,7 @@ while ($item = mysqli_fetch_assoc($result)) {
 mysqli_stmt_close($stmt);
 
 if (empty($cart_items)) {
-    header("Location: cart.php");
+    header("Location: cart");
     exit();
 }
 
@@ -323,7 +323,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         mysqli_commit($conn);
 
         // Redirect to success page
-        header("Location: order_success.php?order_id=" . $order_id);
+        header("Location: order_success?order_id=" . $order_id);
         exit();
 
     } catch (Exception $e) {
@@ -881,7 +881,7 @@ $errorMsg = isset($error) ? $errorIcon . htmlspecialchars($error) : '';
     </style>
 </head>
 <body>
-    <?php include 'navbar.php'; ?>
+    <?php include 'includes/ui/navbar.php'; ?>
 
     <?php if (isset($error)): ?>
     <div class="error-banner">
@@ -1175,6 +1175,6 @@ $errorMsg = isset($error) ? $errorIcon . htmlspecialchars($error) : '';
         });
     </script>
 
-    <?php include 'footer.php'; ?>
+    <?php include 'includes/ui/footer.php'; ?>
 </body>
 </html> 

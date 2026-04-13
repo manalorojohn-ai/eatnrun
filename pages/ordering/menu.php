@@ -68,7 +68,7 @@ if (isset($_GET['reorder']) && !empty($_GET['reorder'])) {
         mysqli_rollback($conn);
         $_SESSION['error'] = "An error occurred while processing your request: " . $e->getMessage();
     }
-    header("Location: menu.php");
+    header("Location: menu");
     exit();
 }
 
@@ -115,10 +115,10 @@ function getMenuItems($conn, $category_name = null) {
 $categories = getCategories($conn);
 $selected_category = isset($_GET['category']) ? $_GET['category'] : null;
 $menu_items = getMenuItems($conn, $selected_category);
-$page_title = 'Our Menu';
-$current_page = 'menu.php';
+$page_title = 'Our Delicious Menu';
+$current_page = 'menu';
 
-// Pass extra styles
+// Include CSS
 ob_start(); ?>
 <link rel="stylesheet" href="assets/css/menu-enhanced.css">
 <?php $extra_styles = ob_get_clean();
@@ -128,104 +128,167 @@ include 'includes/ui/loader.php';
 include 'includes/ui/navbar.php';
 ?>
 
-<div class="container py-5">
-    <div class="page-title">
-        <h1>Our Menu</h1>
-        <p>Discover our delicious collection of freshly prepared meals, snacks, and drinks.</p>
+<div class="menu-hero-aesthetic">
+    <div class="container py-5 text-center">
+        <div class="hero-content-zen">
+            <h1 class="display-3 fw-bold animate-up">Our <span class="text-gradient">Menu</span>.</h1>
+            <p class="lead text-secondary animate-up-delayed">Crafted with precision, delivered with care.</p>
+            
+            <div class="search-glass-container animate-up-delayed-more">
+                <div class="search-glass">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="menuSearch" placeholder="What are you craving today?" autocomplete="off">
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <div class="filter-section">
-        <div class="category-wrapper">
-            <a href="menu.php" class="category-link <?php echo !$selected_category ? 'active' : ''; ?>">
-                All
+<div class="container py-2">
+    <div class="filter-wrapper-zen sticky-top">
+        <div class="category-grid-aesthetic">
+            <a href="menu" class="category-chip <?php echo !$selected_category ? 'active' : ''; ?>" data-category="all">
+                <i class="fas fa-utensils"></i> All
             </a>
             <?php foreach ($categories as $category): ?>
-                <a href="menu.php?category=<?php echo urlencode($category['name']); ?>" 
-                   class="category-link <?php echo ($selected_category === $category['name']) ? 'active' : ''; ?>">
-                <?php echo htmlspecialchars($category['name']); ?>
+                <a href="menu?category=<?php echo urlencode($category['name']); ?>" 
+                   class="category-chip <?php echo ($selected_category === $category['name']) ? 'active' : ''; ?>"
+                   data-category="<?php echo htmlspecialchars($category['name']); ?>">
+                    <?php
+                    $cat_name = strtolower($category['name']);
+                    if (strpos($cat_name, 'pizza') !== false) echo '<i class="fas fa-pizza-slice"></i>';
+                    elseif (strpos($cat_name, 'burger') !== false) echo '<i class="fas fa-hamburger"></i>';
+                    elseif (strpos($cat_name, 'drink') !== false) echo '<i class="fas fa-glass-martini-alt"></i>';
+                    elseif (strpos($cat_name, 'dessert') !== false) echo '<i class="fas fa-ice-cream"></i>';
+                    elseif (strpos($cat_name, 'pasta') !== false) echo '<i class="fas fa-wine-glass-alt"></i>';
+                    else echo '<i class="fas fa-dot-circle"></i>';
+                    ?>
+                    <?php echo htmlspecialchars($category['name']); ?>
                 </a>
             <?php endforeach; ?>
         </div>
     </div>
 
-    <!-- Notifications -->
-    <div class="notifications-container mb-4">
+    <!-- Notifications Area -->
+    <div class="notifications-area">
         <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert alert-danger">
+            <div class="menu-alert error">
                 <i class="fas fa-exclamation-circle"></i> <?php echo htmlspecialchars($_SESSION['error']); unset($_SESSION['error']); ?>
             </div>
         <?php endif; ?>
-        <?php if (isset($_SESSION['warning'])): ?>
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle"></i> <?php echo htmlspecialchars($_SESSION['warning']); unset($_SESSION['warning']); ?>
-            </div>
-        <?php endif; ?>
         <?php if (isset($_SESSION['success'])): ?>
-            <div class="alert alert-success">
+            <div class="menu-alert success">
                 <i class="fas fa-check-circle"></i> <?php echo htmlspecialchars($_SESSION['success']); unset($_SESSION['success']); ?>
             </div>
         <?php endif; ?>
     </div>
 
     <!-- Menu Grid -->
-    <div class="menu-grid">
-        <?php if (empty($menu_items)): ?>
-            <div class="text-center w-100 py-5">
-                <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                <p class="lead text-muted">No items found in this category.</p>
-            </div>
-        <?php else: ?>
-            <?php foreach ($menu_items as $item): ?>
-                <div class="menu-item" id="item-<?php echo $item['id']; ?>">
-                    <div class="menu-item-image">
-                        <?php 
-                        $image_url = (file_exists($item['image_path']) && !empty($item['image_path'])) ? $item['image_path'] : 'assets/images/menu/default-food.jpg';
-                        ?>
-                        <img src="<?php echo htmlspecialchars($image_url); ?>" 
-                             alt="<?php echo htmlspecialchars($item['name']); ?>"
-                             onerror="this.onerror=null; this.src='assets/images/menu/default-food.jpg'"
-                             loading="lazy">
-                    </div>
-                    <div class="menu-item-info">
-                        <div class="category-tag"><?php echo htmlspecialchars($item['category_name']); ?></div>
-                        <h3 class="menu-item-name"><?php echo htmlspecialchars($item['name']); ?></h3>
-                        <p class="menu-item-description text-muted small mb-3"><?php echo htmlspecialchars($item['description']); ?></p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="price">₱<?php echo number_format($item['price'], 2); ?></span>
-                            <form action="add_to_cart.php" method="POST" class="add-to-cart-form">
-                                <input type="hidden" name="item_id" value="<?php echo $item['id']; ?>">
-                                <button type="submit" name="add_to_cart" class="add-to-cart-btn">
-                                    <i class="fas fa-plus"></i> Add
+    <div class="menu-container mt-5">
+        <div class="menu-grid-aesthetic" id="menuGrid">
+            <?php if (empty($menu_items)): ?>
+                <div class="empty-state-zen">
+                    <i class="fas fa-cloud fa-3x mb-3 text-muted"></i>
+                    <h3>Quiet for now...</h3>
+                    <p>We couldn't find matches. Try another search.</p>
+                </div>
+            <?php else: ?>
+                <?php foreach ($menu_items as $index => $item): ?>
+                    <div class="card-aesthetic animate-in" style="animation-delay: <?php echo $index * 0.05; ?>s" data-category="<?php echo htmlspecialchars($item['category_name']); ?>" data-name="<?php echo htmlspecialchars(strtolower($item['name'])); ?>">
+                        <div class="card-image-wrapper">
+                            <?php 
+                            $image_url = (file_exists($item['image_path']) && !empty($item['image_path'])) ? $item['image_path'] : 'assets/images/menu/default-food.jpg';
+                            ?>
+                            <img src="<?php echo htmlspecialchars($image_url); ?>" 
+                                 alt="<?php echo htmlspecialchars($item['name']); ?>"
+                                 class="food-img"
+                                 loading="lazy">
+                            <div class="card-hover-overlay">
+                                <button class="btn-quick-view" data-item-id="<?php echo $item['id']; ?>">
+                                    <i class="fas fa-expand-alt"></i>
                                 </button>
-                            </form>
+                            </div>
+                            <span class="badge-custom"><?php echo htmlspecialchars($item['category_name']); ?></span>
+                        </div>
+                        <div class="card-body-aesthetic">
+                            <div class="card-meta">
+                                <span class="rating"><i class="fas fa-star text-warning"></i> 4.9</span>
+                                <span class="delivery-time"><i class="fas fa-clock text-muted"></i> 25-35 min</span>
+                            </div>
+                            <h3 class="food-name"><?php echo htmlspecialchars($item['name']); ?></h3>
+                            <p class="food-desc"><?php echo htmlspecialchars($item['description']); ?></p>
+                            <div class="card-footer-aesthetic">
+                                <div class="food-price">
+                                    <span class="price-symbol">₱</span>
+                                    <span class="price-value"><?php echo number_format($item['price'], 2); ?></span>
+                                </div>
+                                <button type="button" class="btn-add-aesthetic" data-item-id="<?php echo $item['id']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                    <i class="fas fa-shopping-basket"></i> Add
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
     </div>
 </div>
 
 <?php 
-// Extra scripts for menu page
+// Include JS
 ob_start(); ?>
 <script src="assets/js/cart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-hide alerts
-    const alerts = document.querySelectorAll('.alert');
-    alerts.forEach(alert => {
-        setTimeout(() => {
-            alert.style.opacity = '0';
-            alert.style.transform = 'translateY(-10px)';
-            alert.style.transition = 'all 0.4s ease';
-            setTimeout(() => alert.remove(), 400);
-        }, 5000);
+    const searchInput = document.getElementById('menuSearch');
+    const menuGrid = document.getElementById('menuGrid');
+    const cards = document.querySelectorAll('.card-aesthetic');
+    
+    // Search functionality with aesthetic transitions
+    if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase().trim();
+            let visibleCount = 0;
+            
+            cards.forEach(card => {
+                const name = card.dataset.name;
+                const desc = card.querySelector('.food-desc').textContent.toLowerCase();
+                
+                if (name.includes(searchTerm) || desc.includes(searchTerm)) {
+                    card.classList.remove('fade-out');
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.classList.add('fade-out');
+                    setTimeout(() => { if(card.classList.contains('fade-out')) card.style.display = 'none'; }, 300);
+                }
+            });
+        });
+    }
+
+    // Add to cart click synergy
+    document.querySelectorAll('.btn-add-aesthetic').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const itemId = this.dataset.itemId;
+            const originalHTML = this.innerHTML;
+            
+            this.classList.add('loading');
+            this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+            
+            if (typeof addToCart === 'function') {
+                addToCart(itemId);
+                setTimeout(() => {
+                    this.classList.remove('loading');
+                    this.innerHTML = '<i class="fas fa-check"></i>';
+                    setTimeout(() => { this.innerHTML = originalHTML; }, 1500);
+                }, 800);
+            }
+        });
     });
 });
 </script>
 <?php 
 $extra_scripts = ob_get_clean();
-
 include 'includes/ui/footer.php'; 
-?>
+?>?>
+

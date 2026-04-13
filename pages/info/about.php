@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/config.php';
 $page_title = 'About Us';
-$current_page = 'about.php';
+$current_page = 'about';
 
 // Pass extra styles for the about page
 ob_start(); ?>
@@ -21,7 +21,6 @@ ob_start(); ?>
         --transition-spring: cubic-bezier(0.68, -0.6, 0.32, 1.6);
     }
 
-    /* Container & Grid Styles */
     .container {
         max-width: 1200px;
         margin: 0 auto;
@@ -207,13 +206,8 @@ ob_start(); ?>
 <?php 
 $extra_styles = ob_get_clean();
 
-// Include standard header
 include 'includes/ui/header.php';
-
-// Include loader
 include 'includes/ui/loader.php';
-
-// Include navbar
 include 'includes/ui/navbar.php';
 ?>
 
@@ -322,7 +316,7 @@ include 'includes/ui/navbar.php';
                     button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Sending...';
                     button.disabled = true;
 
-                    fetch('actions/reviews/submit_message.php', {
+                    fetch('submit_message', {
                         method: 'POST',
                         body: new FormData(this)
                     })

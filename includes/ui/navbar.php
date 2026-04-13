@@ -6,7 +6,11 @@ if (session_status() === PHP_SESSION_NONE) {
 require_once 'config/database/db.php';
 
 // Get current page for active link highlighting
-$current_page = basename($_SERVER['PHP_SELF']);
+$current_page = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+$script_name = trim(dirname($_SERVER['SCRIPT_NAME']), '/');
+$current_page = str_replace($script_name, '', $current_page);
+$current_page = trim($current_page, '/');
+if (empty($current_page)) $current_page = 'index';
 
 // Check if user is logged in
 $is_logged_in = isset($_SESSION['user_id']);
@@ -59,7 +63,7 @@ if ($is_logged_in && !$is_admin) {
 <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="nav-container">
         <!-- Logo and Brand -->
-        <a href="index.php" class="navbar-brand" aria-label="Eat&Run Home">
+        <a href="index" class="navbar-brand" aria-label="Eat&Run Home">
             <img src="assets/images/logo.png" alt="Logo" class="logo" onerror="this.onerror=null; this.src='https://via.placeholder.com/40x40?text=E%26R'">
             <span>Eat&Run</span>
         </a>
@@ -73,45 +77,61 @@ if ($is_logged_in && !$is_admin) {
 
         <!-- Navigation Menu Container -->
         <div class="nav-menu" id="navMenu" aria-hidden="true">
-            <ul class="nav-links">
+            <ul class="nav-links-container" id="navbar-menu">
                 <?php if($is_admin): ?>
-                    <li><a href="admin/dashboard.php" class="nav-link <?php echo $current_page == 'dashboard.php' ? 'active' : ''; ?>">
-                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    <li id="mobile-background-icons"><a href="admin/dashboard" class="nav-link <?php echo $current_page == 'admin/dashboard' ? 'active' : ''; ?>">
+                        <i class="fas fa-tachometer-alt"></i> <span class="nav-text">Dashboard</span>
                     </a></li>
-                    <li><a href="admin/orders.php" class="nav-link <?php echo $current_page == 'orders.php' ? 'active' : ''; ?>">
-                        <i class="fas fa-shopping-bag"></i> Orders
+                    <li id="mobile-background-icons"><a href="admin/orders" class="nav-link <?php echo $current_page == 'admin/orders' ? 'active' : ''; ?>">
+                        <i class="fas fa-shopping-bag"></i> <span class="nav-text">Orders</span>
                     </a></li>
-                    <li><a href="admin/products.php" class="nav-link <?php echo $current_page == 'products.php' ? 'active' : ''; ?>">
-                        <i class="fas fa-utensils"></i> Products
+                    <li id="mobile-background-icons"><a href="admin/products" class="nav-link <?php echo $current_page == 'admin/products' ? 'active' : ''; ?>">
+                        <i class="fas fa-utensils"></i> <span class="nav-text">Products</span>
                     </a></li>
-                    <li><a href="admin/users.php" class="nav-link <?php echo $current_page == 'users.php' ? 'active' : ''; ?>">
-                        <i class="fas fa-users"></i> Users
+                    <li id="mobile-background-icons"><a href="admin/users" class="nav-link <?php echo $current_page == 'admin/users' ? 'active' : ''; ?>">
+                        <i class="fas fa-users"></i> <span class="nav-text">Users</span>
                     </a></li>
                 <?php else: ?>
-                    <li><a href="index" class="nav-link <?php echo ($current_page == 'index.php' || $current_page == 'home.php') ? 'active' : ''; ?>">
-                        <i class="fas fa-home"></i> Home
+                    <li id="mobile-background-icons"><a href="index" class="nav-link <?php echo ($current_page == 'index' || $current_page == 'home') ? 'active' : ''; ?>">
+                        <i class="fas fa-home"></i> <span class="nav-text">Home</span>
                     </a></li>
-                    <li><a href="menu" class="nav-link <?php echo $current_page == 'menu.php' ? 'active' : ''; ?>">
-                        <i class="fas fa-utensils"></i> Menu
+                    <li id="mobile-background-icons"><a href="menu" class="nav-link <?php echo $current_page == 'menu' ? 'active' : ''; ?>">
+                        <i class="fas fa-utensils"></i> <span class="nav-text">Menu</span>
                     </a></li>
-                    <li><a href="about" class="nav-link <?php echo $current_page == 'about.php' ? 'active' : ''; ?>">
-                        <i class="fas fa-info-circle"></i> About
+                    <li id="mobile-background-icons"><a href="about" class="nav-link <?php echo $current_page == 'about' ? 'active' : ''; ?>">
+                        <i class="fas fa-info-circle"></i> <span class="nav-text">About</span>
                     </a></li>
                     <?php if($is_logged_in): ?>
-                        <li><a href="my_orders" class="nav-link <?php echo ($current_page == 'my_orders.php' || $current_page == 'orders.php') ? 'active' : ''; ?>">
-                            <i class="fas fa-clipboard-list"></i> My Orders
+                        <li id="mobile-background-icons"><a href="my_orders" class="nav-link <?php echo ($current_page == 'my_orders' || $current_page == 'orders') ? 'active' : ''; ?>">
+                            <i class="fas fa-clipboard-list"></i> <span class="nav-text">My Orders</span>
                         </a></li>
-                        <li class="cart-item"><a href="cart" class="nav-link <?php echo $current_page == 'cart.php' ? 'active' : ''; ?>">
-                            <i class="fas fa-shopping-cart"></i> Cart
+                        <li id="mobile-background-icons" class="cart-item"><a href="cart" class="nav-link <?php echo $current_page == 'cart' ? 'active' : ''; ?>">
+                            <i class="fas fa-shopping-cart"></i> <span class="nav-text">Cart</span>
                             <?php if($cartCount > 0): ?>
                                 <span class="cart-counter"><?php echo $cartCount; ?></span>
                             <?php endif; ?>
                         </a></li>
                     <?php endif; ?>
                 <?php endif; ?>
+
+                <?php if($is_logged_in): ?>
+                    <li id="mobile-background-icons" class="mobile-only"><a href="profile" class="nav-link <?php echo $current_page == 'profile' ? 'active' : ''; ?>">
+                        <i class="fas fa-user-circle"></i> <span class="nav-text">Profile</span>
+                    </a></li>
+                    <li id="mobile-background-icons" class="mobile-only"><a href="logout" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i> <span class="nav-text">Logout</span>
+                    </a></li>
+                <?php else: ?>
+                    <li id="mobile-background-icons" class="mobile-only"><a href="login" class="nav-link <?php echo $current_page == 'login' ? 'active' : ''; ?>">
+                        <i class="fas fa-sign-in-alt"></i> <span class="nav-text">Login</span>
+                    </a></li>
+                    <li id="mobile-background-icons" class="mobile-only"><a href="register" class="nav-link <?php echo $current_page == 'register' ? 'active' : ''; ?>">
+                        <i class="fas fa-user-plus"></i> <span class="nav-text">Register</span>
+                    </a></li>
+                <?php endif; ?>
             </ul>
 
-            <div class="auth-buttons">
+            <div class="auth-buttons desktop-only">
                 <?php if($is_logged_in): ?>
                     <?php if(!$is_admin): ?>
                         <!-- Notifications -->
@@ -134,7 +154,7 @@ if ($is_logged_in && !$is_admin) {
                                         <div class="notif-center" id="notif-center-list">
                                             <?php if (!empty($notifications)): ?>
                                                 <?php foreach ($notifications as $n): ?>
-                                                    <a href="<?php echo htmlspecialchars($n['link'] ?? 'notifications.php'); ?>" class="notification-item <?php echo ($n['is_read'] ? '' : 'unread'); ?>" data-id="<?php echo $n['id']; ?>">
+                                                    <a href="<?php echo htmlspecialchars($n['link'] ?? 'notifications'); ?>" class="notification-item <?php echo ($n['is_read'] ? '' : 'unread'); ?>" data-id="<?php echo $n['id']; ?>">
                                                         <div class="notif-icon">
                                                             <i class="fas <?php 
                                                                 $ntype = strtolower($n['type'] ?? 'system');
@@ -153,15 +173,15 @@ if ($is_logged_in && !$is_admin) {
                                         </div>
                                     </div>
                                 </li>
-                                <li><a class="see-all" href="notifications.php">See all notifications <i class="fa fa-angle-right"></i></a></li>
+                                <li><a class="see-all" href="notifications">See all notifications <i class="fa fa-angle-right"></i></a></li>
                             </ul>
                         </div>
                     <?php endif; ?>
                     
-                    <a href="<?php echo $is_admin ? 'admin/profile.php' : 'profile.php'; ?>" class="login-btn">
+                    <a href="<?php echo $is_admin ? 'admin/dashboard' : 'profile'; ?>" class="login-btn">
                         <i class="fas fa-user<?php echo $is_admin ? '-shield' : ''; ?>"></i> <?php echo $is_admin ? 'Admin' : 'Profile'; ?>
                     </a>
-                    <a href="logout.php" class="register-btn">
+                    <a href="logout" class="register-btn">
                         <i class="fas fa-sign-out-alt"></i> Logout
                     </a>
                 <?php else: ?>
@@ -181,8 +201,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (mobileMenuToggle && navMenu) {
         mobileMenuToggle.addEventListener('click', function() {
             const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            const menuList = document.getElementById('navbar-menu');
             this.setAttribute('aria-expanded', !isExpanded);
             navMenu.classList.toggle('active');
+            if (menuList) menuList.classList.toggle('active');
             this.classList.toggle('active');
             document.body.style.overflow = isExpanded ? '' : 'hidden';
         });
@@ -210,7 +232,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function markAllAsRead() {
-    fetch('mark_all_notifications_read.php', { method: 'POST' })
+    fetch('mark_all_notifications_read', { method: 'POST' })
     .then(r => r.json())
     .then(data => {
         if (data.success) {

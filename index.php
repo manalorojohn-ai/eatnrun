@@ -10,13 +10,22 @@ $request = $_SERVER['REQUEST_URI'];
 $script_name = $_SERVER['SCRIPT_NAME'];
 $base_dir = str_replace('index.php', '', $script_name);
 
+// Built-in server router
+if (php_sapi_name() == 'cli-server') {
+    $url = parse_url($request);
+    $file = './' . ltrim($url['path'], '/');
+    if (file_exists($file) && is_file($file)) {
+        return false; // serve the requested resource as-is.
+    }
+}
+
 // Get the actual request path after the base directory
 $path = str_replace($base_dir, '', $request);
 $path = parse_url($path, PHP_URL_PATH);
 $path = trim($path, '/');
 
 // Define default route
-if (empty($path) || $path === 'index.php') {
+if (empty($path) || $path === 'index.php' || $path === 'index') {
     require_once 'pages/home.php';
     exit();
 }
@@ -32,8 +41,27 @@ if (!str_ends_with($page_file, '.php')) {
     $page_file .= '.php';
 }
 
-// Search for the page in the organized /pages subfolders
-$search_folders = ['ordering', 'account', 'auth', 'info', 'reviews'];
+// Special case for admin routing
+if (str_starts_with($path, 'admin/') || $path === 'admin') {
+    require_once 'admin/index.php';
+    exit();
+}
+
+// Search for the page in the organized folders
+$search_folders = [
+    'pages/ordering', 
+    'pages/account', 
+    'pages/auth', 
+    'pages/info', 
+    'pages/reviews',
+    'actions/cart',
+    'actions/auth',
+    'actions/order',
+    'actions/account',
+    'actions/notifications',
+    'actions/reviews',
+    'actions'
+];
 $found = false;
 
 // Check primary pages/ folder first
@@ -43,8 +71,8 @@ if (file_exists('pages/' . $page_file)) {
 } else {
     // Search subfolders
     foreach ($search_folders as $folder) {
-        if (file_exists("pages/$folder/$page_file")) {
-            require_once "pages/$folder/$page_file";
+        if (file_exists("$folder/$page_file")) {
+            require_once "$folder/$page_file";
             $found = true;
             break;
         }

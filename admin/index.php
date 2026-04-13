@@ -14,6 +14,13 @@ $path = str_replace($base_dir, '', $request);
 $path = parse_url($path, PHP_URL_PATH);
 $path = trim($path, '/');
 
+// Strip 'admin/' prefix if present (when called from root router)
+if (str_starts_with($path, 'admin/')) {
+    $path = substr($path, 6);
+} elseif ($path === 'admin') {
+    $path = '';
+}
+
 // Default to dashboard
 if (empty($path) || $path === 'index.php') {
     require_once 'pages/dashboard.php';

@@ -6,7 +6,7 @@ ini_set('display_errors', 1);
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: login");
     exit();
 }
 
@@ -387,7 +387,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_photo'])) {
     </style>
 </head>
 <body>
-    <?php include 'navbar.php'; ?>
+    <?php include 'includes/ui/navbar.php'; ?>
 
     <div class="profile-container">
         <div class="profile-header animate__animated animate__fadeInDown">
@@ -453,7 +453,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_photo'])) {
                 </div>
             <?php endif; ?>
 
-            <form method="POST" action="profile.php">
+            <form method="POST" action="profile">
                 <div class="form-floating">
                     <input type="text" class="form-control <?php echo empty($user['full_name']) ? 'is-invalid' : ''; ?>" 
                            id="full_name" name="full_name" 
@@ -489,7 +489,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_photo'])) {
         </div>
     </div>
 
-    <?php include 'footer.php'; ?>
+    <?php include 'includes/ui/footer.php'; ?>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -562,7 +562,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_photo'])) {
                     changePhotoBtn.disabled = true;
                     changePhotoBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Uploading...';
                     
-                    fetch('profile.php', {
+                    fetch('profile', {
                         method: 'POST',
                         body: formData
                     })

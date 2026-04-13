@@ -23,11 +23,14 @@ $is_render = (bool)getenv('RENDER');
 // On Render, we MUST use Postgres (Neon)
 if ($is_render || (getenv('DB_HOST') && extension_loaded('pdo_pgsql'))) {
     try {
-        // Neon requires the endpoint ID as an option if the client library is older
+        // Neon SNI Trick: Embed endpoint ID in the password if direct connection fails
         $endpoint = explode('.', DB_HOST)[0];
-        $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require;options=--endpoint=$endpoint";
+        $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
         
-        $conn = new PDO($dsn, DB_USER, DB_PASS, [
+        // Try with password embedding (the most robust way for Neon)
+        $neon_pass = "endpoint=$endpoint;" . DB_PASS;
+        
+        $conn = new PDO($dsn, DB_USER, $neon_pass, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_TIMEOUT => 5
         ]);

@@ -78,12 +78,61 @@ if ($is_logged_in && !$is_admin) {
                 <?php if(!$is_admin): ?>
                     <li id="mobile-background-icons"><a href="index" class="nav-link"><i class="fas fa-home"></i> <span class="nav-text">Home</span></a></li>
                     <li id="mobile-background-icons"><a href="menu" class="nav-link"><i class="fas fa-utensils"></i> <span class="nav-text">Menu</span></a></li>
+                    <li id="mobile-background-icons" class="mobile-only"><a href="orders" class="nav-link"><i class="fas fa-list-alt"></i> <span class="nav-text">My Orders</span></a></li>
                     <li id="mobile-background-icons"><a href="about" class="nav-link"><i class="fas fa-info-circle"></i> <span class="nav-text">About</span></a></li>
                 <?php else: ?>
                     <li id="mobile-background-icons"><a href="admin/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> <span class="nav-text">Admin</span></a></li>
                 <?php endif; ?>
 
                 <?php if($is_logged_in): ?>
+                    <!-- Notification Bell (Mobile: Link, Desktop: Dropdown) -->
+                    <li class="nav-item dropdown notification-bell-wrapper">
+                        <!-- Desktop Bell -->
+                        <div class="desktop-only">
+                            <button class="notification-btn" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-bell"></i>
+                                <?php if($unread_count > 0): ?>
+                                    <span class="notification-counter"><?php echo $unread_count; ?></span>
+                                <?php endif; ?>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end notif-box animate__animated animate__fadeIn" aria-labelledby="notifDropdown">
+                                <div class="notif-header">
+                                    <span>Notifications</span>
+                                    <?php if($unread_count > 0): ?>
+                                        <button onclick="markAllAsRead()" class="mark-all">Mark all as read</button>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="notif-scroll">
+                                    <?php if(empty($notifications)): ?>
+                                        <div class="notif-empty">No new notifications</div>
+                                    <?php else: ?>
+                                        <?php foreach($notifications as $notif): ?>
+                                            <a href="<?php echo $notif['link'] ?: '#'; ?>" class="notif-item <?php echo $notif['is_read'] ? '' : 'unread'; ?>">
+                                                <div class="notif-icon">
+                                                    <i class="fas <?php echo $notif['type'] == 'order' ? 'fa-shopping-bag' : 'fa-info-circle'; ?>"></i>
+                                                </div>
+                                                <div class="notif-content">
+                                                    <span class="block"><?php echo htmlspecialchars($notif['message']); ?></span>
+                                                    <span class="time"><?php echo date('M d, g:i a', strtotime($notif['created_at'])); ?></span>
+                                                </div>
+                                            </a>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </div>
+                                <a href="notifications" class="see-all">See All Messages</a>
+                            </div>
+                        </div>
+                        
+                        <!-- Mobile Bell -->
+                        <a href="notifications" class="nav-link mobile-only">
+                            <i class="fas fa-bell"></i>
+                            <span class="nav-text">Notifications</span>
+                            <?php if($unread_count > 0): ?>
+                                <span class="notification-count"><?php echo $unread_count; ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
+
                     <?php if(!$is_admin): ?>
                         <li id="mobile-background-icons"><a href="cart" class="nav-link"><i class="fas fa-shopping-cart"></i> <span class="nav-text">Cart</span></a></li>
                     <?php endif; ?>

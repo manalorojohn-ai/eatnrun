@@ -274,7 +274,8 @@ $users_table = $using_postgres ?
         role VARCHAR(20) DEFAULT 'customer',
         status VARCHAR(20) DEFAULT 'active',
         is_verified BOOLEAN DEFAULT FALSE,
-        document_status VARCHAR(20) DEFAULT 'none',
+        address TEXT,
+        profile_photo VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )" : 
     "CREATE TABLE IF NOT EXISTS users (
@@ -284,10 +285,11 @@ $users_table = $using_postgres ?
         password VARCHAR(255) NOT NULL,
         full_name VARCHAR(100),
         phone VARCHAR(20),
+        address TEXT,
+        profile_photo VARCHAR(255),
         role ENUM('admin', 'customer', 'rider') DEFAULT 'customer',
         status ENUM('active', 'inactive') DEFAULT 'active',
         is_verified TINYINT(1) DEFAULT 0,
-        document_status ENUM('none', 'pending', 'approved', 'rejected') DEFAULT 'none',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 

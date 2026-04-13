@@ -171,6 +171,16 @@ if ($using_postgres) {
         public function close() { return true; }
         public function set_charset($c) { return true; }
         
+        public function begin_transaction() {
+            try { return $this->pdo->beginTransaction(); } catch (Exception $e) { return false; }
+        }
+        public function commit() {
+            try { return $this->pdo->commit(); } catch (Exception $e) { return false; }
+        }
+        public function rollback() {
+            try { return $this->pdo->rollBack(); } catch (Exception $e) { return false; }
+        }
+        
         // Internal PDO access
         public function getPDO() { return $this->pdo; }
     }

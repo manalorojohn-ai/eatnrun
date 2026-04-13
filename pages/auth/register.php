@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // If no errors, proceed with registration and OTP
     if (empty($error)) {
-        mysqli_begin_transaction($conn);
+        $conn->begin_transaction();
         
         try {
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -134,6 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mail->Password = 'jrsp vsza dxvw zcsa';
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port = 587;
+                $mail->Timeout = 10; // Prevent 502 Bad Gateway timeouts
 
                 $mail->setFrom('miguelantonioramos140@gmail.com', 'Eat&Run');
                 $mail->addAddress($email, $full_name);
@@ -154,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>";
 
                 $mail->send();
-                mysqli_commit($conn);
+                $conn->commit();
 
                 // Store user data in session for verification
                 $_SESSION['temp_user_id'] = $user_id;
@@ -163,12 +164,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header("Location: verify-email.php");
                 exit();
             } catch (Exception $e) {
-                mysqli_rollback($conn);
+                $conn->rollback();
                 error_log("Email error: " . $mail->ErrorInfo);
                 $error = "Failed to send verification email. Please try again.";
             }
         } catch (Exception $e) {
-            mysqli_rollback($conn);
+            $conn->rollback();
             error_log("Registration error: " . $e->getMessage());
             $error = "Registration failed. Please try again.";
         }

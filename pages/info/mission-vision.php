@@ -20,6 +20,10 @@ session_start();
     <link rel="stylesheet" href="https://unpkg.com/simplebar@5.3.6/dist/simplebar.min.css">
     <!-- Add Animate.css -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Common Styles -->
+    <link rel="stylesheet" href="assets/css/shared-styles.css">
+    <link rel="stylesheet" href="assets/css/navbar-enhanced.css">
+    <link rel="stylesheet" href="assets/css/footer.css">
     <style>
         :root {
             --primary: #006C3B;

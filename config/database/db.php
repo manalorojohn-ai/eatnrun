@@ -125,13 +125,8 @@ if ($using_postgres) {
         }
 
         public function prepare($query) {
-            // Translate MySQL syntax to PG ($1, $2 instead of ?)
-            $i = 1;
-            $query = preg_replace_callback('/\?/', function($m) use (&$i) {
-                return '$' . $i++;
-            }, $query);
-
-            // Clean backticks
+            // Use standard positional parameters (?) which PDO handles natively even on Postgres
+            // Cleaning backticks is still necessary for Postgres
             $query = str_replace('`', '"', $query);
 
             try {

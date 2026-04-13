@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $result->fetch_assoc();
 
     // Verify password (supports both plain text for migration/dev and hashes for security)
-    if ($user && ($password === trim($user['password']) || password_verify($password, $user['password']))) {
+    if ($user && (trim($password) === trim($user['password']) || password_verify(trim($password), $user['password']))) {
         // Admin users
         if ($user['role'] === 'admin') {
             // Login successful for admin

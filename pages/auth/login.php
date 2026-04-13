@@ -13,11 +13,11 @@ $error_message = '';
 $success_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = mysqli_real_escape_string($conn, $_POST['email']);
-    $password = $_POST['password'];
-
-    // Query the database
-    $query = "SELECT * FROM users WHERE email = ? AND status = 'active'";
+    $email = trim($_POST['email']);
+    $password = trim($_POST['password']);
+    
+    // Case-insensitive query for PostgreSQL compatibility
+    $query = "SELECT * FROM users WHERE LOWER(email) = LOWER(?) AND status = 'active'";
     $stmt = $conn->prepare($query);
     $stmt->bind_param("s", $email);
     $stmt->execute();
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = $result->fetch_assoc();
 
     // Verify password (supports both plain text for migration/dev and hashes for security)
-    if ($user && ($password === $user['password'] || password_verify($password, $user['password']))) {
+    if ($user && ($password === trim($user['password']) || password_verify($password, $user['password']))) {
         // Admin users bypass document verification checks
         if ($user['role'] === 'admin') {
             // Login successful for admin

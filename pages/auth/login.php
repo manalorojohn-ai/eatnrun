@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Verify password (supports both plain text for migration/dev and hashes for security)
     if ($user && ($password === trim($user['password']) || password_verify($password, $user['password']))) {
-        // Admin users bypass document verification checks
+        // Admin users
         if ($user['role'] === 'admin') {
             // Login successful for admin
             $_SESSION['user_id'] = $user['id'];
@@ -39,33 +39,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Regular customer verification checks
-        // Check if email is verified
         if (!$user['is_verified']) {
             $error_message = "Please verify your email address first. Check your inbox for the verification code.";
-        }
-        // Check if documents are approved
-        elseif ($user['document_status'] === 'pending') {
-            $error_message = "Your documents are under review. Please wait for admin approval.";
-        }
-        elseif ($user['document_status'] === 'rejected') {
-            $error_message = "Your documents were rejected. Please contact support for more information.";
-        }
-        elseif ($user['document_status'] === 'approved' || $user['document_status'] === 'none' || empty($user['document_status'])) {
-            // Login successful - allowing entry even if document_status is empty for now
+        } else {
+            // Login successful for regular user
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['full_name'] = $user['full_name'];
             
             // Redirect customer to dashboard
             header("Location: dashboard");
-            exit();
-        } else {
-            // Document status is null or invalid - redirect to document submission
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['role'] = $user['role'];
-            $_SESSION['full_name'] = $user['full_name'];
-            $_SESSION['email_verified'] = true;
-            header("Location: submit_documents");
             exit();
         }
     } else {

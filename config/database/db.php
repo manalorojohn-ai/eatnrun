@@ -6,14 +6,17 @@ if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: '');
 if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'food_ordering');
 if (!defined('DB_PORT')) define('DB_PORT', getenv('DB_PORT') ?: '5432');
 
-// Connection string for PostgreSQL
-$conn_string = "host=" . DB_HOST . " port=" . DB_PORT . " dbname=" . DB_NAME . " user=" . DB_USER . " password=" . DB_PASS . " sslmode=require";
-
-// Connect to Neon
-$conn = pg_connect($conn_string);
-
-if (!$conn) {
-    die("Connection failed: " . pg_last_error());
+try {
+    $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
+    $conn_pdo = new PDO($dsn, DB_USER, DB_PASS, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    // Create a dummy resource-like object for procedural mapping
+    $conn = $conn_pdo; 
+} catch (PDOException $e) {
+    // If pgsql driver is missing or connection fails
+    if (strpos($e->getMessage(), 'could not find driver') !== false) {
+        die("Fatal Error: The 'pgsql' extension is not enabled in your PHP. Please enable 'extension=pdo_pgsql' in your php.ini file.");
+    }
+    die("Connection failed: " . $e->getMessage());
 }
 
 // ---------------------------------------------------------
@@ -21,31 +24,56 @@ if (!$conn) {
 // ---------------------------------------------------------
 if (!function_exists('mysqli_query')) {
     function mysqli_query($c, $q) {
-        // Convert some common MySQL syntax to PG
-        $q = str_ireplace('AUTO_INCREMENT', 'SERIAL', $q);
-        $q = str_ireplace('INT ', 'INTEGER ', $q);
-        $q = str_ireplace('TINYINT(1)', 'BOOLEAN', $q);
-        $q = str_ireplace('DATETIME', 'TIMESTAMP', $q);
-        $q = str_ireplace('`', '"', $q); // MySQL backticks to PG double quotes
-        return pg_query($c, $q);
+        global $last_stmt;
+        try {
+            // Convert some common MySQL syntax to PG on the fly
+            $q = str_ireplace('AUTO_INCREMENT', 'SERIAL', $q);
+            // Don't replace 'INT ' if it's inside a word, but here we do basic translation
+            $q = str_ireplace('INT ', 'INTEGER ', $q);
+            $q = str_ireplace('TINYINT(1)', 'BOOLEAN', $q);
+            $q = str_ireplace('DATETIME', 'TIMESTAMP', $q);
+            $q = str_ireplace('`', '"', $q); // MySQL backticks to PG double quotes
+            
+            $stmt = $c->query($q);
+            $last_stmt = $stmt;
+            return $stmt;
+        } catch (Exception $e) {
+            return false;
+        }
     }
 }
 
 if (!function_exists('mysqli_fetch_assoc')) {
-    function mysqli_fetch_assoc($r) {
-        return pg_fetch_assoc($r);
+    function mysqli_fetch_assoc($res) {
+        if (!$res) return false;
+        return $res->fetch(PDO::FETCH_ASSOC);
+    }
+}
+
+if (!function_exists('mysqli_num_rows')) {
+    function mysqli_num_rows($res) {
+        if (!$res) return 0;
+        return $res->rowCount();
     }
 }
 
 if (!function_exists('mysqli_real_escape_string')) {
     function mysqli_real_escape_string($c, $s) {
-        return pg_escape_string($c, $s);
+        // Simple manual escaping for PDO if quote() isn't ideal
+        return str_replace("'", "''", $s);
     }
 }
 
 if (!function_exists('mysqli_error')) {
     function mysqli_error($c) {
-        return pg_last_error($c);
+        $info = $c->errorInfo();
+        return $info[2] ?? 'Unknown error';
+    }
+}
+
+if (!function_exists('mysqli_insert_id')) {
+    function mysqli_insert_id($c) {
+        return $c->lastInsertId();
     }
 }
 

@@ -18,21 +18,28 @@ if (!defined('DB_PORT')) {
 // HYBRID CONNECTION LOGIC (POSTGRES FOR RENDER, MYSQL FOR LOCAL)
 // ---------------------------------------------------------
 $using_postgres = false;
+$is_render = (bool)getenv('RENDER');
 
-// Only try Postgres if DB_HOST is set (usually Render) and driver exists
-if (getenv('DB_HOST') && extension_loaded('pdo_pgsql')) {
+// On Render, we MUST use Postgres (Neon)
+if ($is_render || (getenv('DB_HOST') && extension_loaded('pdo_pgsql'))) {
     try {
         $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
-        $conn = new PDO($dsn, DB_USER, DB_PASS, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+        $conn = new PDO($dsn, DB_USER, DB_PASS, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_TIMEOUT => 5 // 5 second timeout
+        ]);
         $using_postgres = true;
     } catch (PDOException $e) {
-        // Fallback to MySQL if Postgres connection fails
+        // If we are on Render, we cannot fallback. Show the actual Neon error.
+        if ($is_render) {
+            die("Neon Connection Error: " . $e->getMessage());
+        }
         error_log("Postgres failed, falling back to MySQL: " . $e->getMessage());
     }
 }
 
-// Local Fallback: Use MySQL if not using Postgres
-if (!$using_postgres) {
+// Local Fallback: Only use MySQL if NOT on Render
+if (!$using_postgres && !$is_render) {
     $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
     if ($conn->connect_error) {
         die("Connection failed: " . $conn->connect_error);

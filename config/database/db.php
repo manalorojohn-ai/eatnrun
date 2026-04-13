@@ -1,7 +1,7 @@
 <?php
 // Database configuration
 if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'root');
+if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: getenv('DB_USFR') ?: 'root');
 if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: '');
 if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'food_ordering');
 if (!defined('DB_PORT')) define('DB_PORT', getenv('DB_PORT') ?: (getenv('DB_HOST') ? '5432' : '3306'));

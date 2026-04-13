@@ -225,6 +225,37 @@ if ($using_postgres) {
             return $pdo->lastInsertId();
         }
     }
+
+    if (!function_exists('mysqli_prepare')) {
+        function mysqli_prepare($c, $q) {
+            $q = str_replace('`', '"', $q);
+            return $c->prepare($q);
+        }
+    }
+
+    if (!function_exists('mysqli_stmt_bind_param')) {
+        function mysqli_stmt_bind_param($s, $t, ...$v) {
+            return $s->bind_param($t, ...$v);
+        }
+    }
+
+    if (!function_exists('mysqli_stmt_execute')) {
+        function mysqli_stmt_execute($s) {
+            return $s->execute();
+        }
+    }
+
+    if (!function_exists('mysqli_stmt_get_result')) {
+        function mysqli_stmt_get_result($s) {
+            return $s->get_result();
+        }
+    }
+
+    if (!function_exists('mysqli_stmt_close')) {
+        function mysqli_stmt_close($s) {
+            return $s->close();
+        }
+    }
 }
 
 // ---------------------------------------------------------

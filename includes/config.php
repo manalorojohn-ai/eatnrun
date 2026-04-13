@@ -9,7 +9,8 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Database connection
-$conn = require_once dirname(__DIR__) . '/config/database/db.php';
+require_once dirname(__DIR__) . '/config/database/db.php';
+// $conn is now available from db.php
 
 // Site configuration
 define('SITE_NAME', 'Eat&Run');

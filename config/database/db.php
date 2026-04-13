@@ -113,56 +113,146 @@ $users_table = $using_postgres ?
 
 mysqli_query($conn, $users_table);
 
-return $conn;
-?>
+// Create categories table
+$categories_table = $using_postgres ? 
+    "CREATE TABLE IF NOT EXISTS categories (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(50) NOT NULL,
+        description TEXT,
+        status VARCHAR(20) DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )" : 
+    "CREATE TABLE IF NOT EXISTS categories (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(50) NOT NULL,
+        description TEXT,
+        status ENUM('active', 'inactive') DEFAULT 'active',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+mysqli_query($conn, $categories_table);
+
+// Create menu_items table
+$menu_items_table = $using_postgres ? 
+    "CREATE TABLE IF NOT EXISTS menu_items (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        price DECIMAL(10,2) NOT NULL,
+        category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+        image_path VARCHAR(255),
+        status VARCHAR(20) DEFAULT 'available',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )" : 
+    "CREATE TABLE IF NOT EXISTS menu_items (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        price DECIMAL(10,2) NOT NULL,
+        category_id INT,
+        image_path VARCHAR(255),
+        status ENUM('available', 'unavailable') DEFAULT 'available',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
+mysqli_query($conn, $menu_items_table);
 
 // Create orders table
-$orders_table = "CREATE TABLE IF NOT EXISTS orders (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    full_name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    phone VARCHAR(20) NOT NULL,
-    delivery_address TEXT NOT NULL,
-    payment_method VARCHAR(50) NOT NULL DEFAULT 'cod',
-    payment_proof VARCHAR(255),
-    payment_status VARCHAR(20) DEFAULT 'pending',
-    delivery_notes TEXT,
-    subtotal DECIMAL(10,2) NOT NULL,
-    delivery_fee DECIMAL(10,2) DEFAULT 50.00,
-    total_amount DECIMAL(10,2) NOT NULL,
-    status VARCHAR(20) DEFAULT 'pending',
-    is_rated BOOLEAN DEFAULT FALSE,
-    cancel_reason TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    received_at TIMESTAMP NULL
-)";
+$orders_table = $using_postgres ? 
+    "CREATE TABLE IF NOT EXISTS orders (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        full_name VARCHAR(100) NOT NULL,
+        email VARCHAR(100) NOT NULL,
+        phone VARCHAR(20) NOT NULL,
+        delivery_address TEXT NOT NULL,
+        payment_method VARCHAR(50) NOT NULL DEFAULT 'cod',
+        payment_proof VARCHAR(255),
+        payment_status VARCHAR(20) DEFAULT 'pending',
+        delivery_notes TEXT,
+        subtotal DECIMAL(10,2) NOT NULL,
+        delivery_fee DECIMAL(10,2) DEFAULT 50.00,
+        total_amount DECIMAL(10,2) NOT NULL,
+        status VARCHAR(20) DEFAULT 'pending',
+        is_rated BOOLEAN DEFAULT FALSE,
+        cancel_reason TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        received_at TIMESTAMP NULL
+    )" : 
+    "CREATE TABLE IF NOT EXISTS orders (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        full_name VARCHAR(100) NOT NULL,
+        email VARCHAR(100) NOT NULL,
+        phone VARCHAR(20) NOT NULL,
+        delivery_address TEXT NOT NULL,
+        payment_method VARCHAR(50) NOT NULL DEFAULT 'cod',
+        payment_proof VARCHAR(255),
+        payment_status ENUM('pending', 'paid', 'failed') DEFAULT 'pending',
+        delivery_notes TEXT,
+        subtotal DECIMAL(10,2) NOT NULL,
+        delivery_fee DECIMAL(10,2) DEFAULT 50.00,
+        total_amount DECIMAL(10,2) NOT NULL,
+        status ENUM('pending', 'processing', 'completed', 'cancelled') DEFAULT 'pending',
+        is_rated TINYINT(1) DEFAULT 0,
+        cancel_reason TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        received_at TIMESTAMP NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 mysqli_query($conn, $orders_table);
 
 // Create order_details table
-$order_details_table = "CREATE TABLE IF NOT EXISTS order_details (
-    id SERIAL PRIMARY KEY,
-    order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-    menu_item_id INTEGER NOT NULL REFERENCES menu_items(id),
-    quantity INTEGER NOT NULL,
-    price DECIMAL(10,2) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)";
+$order_details_table = $using_postgres ? 
+    "CREATE TABLE IF NOT EXISTS order_details (
+        id SERIAL PRIMARY KEY,
+        order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+        menu_item_id INTEGER NOT NULL REFERENCES menu_items(id),
+        quantity INTEGER NOT NULL,
+        price DECIMAL(10,2) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )" : 
+    "CREATE TABLE IF NOT EXISTS order_details (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        order_id INT NOT NULL,
+        menu_item_id INT NOT NULL,
+        quantity INT NOT NULL,
+        price DECIMAL(10,2) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+        FOREIGN KEY (menu_item_id) REFERENCES menu_items(id) ON DELETE RESTRICT
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 mysqli_query($conn, $order_details_table);
 
 // Create notifications table
-$notifications_table = "CREATE TABLE IF NOT EXISTS notifications (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    message TEXT NOT NULL,
-    type VARCHAR(50) NOT NULL,
-    is_read BOOLEAN DEFAULT FALSE,
-    link VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    read_at TIMESTAMP NULL
-)";
+$notifications_table = $using_postgres ? 
+    "CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        message TEXT NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        is_read BOOLEAN DEFAULT FALSE,
+        link VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        read_at TIMESTAMP NULL
+    )" : 
+    "CREATE TABLE IF NOT EXISTS notifications (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        message TEXT NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        is_read TINYINT(1) DEFAULT 0,
+        link VARCHAR(255),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        read_at TIMESTAMP NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
 mysqli_query($conn, $notifications_table);
 
 return $conn;
-?> 
+?>

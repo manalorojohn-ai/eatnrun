@@ -23,10 +23,13 @@ $is_render = (bool)getenv('RENDER');
 // On Render, we MUST use Postgres (Neon)
 if ($is_render || (getenv('DB_HOST') && extension_loaded('pdo_pgsql'))) {
     try {
-        $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
+        // Neon requires the endpoint ID as an option if the client library is older
+        $endpoint = explode('.', DB_HOST)[0];
+        $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require;options=--endpoint=$endpoint";
+        
         $conn = new PDO($dsn, DB_USER, DB_PASS, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_TIMEOUT => 5 // 5 second timeout
+            PDO::ATTR_TIMEOUT => 5
         ]);
         $using_postgres = true;
     } catch (PDOException $e) {

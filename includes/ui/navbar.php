@@ -78,13 +78,15 @@ if ($is_logged_in && !$is_admin) {
                 <?php if(!$is_admin): ?>
                     <li class="mobile-background-icons"><a href="index" class="nav-link"><i class="fas fa-home"></i> <span class="nav-text">Home</span></a></li>
                     <li class="mobile-background-icons"><a href="menu" class="nav-link"><i class="fas fa-utensils"></i> <span class="nav-text">Menu</span></a></li>
-                    <li class="mobile-background-icons mobile-only"><a href="orders" class="nav-link"><i class="fas fa-list-alt"></i> <span class="nav-text">My Orders</span></a></li>
                     <li class="mobile-background-icons"><a href="about" class="nav-link"><i class="fas fa-info-circle"></i> <span class="nav-text">About</span></a></li>
                 <?php else: ?>
                     <li class="mobile-background-icons"><a href="admin/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> <span class="nav-text">Admin</span></a></li>
                 <?php endif; ?>
 
                 <?php if($is_logged_in): ?>
+                    <?php if(!$is_admin): ?>
+                        <li class="mobile-background-icons mobile-only"><a href="orders" class="nav-link"><i class="fas fa-list-alt"></i> <span class="nav-text">My Orders</span></a></li>
+                    <?php endif; ?>
                     <!-- Notification Bell (Mobile: Link, Desktop: Dropdown) -->
                     <li class="nav-item dropdown notification-bell-wrapper">
                         <!-- Desktop Bell -->

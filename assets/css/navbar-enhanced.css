@@ -41,14 +41,13 @@
     height: 50px;
 }
 
-/* Enhanced Mobile Menu Toggle Design - made PLAIN as per USER request */
+/* Enhanced Mobile Menu Toggle - HIDDEN BY DEFAULT ON DESKTOP */
 .mobile-menu-toggle {
-    display: none;
-    /* hidden by default; shown only in burger/mobile mode */
+    display: none !important;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 44px; /* Standard Android touch target */
+    width: 44px;
     height: 44px;
     background: transparent;
     border: none;
@@ -60,10 +59,6 @@
     touch-action: manipulation;
     position: relative;
     outline: none;
-    /* Ensure it's flex for alignment ONLY when visible */
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
 }
 
 /* Active state visuals */
@@ -704,7 +699,6 @@
 @media (max-width: 991px) {
     .mobile-menu-toggle {
         display: flex !important;
-        /* ensure visible on all pages in mobile */
         margin-left: auto;
     }
 
@@ -897,20 +891,12 @@ body.login-page .mobile-menu-toggle {
     box-shadow: 0 6px 20px rgba(0, 108, 59, 0.4);
 }
 
-/* Layering for all pages */
-.mobile-menu-toggle {
-    z-index: 1000;
-    position: relative;
-}
+
 
 /* Desktop default: show nav links inline */
 .nav-links {
     position: static;
     box-shadow: none;
-}
-
-.mobile-menu-btn {
-    display: block;
 }
 
 .auth-buttons {

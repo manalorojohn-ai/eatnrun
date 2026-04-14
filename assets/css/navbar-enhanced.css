@@ -47,8 +47,10 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 44px;
-    height: 44px;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
     background: transparent;
     border: none;
     cursor: pointer;
@@ -59,7 +61,17 @@
     touch-action: manipulation;
     position: relative;
     outline: none;
-    z-index: 1001; /* Ensure above other elements */
+    z-index: 1001;
+}
+
+.burger-trigger .hamburger-line {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background-color: #333 !important;
+    margin: 3px auto;
+    transition: all 0.3s ease;
+    border-radius: 2px;
 }
 
 /* Active state visuals */
@@ -84,15 +96,7 @@
     box-shadow: 0 0 0 3px rgba(0, 108, 59, 0.35), 0 4px 12px rgba(0, 108, 59, 0.3);
 }
 
-/* Enhanced Hamburger Lines */
-.hamburger-line {
-    width: 28px;
-    height: 3px;
-    background: #333;
-    margin: 3px 0;
-    transition: all 0.3s ease;
-    border-radius: 3px;
-}
+
 
 /* Animated X Transformation disabled as per USER request - keeping plain three lines */
 .burger-trigger.active .hamburger-line:nth-child(1) {

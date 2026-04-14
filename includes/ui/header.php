@@ -25,7 +25,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <link rel="stylesheet" href="assets/css/shared-styles.css">
     <link rel="stylesheet" href="assets/css/notifications.css">
     <link rel="stylesheet" href="assets/css/toast.css">
-    <link rel="stylesheet" href="assets/css/navbar-enhanced.css">
+    <link rel="stylesheet" href="assets/css/navbar-enhanced.css?v=<?php echo time(); ?>">
 
     <?php if (isset($extra_styles))
         echo $extra_styles; ?>

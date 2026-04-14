@@ -67,7 +67,7 @@ if ($is_logged_in && !$is_admin) {
             <span>Eat&Run</span>
         </a>
 
-        <button class="mobile-menu-toggle" id="mobileMenuToggle">
+        <button class="burger-trigger" id="mobileMenuToggle">
             <span class="hamburger-line"></span>
             <span class="hamburger-line"></span>
             <span class="hamburger-line"></span>

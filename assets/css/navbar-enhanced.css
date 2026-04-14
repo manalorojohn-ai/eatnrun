@@ -42,7 +42,7 @@
 }
 
 /* Enhanced Mobile Menu Toggle - HIDDEN BY DEFAULT ON DESKTOP */
-.mobile-menu-toggle {
+.burger-trigger {
     display: none !important;
     flex-direction: column;
     justify-content: center;
@@ -62,24 +62,24 @@
 }
 
 /* Active state visuals */
-.mobile-menu-toggle.active {
+.burger-trigger.active {
     background: rgba(0, 0, 0, 0.05);
 }
 
 /* Hover Effects */
-.mobile-menu-toggle:hover {
+.burger-trigger:hover {
     background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 108, 59, 0.4);
     border-color: rgba(255, 255, 255, 0.3);
 }
 
-.mobile-menu-toggle:active {
+.burger-trigger:active {
     transform: scale(0.95);
     box-shadow: 0 2px 8px rgba(0, 108, 59, 0.3);
 }
 
-.mobile-menu-toggle:focus-visible {
+.burger-trigger:focus-visible {
     box-shadow: 0 0 0 3px rgba(0, 108, 59, 0.35), 0 4px 12px rgba(0, 108, 59, 0.3);
 }
 
@@ -94,32 +94,32 @@
 }
 
 /* Animated X Transformation disabled as per USER request - keeping plain three lines */
-.mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+.burger-trigger.active .hamburger-line:nth-child(1) {
     transform: none;
 }
 
-.mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+.burger-trigger.active .hamburger-line:nth-child(2) {
     opacity: 1;
     transform: none;
 }
 
-.mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+.burger-trigger.active .hamburger-line:nth-child(3) {
     transform: none;
 }
 
 /* Hover Effects */
-.mobile-menu-toggle:hover {
+.burger-trigger:hover {
     background: rgba(0, 0, 0, 0.03);
 }
 
-.mobile-menu-toggle:active {
+.burger-trigger:active {
     background: rgba(0, 0, 0, 0.08);
 }
 
 /* Respect reduced-motion preferences */
 @media (prefers-reduced-motion: reduce) {
 
-    .mobile-menu-toggle,
+    .burger-trigger,
     .hamburger-line,
     .nav-menu,
     .nav-link,
@@ -697,7 +697,7 @@
 }
 
 @media (max-width: 991px) {
-    .mobile-menu-toggle {
+    .burger-trigger {
         display: flex !important;
         margin-left: auto;
     }
@@ -870,7 +870,7 @@
     }
 
     /* Enhanced mobile menu toggle for small screens */
-    .mobile-menu-toggle {
+    .burger-trigger {
         width: 52px;
         height: 52px;
         padding: 10px;
@@ -883,12 +883,26 @@
 }
 
 /* Special styling for login page (position only; visibility still controlled by breakpoints) */
-body.login-page .mobile-menu-toggle {
+body.login-page .burger-trigger {
     position: fixed;
     top: 20px;
     right: 20px;
     z-index: 9999;
     box-shadow: 0 6px 20px rgba(0, 108, 59, 0.4);
+}
+
+/* ABSOLUTE DESKTOP HIDE RULE */
+@media (min-width: 992px) {
+    .burger-trigger {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        position: absolute !important;
+        width: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
 }
 
 

@@ -7,12 +7,14 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 // Function to handle database errors
-function handleDatabaseError($conn, $error_message) {
+function handleDatabaseError($conn, $error_message)
+{
     return "Database Error: " . mysqli_error($conn) . " - " . $error_message;
 }
 
 // Function to validate order ID
-function validateOrderId($order_id) {
+function validateOrderId($order_id)
+{
     return filter_var($order_id, FILTER_VALIDATE_INT) !== false && $order_id > 0;
 }
 
@@ -25,7 +27,7 @@ if (!isset($_SESSION['user_id'])) {
 // Get order item details with validation
 if (isset($_GET['item']) && validateOrderId($_GET['item'])) {
     $order_id = mysqli_real_escape_string($conn, $_GET['item']);
-    
+
     $query = "SELECT o.*, oi.*, m.name as menu_item_name, m.price as menu_item_price, 
                  m.image_url as menu_item_image,
                  m.description as menu_item_description, m.category_id,
@@ -35,16 +37,16 @@ if (isset($_GET['item']) && validateOrderId($_GET['item'])) {
           JOIN menu_items m ON oi.menu_item_id = m.id 
           LEFT JOIN categories c ON m.category_id = c.id
           WHERE o.id = ? AND o.user_id = ?";
-              
+
     $stmt = mysqli_prepare($conn, $query);
     mysqli_stmt_bind_param($stmt, "ii", $order_id, $_SESSION['user_id']);
-    
+
     if (!mysqli_stmt_execute($stmt)) {
         $error = handleDatabaseError($conn, "Error fetching order details");
     } else {
         $result = mysqli_stmt_get_result($stmt);
         $order_item = mysqli_fetch_assoc($result);
-        
+
         if (!$order_item) {
             $error = "Order not found or unauthorized access";
         }
@@ -457,82 +459,82 @@ if (isset($_GET['item']) && validateOrderId($_GET['item'])) {
 
     <div class="order-details">
         <?php if (isset($error)): ?>
-            <div class="error-message">
-                <i class="fas fa-exclamation-circle"></i>
-                <?php echo $error; ?>
-            </div>
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <?php echo $error; ?>
+                </div>
         <?php else: ?>
-            <div class="order-header">
-                <h1>Order #<?php echo $order_item['order_id']; ?></h1>
-                <span class="order-status status-<?php echo strtolower($order_item['status']); ?>">
-                    <?php echo ucfirst($order_item['status']); ?>
-                </span>
-            </div>
+                <div class="order-header">
+                    <h1>Order #<?php echo $order_item['order_id']; ?></h1>
+                    <span class="order-status status-<?php echo strtolower($order_item['status']); ?>">
+                        <?php echo ucfirst($order_item['status']); ?>
+                    </span>
+                </div>
 
-            <div class="order-items">
-                <div class="item-card">
-                    <div class="item-image">
-                        <?php 
-                        $image_url = !empty($order_item['menu_item_image']) 
-                            ? $order_item['menu_item_image']
-                            : 'assets/images/default-food.png';
-                        
-                        $image_url = str_replace('\\', '/', $image_url);
-                        $image_url = ltrim($image_url, '/');
-                        
-                        try {
-                            if (!file_exists($image_url)) {
+                <div class="order-items">
+                    <div class="item-card">
+                        <div class="item-image">
+                            <?php
+                            $image_url = !empty($order_item['menu_item_image'])
+                                ? $order_item['menu_item_image']
+                                : 'assets/images/default-food.png';
+
+                            $image_url = str_replace('\\', '/', $image_url);
+                            $image_url = ltrim($image_url, '/');
+
+                            try {
+                                if (!file_exists($image_url)) {
+                                    $image_url = 'assets/images/default-food.png';
+                                }
+                            } catch (Exception $e) {
                                 $image_url = 'assets/images/default-food.png';
                             }
-                        } catch (Exception $e) {
-                            $image_url = 'assets/images/default-food.png';
-                        }
-                        ?>
-                        <img src="<?php echo htmlspecialchars($image_url); ?>" 
-                             alt="<?php echo htmlspecialchars($order_item['menu_item_name']); ?>"
-                             onerror="this.src='assets/images/default-food.png';"
-                             loading="lazy">
-                    </div>
-                    <div class="item-details">
-                        <div class="item-name"><?php echo htmlspecialchars($order_item['menu_item_name']); ?></div>
-                        <div class="item-description"><?php echo htmlspecialchars($order_item['menu_item_description']); ?></div>
-                        <div class="item-category">
-                            <i class="fas fa-utensils"></i>
-                            <span><?php echo htmlspecialchars($order_item['category_name']); ?></span>
+                            ?>
+                            <img src="<?php echo htmlspecialchars($image_url); ?>" 
+                                 alt="<?php echo htmlspecialchars($order_item['menu_item_name']); ?>"
+                                 onerror="this.src='assets/images/default-food.png';"
+                                 loading="lazy">
                         </div>
-                        <div class="item-price">
-                            <i class="fas fa-tag"></i>
-                            ₱<?php echo number_format($order_item['menu_item_price'], 2); ?>
-                        </div>
-                        <div class="item-quantity">
-                            <i class="fas fa-shopping-basket"></i>
-                            Quantity: <?php echo $order_item['quantity']; ?>
+                        <div class="item-details">
+                            <div class="item-name"><?php echo htmlspecialchars($order_item['menu_item_name']); ?></div>
+                            <div class="item-description"><?php echo htmlspecialchars($order_item['menu_item_description']); ?></div>
+                            <div class="item-category">
+                                <i class="fas fa-utensils"></i>
+                                <span><?php echo htmlspecialchars($order_item['category_name']); ?></span>
+                            </div>
+                            <div class="item-price">
+                                <i class="fas fa-tag"></i>
+                                ₱<?php echo number_format($order_item['menu_item_price'], 2); ?>
+                            </div>
+                            <div class="item-quantity">
+                                <i class="fas fa-shopping-basket"></i>
+                                Quantity: <?php echo $order_item['quantity']; ?>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="order-summary">
-                <div class="summary-row">
-                    <span>Subtotal:</span>
-                    <span>₱<?php echo number_format($order_item['menu_item_price'] * $order_item['quantity'], 2); ?></span>
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span>₱<?php echo number_format($order_item['menu_item_price'] * $order_item['quantity'], 2); ?></span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Delivery Fee:</span>
+                        <span>₱<?php echo number_format($order_item['delivery_fee'], 2); ?></span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span>Total:</span>
+                        <span>₱<?php echo number_format($order_item['total_amount'], 2); ?></span>
+                    </div>
                 </div>
-                <div class="summary-row">
-                    <span>Delivery Fee:</span>
-                    <span>₱<?php echo number_format($order_item['delivery_fee'], 2); ?></span>
-                </div>
-                <div class="summary-row summary-total">
-                    <span>Total:</span>
-                    <span>₱<?php echo number_format($order_item['total_amount'], 2); ?></span>
-                </div>
-            </div>
 
-            <div style="text-align: center;">
-                <a href="my_orders.php" class="back-button">
-                    <i class="fas fa-arrow-left"></i>
-                    Back to Orders
-                </a>
-            </div>
+                <div style="text-align: center;">
+                    <a href="my_orders.php" class="back-button">
+                        <i class="fas fa-arrow-left"></i>
+                        Back to Orders
+                    </a>
+                </div>
         <?php endif; ?>
     </div>
 

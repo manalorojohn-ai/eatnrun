@@ -3,14 +3,26 @@
  * Advanced Root Router for Eat&Run
  * Organized by category to ensure each page file is in a dedicated folder.
  * Automatically finds files in sub-directories within /pages.
+ * 
+ * This router handles:
+ * - URL rewriting (removes .php extensions)
+ * - Request parsing and path resolution
+ * - File searching in organized folders
+ * - Admin route delegation
+ * - Error handling and 404 responses
  */
+
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't display errors to users
+ini_set('log_errors', 1);
 
 // Basic routing logic
 $request = $_SERVER['REQUEST_URI'];
 $script_name = $_SERVER['SCRIPT_NAME'];
 $base_dir = str_replace('index.php', '', $script_name);
 
-// Built-in server router
+// Built-in server router (for development)
 if (php_sapi_name() == 'cli-server') {
     $url = parse_url($request);
     $file = './' . ltrim($url['path'], '/');
@@ -28,11 +40,6 @@ $path = trim($path, '/');
 if (empty($path) || $path === 'index.php' || $path === 'index') {
     require_once 'pages/home.php';
     exit();
-}
-
-// Special case for dashboard (often accessed as dashboard.php)
-if ($path === 'dashboard' || $path === 'dashboard.php') {
-    $path = 'dashboard.php';
 }
 
 // Prepare the page file name

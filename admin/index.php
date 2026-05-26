@@ -2,7 +2,19 @@
 /**
  * Admin Router for Eat&Run
  * Routes admin requests to organized subfolders in administrative/pages.
+ * 
+ * This router handles:
+ * - Admin-specific URL rewriting
+ * - Request parsing for admin paths
+ * - File searching in admin folders
+ * - Error handling and 404 responses
+ * - Admin authentication (optional)
  */
+
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't display errors to users
+ini_set('log_errors', 1);
 
 // Basic routing logic
 $request = $_SERVER['REQUEST_URI'];
@@ -22,7 +34,7 @@ if (str_starts_with($path, 'admin/')) {
 }
 
 // Default to dashboard
-if (empty($path) || $path === 'index.php') {
+if (empty($path) || $path === 'index.php' || $path === 'index') {
     require_once 'pages/dashboard.php';
     exit();
 }

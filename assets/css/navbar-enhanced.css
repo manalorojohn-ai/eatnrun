@@ -693,12 +693,23 @@
 
 /* Android-Optimized Responsive Design */
 /* Visibility Utilities */
-.mobile-only { display: none !important; }
-.desktop-only { display: inline-block !important; position: relative; }
+.mobile-only {
+    display: none !important;
+}
+
+.desktop-only {
+    display: inline-block !important;
+    position: relative;
+}
 
 @media (max-width: 991px) {
-    .mobile-only { display: flex !important; }
-    .desktop-only { display: none !important; }
+    .mobile-only {
+        display: flex !important;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
 }
 
 @media (max-width: 991px) {
@@ -709,7 +720,8 @@
 
     .nav-menu {
         position: fixed;
-        top: 60px; /* Adjusted for compact navbar */
+        top: 60px;
+        /* Adjusted for compact navbar */
         left: 0;
         right: 0;
         background: #ffffff;
@@ -721,7 +733,8 @@
         visibility: hidden;
         transition: all 0.3s ease;
         z-index: 1000;
-        height: auto; /* Match content height */
+        height: auto;
+        /* Match content height */
         max-height: 80vh;
         overflow-y: auto;
         border-radius: 0 0 20px 20px;
@@ -745,7 +758,8 @@
     .nav-links-container {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 8px; /* Tighter gap */
+        gap: 8px;
+        /* Tighter gap */
         width: 100%;
         margin: 0;
     }
@@ -760,17 +774,20 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        padding: 10px 5px; /* Compact padding */
+        padding: 10px 5px;
+        /* Compact padding */
         font-size: 0.75rem;
         border-radius: 10px;
         text-align: center;
         gap: 4px;
         color: #333;
-        height: 100%; /* Ensure it fills parent li */
+        height: 100%;
+        /* Ensure it fills parent li */
     }
 
     .nav-link i {
-        font-size: 1.5rem; /* Slightly smaller for better fit */
+        font-size: 1.5rem;
+        /* Slightly smaller for better fit */
         margin: 0 !important;
     }
 
@@ -791,8 +808,10 @@
     }
 
     /* Specific styles for requested mobile structure */
-    .mobile-background-icons, .nav-links-container > li {
-        background: rgba(0, 108, 59, 0.08); /* Eat&Run Green Theme */
+    .mobile-background-icons,
+    .nav-links-container>li {
+        background: rgba(0, 108, 59, 0.08);
+        /* Eat&Run Green Theme */
         border: 1px solid rgba(0, 108, 59, 0.15);
         border-radius: 12px;
         margin-bottom: 0;
@@ -800,7 +819,8 @@
         display: flex;
     }
 
-    .mobile-background-icons:hover, .nav-links-container > li:hover {
+    .mobile-background-icons:hover,
+    .nav-links-container>li:hover {
         background: rgba(0, 108, 59, 0.15);
         border-color: rgba(0, 108, 59, 0.3);
     }

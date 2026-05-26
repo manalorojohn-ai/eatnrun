@@ -14,4 +14,4 @@ echo json_encode([
     'success' => $success,
     'message' => $success ? 'Item removed' : 'Failed to remove item'
 ]);
-?> 
+?>

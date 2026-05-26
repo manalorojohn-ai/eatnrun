@@ -37,20 +37,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_quantity'])) {
         $cart_id = $_POST['cart_id'];
         $quantity = max(1, intval($_POST['quantity'])); // Ensure quantity is at least 1
-        
+
         $stmt = mysqli_prepare($conn, "UPDATE cart SET quantity = ? WHERE id = ? AND user_id = ?");
         mysqli_stmt_bind_param($stmt, "iii", $quantity, $cart_id, $_SESSION['user_id']);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
     } elseif (isset($_POST['remove_item'])) {
         $cart_id = $_POST['cart_id'];
-        
+
         $stmt = mysqli_prepare($conn, "DELETE FROM cart WHERE id = ? AND user_id = ?");
         mysqli_stmt_bind_param($stmt, "ii", $cart_id, $_SESSION['user_id']);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
     }
-    
+
     // Redirect to prevent form resubmission
     header("Location: cart");
     exit();
@@ -324,65 +324,65 @@ if (isset($_GET['checkout']) && !empty($cart_items)) {
     </div>
 
         <?php if (empty($cart_items)): ?>
-            <div class="empty-cart">
-                    <i class="fas fa-shopping-cart empty-cart-icon"></i>
-                    <h2 class="mb-3">Your cart is empty</h2>
-                    <p class="text-muted mb-4">Add some delicious items to your cart!</p>
-                    <a href="menu" class="btn-continue-shopping">
-                        <i class="fas fa-arrow-left"></i>
-                        Continue Shopping
-                    </a>
-            </div>
+                <div class="empty-cart">
+                        <i class="fas fa-shopping-cart empty-cart-icon"></i>
+                        <h2 class="mb-3">Your cart is empty</h2>
+                        <p class="text-muted mb-4">Add some delicious items to your cart!</p>
+                        <a href="menu" class="btn-continue-shopping">
+                            <i class="fas fa-arrow-left"></i>
+                            Continue Shopping
+                        </a>
+                </div>
         <?php else: ?>
-                <div class="cart-items">
-                    <?php foreach ($cart_items as $item): ?>
-                        <div class="cart-item" data-id="<?php echo $item['cart_id']; ?>" data-price="<?php echo $item['price']; ?>">
-                            <div class="item-details">
-                                <div class="item-name"><?php echo htmlspecialchars($item['name']); ?></div>
-                                <div class="item-price">₱<span class="price-value"><?php echo number_format($item['price'], 2); ?></span></div>
-                            </div>
+                    <div class="cart-items">
+                        <?php foreach ($cart_items as $item): ?>
+                                <div class="cart-item" data-id="<?php echo $item['cart_id']; ?>" data-price="<?php echo $item['price']; ?>">
+                                    <div class="item-details">
+                                        <div class="item-name"><?php echo htmlspecialchars($item['name']); ?></div>
+                                        <div class="item-price">₱<span class="price-value"><?php echo number_format($item['price'], 2); ?></span></div>
+                                    </div>
 
-                            <div class="quantity-control">
-                                <button class="quantity-btn minus" onclick="updateQuantity(<?php echo $item['cart_id']; ?>, 'decrease')">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                                <input type="number" 
-                                       class="quantity-input" 
-                                       value="<?php echo $item['quantity']; ?>" 
-                                       min="1" 
-                                       max="99"
-                                       onchange="updateQuantityManual(<?php echo $item['cart_id']; ?>, this.value)"
-                                       onkeyup="updateQuantityManual(<?php echo $item['cart_id']; ?>, this.value)"
-                                       onkeypress="return event.charCode >= 48 && event.charCode <= 57">
-                                <button class="quantity-btn plus" onclick="updateQuantity(<?php echo $item['cart_id']; ?>, 'increase')">
-                                    <i class="fas fa-plus"></i>
-                                </button>
+                                    <div class="quantity-control">
+                                        <button class="quantity-btn minus" onclick="updateQuantity(<?php echo $item['cart_id']; ?>, 'decrease')">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <input type="number" 
+                                               class="quantity-input" 
+                                               value="<?php echo $item['quantity']; ?>" 
+                                               min="1" 
+                                               max="99"
+                                               onchange="updateQuantityManual(<?php echo $item['cart_id']; ?>, this.value)"
+                                               onkeyup="updateQuantityManual(<?php echo $item['cart_id']; ?>, this.value)"
+                                               onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                                        <button class="quantity-btn plus" onclick="updateQuantity(<?php echo $item['cart_id']; ?>, 'increase')">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                        </div>
+
+                                    <button class="remove-item" onclick="removeItem(<?php echo $item['cart_id']; ?>)">
+                                        <i class="fas fa-trash-alt"></i>
+                                        </button>
                                 </div>
+                        <?php endforeach; ?>
+                    </div>
 
-                            <button class="remove-item" onclick="removeItem(<?php echo $item['cart_id']; ?>)">
-                                <i class="fas fa-trash-alt"></i>
-                                </button>
+                    <div class="cart-summary">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span>₱<span id="subtotal"><?php echo number_format($total, 2); ?></span></span>
                         </div>
-                    <?php endforeach; ?>
-                </div>
-
-                <div class="cart-summary">
-                    <div class="summary-row">
-                        <span>Subtotal</span>
-                        <span>₱<span id="subtotal"><?php echo number_format($total, 2); ?></span></span>
+                        <div class="summary-row">
+                            <span>Delivery Fee</span>
+                            <span>₱<span id="delivery-fee">50.00</span></span>
                     </div>
-                    <div class="summary-row">
-                        <span>Delivery Fee</span>
-                        <span>₱<span id="delivery-fee">50.00</span></span>
+                        <div class="summary-row summary-total">
+                            <span>Total</span>
+                            <span>₱<span id="total"><?php echo number_format($total + 50, 2); ?></span></span>
+                        </div>
+                        <button class="checkout-btn" onclick="window.location.href='checkout'">
+                            Proceed to Checkout
+                        </button>
                 </div>
-                    <div class="summary-row summary-total">
-                        <span>Total</span>
-                        <span>₱<span id="total"><?php echo number_format($total + 50, 2); ?></span></span>
-                    </div>
-                    <button class="checkout-btn" onclick="window.location.href='checkout'">
-                        Proceed to Checkout
-                    </button>
-            </div>
         <?php endif; ?>
         </div>
     </div>

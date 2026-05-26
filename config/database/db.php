@@ -13,25 +13,31 @@ if (!defined('DB_PORT')) define('DB_PORT', getenv('DB_PORT') ?: (getenv('RENDER'
 $using_postgres = false;
 $is_render = (bool)getenv('RENDER');
 
-if ($is_render || (getenv('DB_HOST') && strpos(DB_HOST, 'neon') !== false) || extension_loaded('pdo_pgsql')) {
+// Try PostgreSQL first if available
+if (extension_loaded('pdo_pgsql') || $is_render || (getenv('DB_HOST') && strpos(getenv('DB_HOST'), 'neon') !== false)) {
     try {
         $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
-        // For Neon: use password as-is, don't add endpoint prefix
         $conn = new PDO($dsn, DB_USER, DB_PASS, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_TIMEOUT => 5
         ]);
         $using_postgres = true;
     } catch (PDOException $e) {
-        // Fallback to MySQL if PostgreSQL fails
+        // Log error but don't die - try MySQLi fallback
         error_log("PostgreSQL connection failed: " . $e->getMessage());
+        $conn = null;
     }
 }
 
 if (!$using_postgres && !isset($conn)) {
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
-    $conn->set_charset("utf8mb4");
+    // Only try MySQLi if it's available
+    if (extension_loaded('mysqli')) {
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+        if ($conn->connect_error) die("Connection failed: " . $conn->connect_error);
+        $conn->set_charset("utf8mb4");
+    } else {
+        die("Error: Neither PostgreSQL (PDO) nor MySQLi extension is available. Please enable one of them.");
+    }
 }
 
 if ($using_postgres) {

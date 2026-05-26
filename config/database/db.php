@@ -96,7 +96,7 @@ if (!$conn) {
         public function commit() { return true; }
         public function rollback() { return true; }
         public function affected_rows() { return 0; }
-        public function connect_error = null;
+        public $connect_error = null;
     }
     
     class JSONResult {

@@ -13,15 +13,18 @@ if (!defined('DB_PORT')) define('DB_PORT', getenv('DB_PORT') ?: (getenv('RENDER'
 $using_postgres = false;
 $is_render = (bool)getenv('RENDER');
 
-if ($is_render || (getenv('DB_HOST') && extension_loaded('pdo_pgsql'))) {
+if ($is_render || (getenv('DB_HOST') && strpos(DB_HOST, 'neon') !== false) || extension_loaded('pdo_pgsql')) {
     try {
-        $endpoint = explode('.', DB_HOST)[0];
         $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
-        $neon_pass = "endpoint=$endpoint;" . DB_PASS;
-        $conn = new PDO($dsn, DB_USER, $neon_pass, [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_TIMEOUT => 5]);
+        // For Neon: use password as-is, don't add endpoint prefix
+        $conn = new PDO($dsn, DB_USER, DB_PASS, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_TIMEOUT => 5
+        ]);
         $using_postgres = true;
     } catch (PDOException $e) {
-        if ($is_render) die("Neon Connection Error: " . $e->getMessage());
+        // Fallback to MySQL if PostgreSQL fails
+        error_log("PostgreSQL connection failed: " . $e->getMessage());
     }
 }
 

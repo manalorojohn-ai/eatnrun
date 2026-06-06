@@ -238,27 +238,50 @@ include 'includes/ui/navbar.php';
 <!-- Quick View Modal -->
 <div class="modal fade" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="quickViewModalLabel">Item Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-content" style="border-radius: 24px; border: none; overflow: hidden;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #006C3B 0%, #00A65A 100%); border: none; padding: 20px 24px;">
+                <h5 class="modal-title" id="quickViewModalLabel" style="color: white; font-weight: 700; font-size: 1.4rem;">🍽️ Item Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: brightness(0) invert(1);"></button>
             </div>
-            <div class="modal-body">
-                <div class="row">
+            <div class="modal-body" style="padding: 32px;">
+                <div class="row g-4">
                     <div class="col-md-6">
-                        <img id="quickViewImage" src="" alt="" class="img-fluid rounded" style="width:100%;height:300px;object-fit:cover;">
+                        <div class="quick-view-image-wrapper" style="border-radius: 20px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.08);">
+                            <img id="quickViewImage" src="" alt="" class="img-fluid" style="width:100%;height:320px;object-fit:cover;">
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <h3 id="quickViewName" class="mb-2"></h3>
-                        <span id="quickViewCategory" class="badge bg-primary mb-3"></span>
-                        <p id="quickViewDescription" class="text-muted mb-3"></p>
-                        <p id="quickViewPrice" class="fw-bold fs-4 text-primary"></p>
+                    <div class="col-md-6 d-flex flex-column">
+                        <span id="quickViewCategory" class="badge" style="background: rgba(0, 108, 59, 0.1); color: #006C3B; padding: 8px 16px; border-radius: 50px; font-weight: 600; width: fit-content; margin-bottom: 16px;"></span>
+                        <h3 id="quickViewName" style="color: #2d3436; font-weight: 800; font-size: 2rem; margin-bottom: 12px; line-height: 1.2;"></h3>
+                        <p id="quickViewDescription" style="color: #636e72; font-size: 1.05rem; line-height: 1.6; margin-bottom: 24px; flex-grow: 1;"></p>
+                        <div class="quick-view-footer d-flex align-items-center justify-content-between gap-3">
+                            <p id="quickViewPrice" style="font-weight: 800; font-size: 2rem; color: #006C3B; margin: 0;"></p>
+                            <button type="button" class="btn-add-to-cart-modal" style="background: linear-gradient(135deg, #006C3B 0%, #00A65A 100%); color: white; border: none; padding: 14px 32px; border-radius: 16px; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 24px rgba(0, 108, 59, 0.25); transition: all 0.3s ease;">
+                                <i class="fas fa-shopping-basket"></i> Add to Cart
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.btn-add-to-cart-modal:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0, 108, 59, 0.35);
+}
+.btn-add-to-cart-modal:active {
+    transform: translateY(-1px);
+}
+.quick-view-image-wrapper {
+    transition: transform 0.3s ease;
+}
+.quick-view-image-wrapper:hover {
+    transform: scale(1.02);
+}
+</style>
 
 <?php 
 // Include JS
@@ -293,6 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Quick View Button Handler
+    let currentItemId = null;
     document.querySelectorAll('.btn-quick-view').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -302,6 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const description = card.dataset.description;
             const price = card.dataset.price;
             const image = card.dataset.image;
+            currentItemId = this.dataset.itemId;
             
             document.getElementById('quickViewName').textContent = name;
             document.getElementById('quickViewCategory').textContent = category;
@@ -313,6 +338,23 @@ document.addEventListener('DOMContentLoaded', function() {
             const quickViewModal = new bootstrap.Modal(document.getElementById('quickViewModal'));
             quickViewModal.show();
         });
+    });
+
+    // Modal Add to Cart Button Handler
+    document.querySelector('.btn-add-to-cart-modal')?.addEventListener('click', function() {
+        if (currentItemId && typeof addToCart === 'function') {
+            const originalHTML = this.innerHTML;
+            this.classList.add('loading');
+            this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Adding...';
+            addToCart(currentItemId);
+            setTimeout(() => {
+                this.classList.remove('loading');
+                this.innerHTML = '<i class="fas fa-check"></i> Added!';
+                setTimeout(() => {
+                    this.innerHTML = '<i class="fas fa-shopping-basket"></i> Add to Cart';
+                }, 1500);
+            }, 800);
+        }
     });
 
     // Add to cart click synergy

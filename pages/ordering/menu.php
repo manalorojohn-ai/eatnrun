@@ -129,55 +129,6 @@ include 'includes/ui/loader.php';
 include 'includes/ui/navbar.php';
 ?>
 
-<!-- Item Detail Modal -->
-<div class="modal fade" id="itemModal" tabindex="-1" aria-labelledby="itemModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
-        <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
-            <div class="modal-header" style="background: linear-gradient(135deg, #006C3B 0%, #00A65A 100%); border: none; padding: 15px 20px;">
-                <h5 class="modal-title" id="itemModalLabel" style="color: white; font-weight: 700; font-size: 1.1rem;">Item Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: brightness(0) invert(1);"></button>
-            </div>
-            <div class="modal-body" style="padding: 20px;">
-                <!-- Image -->
-                <div class="mb-3">
-                    <img id="modalImage" src="" alt="" class="img-fluid" style="width: 100%; height: 250px; object-fit: cover; border-radius: 12px;">
-                </div>
-                
-                <!-- Category -->
-                <span id="modalCategory" class="badge mb-2" style="background: rgba(0, 108, 59, 0.1); color: #006C3B; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.8rem; display: inline-block;"></span>
-                
-                <!-- Name -->
-                <h3 id="modalName" style="color: #2d3436; font-weight: 800; font-size: 1.5rem; margin-bottom: 8px;"></h3>
-                
-                <!-- Description -->
-                <p id="modalDescription" style="color: #636e72; font-size: 0.95rem; line-height: 1.5; margin-bottom: 15px;"></p>
-                
-                <!-- Price -->
-                <p id="modalPrice" style="font-weight: 800; font-size: 1.8rem; color: #006C3B; margin-bottom: 15px;"></p>
-                
-                <!-- Quantity Control -->
-                <div class="mb-4">
-                    <label class="form-label" style="font-weight: 600; color: #2d3436; font-size: 0.9rem; margin-bottom: 8px;">Quantity</label>
-                    <div class="quantity-control" style="display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 8px 12px; border-radius: 10px; width: fit-content;">
-                        <button type="button" id="qtyDecrease" class="qty-btn" style="width: 40px; height: 40px; border-radius: 8px; border: none; background: #006C3B; color: white; font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                            <i class="fas fa-minus"></i>
-                        </button>
-                        <input type="number" id="modalQuantity" value="1" min="1" style="width: 70px; height: 40px; text-align: center; font-size: 1.4rem; font-weight: 800; border: 2px solid #e0e0e0; border-radius: 8px; color: #006C3B; background: white;">
-                        <button type="button" id="qtyIncrease" class="qty-btn" style="width: 40px; height: 40px; border-radius: 8px; border: none; background: #006C3B; color: white; font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; justify-content: center; cursor: pointer;">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Add to Cart Button -->
-                <button type="button" id="modalAddBtn" style="background: linear-gradient(135deg, #006C3B 0%, #00A65A 100%); color: white; border: none; padding: 14px 30px; border-radius: 10px; font-weight: 700; font-size: 1rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 20px rgba(0, 108, 59, 0.25); cursor: pointer;">
-                    <i class="fas fa-shopping-basket"></i> Add to Cart
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <main>
 <div class="menu-hero-aesthetic">
     <div class="container py-5 text-center">
@@ -245,7 +196,7 @@ include 'includes/ui/navbar.php';
                 </div>
             <?php else: ?>
                 <?php foreach ($menu_items as $index => $item): ?>
-                    <div class="card-aesthetic animate-in" style="animation-delay: <?php echo $index * 0.05; ?>s; cursor: pointer;" data-category="<?php echo htmlspecialchars($item['category_name']); ?>" data-name="<?php echo htmlspecialchars(strtolower($item['name'])); ?>" data-image="<?php echo htmlspecialchars($item['image_path']); ?>" data-description="<?php echo htmlspecialchars($item['description']); ?>" data-price="<?php echo htmlspecialchars(number_format($item['price'], 2)); ?>" data-item-id="<?php echo $item['id']; ?>">
+                    <div class="card-aesthetic animate-in" style="animation-delay: <?php echo $index * 0.05; ?>s" data-category="<?php echo htmlspecialchars($item['category_name']); ?>" data-name="<?php echo htmlspecialchars(strtolower($item['name'])); ?>" data-image="<?php echo htmlspecialchars($item['image_path']); ?>" data-description="<?php echo htmlspecialchars($item['description']); ?>" data-price="<?php echo htmlspecialchars(number_format($item['price'], 2)); ?>" data-item-id="<?php echo $item['id']; ?>">
                         <div class="card-image-wrapper">
                             <?php 
                             $image_url = (file_exists($item['image_path']) && !empty($item['image_path'])) ? $item['image_path'] : 'assets/images/menu/default-food.jpg';
@@ -290,7 +241,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('menuSearch');
     const menuGrid = document.getElementById('menuGrid');
     const cards = document.querySelectorAll('.card-aesthetic');
-    let currentItemId = null;
     
     // Search functionality with aesthetic transitions
     if (searchInput) {
@@ -314,82 +264,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Card click handler to open modal
-    document.querySelectorAll('.card-aesthetic').forEach(card => {
-        card.addEventListener('click', function(e) {
-            if (e.target.closest('.btn-add-aesthetic')) return;
-            
-            const name = card.querySelector('.food-name').textContent;
-            const category = card.dataset.category;
-            const description = card.dataset.description;
-            const price = card.dataset.price;
-            const image = card.dataset.image;
-            currentItemId = card.dataset.itemId;
-            
-            // Populate modal
-            document.getElementById('modalName').textContent = name;
-            document.getElementById('modalCategory').textContent = category;
-            document.getElementById('modalDescription').textContent = description;
-            document.getElementById('modalPrice').textContent = '₱' + price;
-            document.getElementById('modalImage').src = image;
-            document.getElementById('modalImage').alt = name;
-            document.getElementById('modalQuantity').value = 1;
-            
-            const itemModal = new bootstrap.Modal(document.getElementById('itemModal'));
-            itemModal.show();
-        });
-    });
-
-    // Quantity controls
-    const qtyInput = document.getElementById('modalQuantity');
-    const qtyIncrease = document.getElementById('qtyIncrease');
-    const qtyDecrease = document.getElementById('qtyDecrease');
-
-    if (qtyIncrease) {
-        qtyIncrease.addEventListener('click', function() {
-            let current = parseInt(qtyInput.value);
-            qtyInput.value = current + 1;
-        });
-    }
-
-    if (qtyDecrease) {
-        qtyDecrease.addEventListener('click', function() {
-            let current = parseInt(qtyInput.value);
-            if (current > 1) {
-                qtyInput.value = current - 1;
-            }
-        });
-    }
-
-    // Modal Add to Cart button
-    document.getElementById('modalAddBtn')?.addEventListener('click', function() {
-        if (currentItemId && typeof addToCart === 'function') {
-            const originalHTML = this.innerHTML;
-            this.classList.add('loading');
-            this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Adding...';
-            
-            // Call addToCart for each quantity
-            const qty = parseInt(qtyInput.value);
-            for (let i = 0; i < qty; i++) {
-                addToCart(currentItemId);
-            }
-            
-            setTimeout(() => {
-                this.classList.remove('loading');
-                this.innerHTML = '<i class="fas fa-check"></i> Added!';
-                setTimeout(() => {
-                    this.innerHTML = '<i class="fas fa-shopping-basket"></i> Add to Cart';
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('itemModal'));
-                    if (modal) modal.hide();
-                }, 1000);
-            }, 800);
-        }
-    });
-
-    // Add to Cart button on card (still works)
+    // Add to Cart click synergy
     document.querySelectorAll('.btn-add-aesthetic').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
+        btn.addEventListener('click', function() {
             const itemId = this.dataset.itemId;
             const originalHTML = this.innerHTML;
             

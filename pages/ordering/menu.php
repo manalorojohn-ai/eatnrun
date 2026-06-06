@@ -195,7 +195,7 @@ include 'includes/ui/navbar.php';
                 </div>
             <?php else: ?>
                 <?php foreach ($menu_items as $index => $item): ?>
-                    <div class="card-aesthetic animate-in" style="animation-delay: <?php echo $index * 0.05; ?>s" data-category="<?php echo htmlspecialchars($item['category_name']); ?>" data-name="<?php echo htmlspecialchars(strtolower($item['name'])); ?>">
+                    <div class="card-aesthetic animate-in" style="animation-delay: <?php echo $index * 0.05; ?>s" data-category="<?php echo htmlspecialchars($item['category_name']); ?>" data-name="<?php echo htmlspecialchars(strtolower($item['name'])); ?>" data-image="<?php echo htmlspecialchars($item['image_path']); ?>" data-description="<?php echo htmlspecialchars($item['description']); ?>" data-price="<?php echo htmlspecialchars(number_format($item['price'], 2)); ?>">
                         <div class="card-image-wrapper">
                             <?php 
                             $image_url = (file_exists($item['image_path']) && !empty($item['image_path'])) ? $item['image_path'] : 'assets/images/menu/default-food.jpg';
@@ -235,6 +235,31 @@ include 'includes/ui/navbar.php';
     </div>
 </div>
 
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickViewModalLabel">Item Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img id="quickViewImage" src="" alt="" class="img-fluid rounded" style="width:100%;height:300px;object-fit:cover;">
+                    </div>
+                    <div class="col-md-6">
+                        <h3 id="quickViewName" class="mb-2"></h3>
+                        <span id="quickViewCategory" class="badge bg-primary mb-3"></span>
+                        <p id="quickViewDescription" class="text-muted mb-3"></p>
+                        <p id="quickViewPrice" class="fw-bold fs-4 text-primary"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?php 
 // Include JS
 ob_start(); ?>
@@ -266,6 +291,29 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+    // Quick View Button Handler
+    document.querySelectorAll('.btn-quick-view').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const card = this.closest('.card-aesthetic');
+            const name = card.querySelector('.food-name').textContent;
+            const category = card.dataset.category;
+            const description = card.dataset.description;
+            const price = card.dataset.price;
+            const image = card.dataset.image;
+            
+            document.getElementById('quickViewName').textContent = name;
+            document.getElementById('quickViewCategory').textContent = category;
+            document.getElementById('quickViewDescription').textContent = description;
+            document.getElementById('quickViewPrice').textContent = `₱${price}`;
+            document.getElementById('quickViewImage').src = image;
+            document.getElementById('quickViewImage').alt = name;
+            
+            const quickViewModal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+            quickViewModal.show();
+        });
+    });
 
     // Add to cart click synergy
     document.querySelectorAll('.btn-add-aesthetic').forEach(btn => {

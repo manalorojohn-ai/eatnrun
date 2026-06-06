@@ -98,14 +98,14 @@ if (!$conn) {
     ];
     
     $sample_menu_items = [
-        ['id' => 1, 'name' => 'Plain Burger', 'description' => 'Classic beef burger with fresh vegetables', 'price' => 85.00, 'category_id' => 1, 'category_name' => 'Burgers', 'image_path' => 'assets/images/menu/plain-burger.jpg', 'status' => 'available'],
-        ['id' => 2, 'name' => 'Cheese Burger', 'description' => 'Juicy beef patty with melted cheese', 'price' => 95.00, 'category_id' => 1, 'category_name' => 'Burgers', 'image_path' => 'assets/images/menu/cheese-burger.jpg', 'status' => 'available'],
-        ['id' => 3, 'name' => 'Adobo with Rice', 'description' => 'Classic Filipino pork adobo', 'price' => 130.00, 'category_id' => 2, 'category_name' => 'Rice Meals', 'image_path' => 'assets/images/menu/adobo-with-rice.jpg', 'status' => 'available'],
-        ['id' => 4, 'name' => 'Sisig with Rice', 'description' => 'Sizzling chopped pork', 'price' => 120.00, 'category_id' => 2, 'category_name' => 'Rice Meals', 'image_path' => 'assets/images/menu/sisig-with-rice.jpg', 'status' => 'available'],
-        ['id' => 5, 'name' => 'Coke', 'description' => 'Refreshing cola drink', 'price' => 45.00, 'category_id' => 3, 'category_name' => 'Beverages', 'image_path' => 'assets/images/menu/coke.jpg', 'status' => 'available'],
-        ['id' => 6, 'name' => 'Mango Juice', 'description' => 'Fresh Philippine mango juice', 'price' => 55.00, 'category_id' => 3, 'category_name' => 'Beverages', 'image_path' => 'assets/images/menu/mango-juice.jpg', 'status' => 'available'],
-        ['id' => 7, 'name' => 'Halo-Halo', 'description' => 'Filipino shaved ice dessert', 'price' => 85.00, 'category_id' => 4, 'category_name' => 'Desserts', 'image_path' => 'assets/images/menu/halo-halo.jpg', 'status' => 'available'],
-        ['id' => 8, 'name' => 'Leche Flan', 'description' => 'Classic caramel custard', 'price' => 60.00, 'category_id' => 4, 'category_name' => 'Desserts', 'image_path' => 'assets/images/menu/leche-flan.jpg', 'status' => 'available']
+        ['id' => 1, 'name' => 'Plain Burger', 'description' => 'Classic beef burger with fresh vegetables', 'price' => 85.00, 'category_id' => 1, 'category_name' => 'Burgers', 'image_path' => 'assets/images/menu/Burgers/plain-burger.jpg', 'status' => 'available'],
+        ['id' => 2, 'name' => 'Cheese Burger', 'description' => 'Juicy beef patty with melted cheese', 'price' => 95.00, 'category_id' => 1, 'category_name' => 'Burgers', 'image_path' => 'assets/images/menu/Burgers/cheese-burger.jpg', 'status' => 'available'],
+        ['id' => 3, 'name' => 'Adobo with Rice', 'description' => 'Classic Filipino pork adobo', 'price' => 130.00, 'category_id' => 2, 'category_name' => 'Rice Meals', 'image_path' => 'assets/images/menu/Rice Meals/adobo.jpg', 'status' => 'available'],
+        ['id' => 4, 'name' => 'Bicol Express', 'description' => 'Spicy coconut milk pork dish', 'price' => 120.00, 'category_id' => 2, 'category_name' => 'Rice Meals', 'image_path' => 'assets/images/menu/Rice Meals/bicol-express.jpg', 'status' => 'available'],
+        ['id' => 5, 'name' => 'Coke', 'description' => 'Refreshing cola drink', 'price' => 45.00, 'category_id' => 3, 'category_name' => 'Beverages', 'image_path' => 'assets/images/menu/Beverages/coke.jpg', 'status' => 'available'],
+        ['id' => 6, 'name' => 'Mango Juice', 'description' => 'Fresh Philippine mango juice', 'price' => 55.00, 'category_id' => 3, 'category_name' => 'Beverages', 'image_path' => 'assets/images/menu/Beverages/mango-juice.jpg', 'status' => 'available'],
+        ['id' => 7, 'name' => 'Halo-Halo', 'description' => 'Filipino shaved ice dessert', 'price' => 85.00, 'category_id' => 4, 'category_name' => 'Desserts', 'image_path' => 'assets/images/menu/Desserts/halo-halo.jpg', 'status' => 'available'],
+        ['id' => 8, 'name' => 'Leche Flan', 'description' => 'Classic caramel custard', 'price' => 60.00, 'category_id' => 4, 'category_name' => 'Desserts', 'image_path' => 'assets/images/menu/Desserts/leche-flan.jpg', 'status' => 'available']
     ];
     
     // Create a simple JSON-based storage class

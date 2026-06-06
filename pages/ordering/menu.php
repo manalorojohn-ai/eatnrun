@@ -219,7 +219,7 @@ include 'includes/ui/navbar.php';
                                     <span class="price-symbol">₱</span>
                                     <span class="price-value"><?php echo number_format($item['price'], 2); ?></span>
                                 </div>
-                                <button type="button" class="btn-add-aesthetic" data-item-id="<?php echo $item['id']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>">
+                                <button type="button" class="btn-add-aesthetic" data-item-id="<?php echo $item['id']; ?>" data-name="<?php echo htmlspecialchars($item['name']); ?>" onclick="event.stopPropagation();">
                                     <i class="fas fa-shopping-basket"></i> Add
                                 </button>
                             </div>
@@ -232,54 +232,200 @@ include 'includes/ui/navbar.php';
 </div>
 </main>
 
+<!-- Item Detail Modal -->
+<div class="item-modal" id="itemModal">
+    <div class="modal-overlay" id="modalOverlay"></div>
+    <div class="modal-content">
+        <button class="modal-close" id="closeModal">&times;</button>
+        <div class="modal-body">
+            <div class="modal-image-container">
+                <img id="modalImage" src="" alt="Item" class="modal-image">
+            </div>
+            <div class="modal-info">
+                <h2 id="modalName" class="modal-title"></h2>
+                <p id="modalDescription" class="modal-description"></p>
+                
+                <div class="modal-rating">
+                    <span class="stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                        <span class="rating-text">4.9 (156 reviews)</span>
+                    </span>
+                </div>
+                
+                <div class="modal-price-section">
+                    <div class="price-display">
+                        <span class="currency">₱</span>
+                        <span id="modalPrice" class="price-large">0.00</span>
+                    </div>
+                </div>
+                
+                <div class="quantity-selector">
+                    <label>Quantity:</label>
+                    <div class="qty-control">
+                        <button class="qty-btn" id="qtyMinus">−</button>
+                        <input type="number" id="quantity" value="1" min="1" max="99">
+                        <button class="qty-btn" id="qtyPlus">+</button>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn-cancel" id="cancelBtn">Cancel</button>
+                    <button class="btn-add-to-cart" id="addToCartBtn">Add to Cart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.item-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; }
+.item-modal.active { display: flex; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 999; }
+.modal-content { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 12px; max-width: 600px; width: 95%; max-height: 90vh; overflow-y: auto; z-index: 1001; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
+.modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 32px; cursor: pointer; color: #999; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; z-index: 1002; }
+.modal-close:hover { color: #333; }
+.modal-body { display: flex; flex-direction: column; padding: 0; }
+.modal-image-container { width: 100%; height: 300px; background: #f5f5f5; border-radius: 12px 12px 0 0; overflow: hidden; }
+.modal-image { width: 100%; height: 100%; object-fit: cover; }
+.modal-info { padding: 30px 25px; }
+.modal-title { font-size: 28px; font-weight: 700; margin: 0 0 15px 0; color: #333; }
+.modal-description { font-size: 15px; color: #666; margin: 0 0 20px 0; line-height: 1.5; }
+.modal-rating { margin-bottom: 20px; }
+.stars { display: flex; align-items: center; gap: 8px; }
+.stars i { color: #ffc107; font-size: 16px; }
+.rating-text { margin-left: 8px; font-size: 14px; color: #666; }
+.modal-price-section { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 25px; }
+.price-display { display: flex; align-items: baseline; gap: 5px; }
+.currency { font-size: 20px; font-weight: 600; color: #006C3B; }
+.price-large { font-size: 36px; font-weight: 700; color: #006C3B; }
+.quantity-selector { margin-bottom: 25px; }
+.quantity-selector label { display: block; font-weight: 600; margin-bottom: 10px; color: #333; }
+.qty-control { display: flex; align-items: center; gap: 10px; background: #f5f5f5; border-radius: 8px; padding: 8px; width: fit-content; }
+.qty-btn { background: white; border: 1px solid #ddd; width: 36px; height: 36px; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: bold; color: #006C3B; transition: all 0.2s; }
+.qty-btn:hover { background: #006C3B; color: white; border-color: #006C3B; }
+#quantity { width: 50px; height: 36px; text-align: center; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; font-weight: 600; }
+#quantity:focus { outline: none; border-color: #006C3B; }
+.modal-actions { display: flex; gap: 12px; }
+.btn-cancel { flex: 1; padding: 12px 20px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; color: #666; transition: all 0.3s; }
+.btn-cancel:hover { background: #e8e8e8; }
+.btn-add-to-cart { flex: 1; padding: 12px 20px; background: #006C3B; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+.btn-add-to-cart:hover { background: #005530; transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0, 108, 59, 0.3); }
+.btn-add-to-cart.loading { opacity: 0.7; pointer-events: none; }
+@media (max-width: 600px) { .modal-content { width: 98%; max-height: 95vh; } .modal-info { padding: 20px 15px; } .modal-title { font-size: 22px; } .price-large { font-size: 28px; } }
+</style>
+
 <?php 
 // Include JS
 ob_start(); ?>
 <script src="assets/js/cart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('menuSearch');
-    const menuGrid = document.getElementById('menuGrid');
-    const cards = document.querySelectorAll('.card-aesthetic');
+    const modal = document.getElementById('itemModal');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const closeBtn = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    const qtyMinus = document.getElementById('qtyMinus');
+    const qtyPlus = document.getElementById('qtyPlus');
+    const qtyInput = document.getElementById('quantity');
+    let currentItemId = null;
     
-    // Search functionality with aesthetic transitions
-    if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase().trim();
-            let visibleCount = 0;
+    // Open modal ONLY when clicking card (not Add button)
+    document.querySelectorAll('.card-aesthetic').forEach(card => {
+        card.addEventListener('click', function(e) {
+            // Don't open modal if clicked on the Add button
+            if (e.target.closest('.btn-add-aesthetic')) {
+                return;
+            }
             
-            cards.forEach(card => {
-                const name = card.dataset.name;
-                const desc = card.querySelector('.food-desc').textContent.toLowerCase();
-                
-                if (name.includes(searchTerm) || desc.includes(searchTerm)) {
-                    card.classList.remove('fade-out');
-                    card.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    card.classList.add('fade-out');
-                    setTimeout(() => { if(card.classList.contains('fade-out')) card.style.display = 'none'; }, 300);
-                }
-            });
-        });
-    }
-
-    // Add to Cart click synergy
-    document.querySelectorAll('.btn-add-aesthetic').forEach(btn => {
-        btn.addEventListener('click', function() {
             const itemId = this.dataset.itemId;
-            const originalHTML = this.innerHTML;
+            const itemName = this.querySelector('.food-name').textContent;
+            const itemImage = this.querySelector('.food-img').src;
+            const itemDescription = this.querySelector('.food-desc').textContent;
+            const itemPrice = this.querySelector('.price-value').textContent;
             
+            currentItemId = itemId;
+            document.getElementById('modalName').textContent = itemName;
+            document.getElementById('modalImage').src = itemImage;
+            document.getElementById('modalDescription').textContent = itemDescription;
+            document.getElementById('modalPrice').textContent = itemPrice;
+            document.getElementById('quantity').value = 1;
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+    });
+    
+    // Close modal
+    function closeModal() {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', closeModal);
+    
+    // Quantity minus
+    qtyMinus.addEventListener('click', function() {
+        let qty = parseInt(qtyInput.value);
+        if (qty > 1) qtyInput.value = qty - 1;
+    });
+    
+    // Quantity plus
+    qtyPlus.addEventListener('click', function() {
+        let qty = parseInt(qtyInput.value);
+        if (qty < 99) qtyInput.value = qty + 1;
+    });
+    
+    // Quantity input validation
+    qtyInput.addEventListener('change', function() {
+        let qty = parseInt(this.value);
+        if (isNaN(qty) || qty < 1) this.value = 1;
+        if (qty > 99) this.value = 99;
+    });
+    
+    // Add to cart from modal
+    addToCartBtn.addEventListener('click', function() {
+        const quantity = parseInt(qtyInput.value);
+        if (typeof addToCart === 'function') {
             this.classList.add('loading');
-            this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
-            
-            if (typeof addToCart === 'function') {
-                addToCart(itemId);
+            const originalText = this.textContent;
+            this.textContent = 'Adding...';
+            addToCart(currentItemId, quantity);
+            setTimeout(() => {
+                this.textContent = 'Added!';
                 setTimeout(() => {
+                    this.textContent = originalText;
                     this.classList.remove('loading');
-                    this.innerHTML = '<i class="fas fa-check"></i>';
-                    setTimeout(() => { this.innerHTML = originalHTML; }, 1500);
-                }, 800);
+                    closeModal();
+                }, 1000);
+            }, 500);
+        }
+    });
+    
+    // Close modal with ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            closeModal();
+        }
+    });
+    
+    // Direct Add button functionality (without opening modal)
+    document.querySelectorAll('.btn-add-aesthetic').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const itemId = this.dataset.itemId;
+            if (typeof addToCart === 'function') {
+                addToCart(itemId, 1);
+                const originalHTML = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => {
+                    this.innerHTML = originalHTML;
+                }, 1500);
             }
         });
     });

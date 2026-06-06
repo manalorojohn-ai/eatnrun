@@ -77,9 +77,9 @@ function getCategories($conn) {
     $categories = [];
     $query = "SELECT id, name FROM categories WHERE status = 'active' ORDER BY name";
     try {
-        $result = mysqli_query($conn, $query);
+        $result = $conn->query($query);
         if ($result) {
-            while ($row = mysqli_fetch_assoc($result)) {
+            while ($row = $result->fetch_assoc()) {
                 $categories[] = $row;
             }
         }
@@ -90,8 +90,9 @@ function getCategories($conn) {
 // Function to get menu items
 function getMenuItems($conn, $category_name = null) {
     $menu_items = [];
+    $escaped_category = $conn->real_escape_string($category_name ?? '');
     $where_clause = $category_name ? 
-        "WHERE c.name = '" . mysqli_real_escape_string($conn, $category_name) . "' AND m.status = 'available'" : 
+        "WHERE c.name = '" . $escaped_category . "' AND m.status = 'available'" : 
         "WHERE m.status = 'available'";
     
     $query = "SELECT m.*, c.name as category_name,
@@ -101,9 +102,9 @@ function getMenuItems($conn, $category_name = null) {
           $where_clause 
           ORDER BY m.name";
     try {
-        $result = mysqli_query($conn, $query);
+        $result = $conn->query($query);
         if ($result) {
-            while ($row = mysqli_fetch_assoc($result)) {
+            while ($row = $result->fetch_assoc()) {
                 $menu_items[] = $row;
             }
         }

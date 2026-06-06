@@ -3,7 +3,29 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Session configuration
+// Load .env file if it exists
+$envFile = dirname(__DIR__) . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        list($name, $value) = explode('=', $line, 2);
+        $name = trim($name);
+        $value = trim($value);
+        if (!getenv($name)) {
+            putenv("$name=$value");
+            $_ENV[$name] = $value;
+            $_SERVER[$name] = $value;
+        }
+    }
+}
+
+// Session configuration - use a local temp directory
+$sessionDir = dirname(__DIR__) . '/tmp/sessions';
+if (!is_dir($sessionDir)) {
+    mkdir($sessionDir, 0777, true);
+}
+session_save_path($sessionDir);
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -50,12 +72,13 @@ function format_date($date) {
     return date('F j, Y, g:i a', strtotime($date));
 }
 
-// Initialize login history table (now using shimmed function)
-$create_login_history_table = "CREATE TABLE IF NOT EXISTS login_history (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id),
-    login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)";
-
-mysqli_query($conn, $create_login_history_table);
+// Initialize login history table - only if using real DB
+if (isset($using_json) && !$using_json) {
+    $create_login_history_table = "CREATE TABLE IF NOT EXISTS login_history (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id),
+        login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )";
+    mysqli_query($conn, $create_login_history_table);
+}
 ?> 

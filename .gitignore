@@ -16,3 +16,6 @@ config/ai_config_local.php
 # Operating System
 .DS_Store
 Thumbs.db 
+
+# Temporary files
+tmp/

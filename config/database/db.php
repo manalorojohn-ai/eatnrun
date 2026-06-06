@@ -22,20 +22,30 @@ if (extension_loaded('pdo_pgsql') || $is_render || (getenv('DB_HOST') && strpos(
         // For Neon: extract endpoint ID and add it to connection options
         $host = DB_HOST;
         $endpoint_id = '';
+        $password = DB_PASS;
         
         if (strpos($host, 'neon') !== false) {
             // Extract endpoint ID from host (first part of domain)
-            $endpoint_id = explode('.', $host)[0];
-            $dsn = "pgsql:host=" . $host . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require;options=" . urlencode('-c endpoint=' . $endpoint_id);
+            $host_parts = explode('.', $host);
+            if (count($host_parts) > 0) {
+                $endpoint_id = $host_parts[0];
+                // Workaround D: Specify endpoint ID in password field
+                // Use $ as separator if ; is problematic
+                $password = "endpoint=" . $endpoint_id . ";" . DB_PASS;
+                error_log("Neon endpoint ID: " . $endpoint_id);
+            }
+            $dsn = "pgsql:host=" . $host . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
         } else {
             $dsn = "pgsql:host=" . $host . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
         }
         
-        $conn = new PDO($dsn, DB_USER, DB_PASS, [
+        error_log("PostgreSQL DSN: " . $dsn);
+        $conn = new PDO($dsn, DB_USER, $password, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             PDO::ATTR_TIMEOUT => 10
         ]);
         $using_postgres = true;
+        error_log("PostgreSQL connection successful!");
     } catch (PDOException $e) {
         error_log("PostgreSQL connection failed: " . $e->getMessage());
         $conn = null;
@@ -79,12 +89,35 @@ if (!$conn) {
     error_log("No database connection available. Using JSON file storage fallback.");
     $using_json = true;
     
+    // Sample data for fallback
+    $sample_categories = [
+        ['id' => 1, 'name' => 'Burgers'],
+        ['id' => 2, 'name' => 'Rice Meals'],
+        ['id' => 3, 'name' => 'Beverages'],
+        ['id' => 4, 'name' => 'Desserts']
+    ];
+    
+    $sample_menu_items = [
+        ['id' => 1, 'name' => 'Plain Burger', 'description' => 'Classic beef burger with fresh vegetables', 'price' => 85.00, 'category_id' => 1, 'category_name' => 'Burgers', 'image_path' => 'assets/images/menu/plain-burger.jpg', 'status' => 'available'],
+        ['id' => 2, 'name' => 'Cheese Burger', 'description' => 'Juicy beef patty with melted cheese', 'price' => 95.00, 'category_id' => 1, 'category_name' => 'Burgers', 'image_path' => 'assets/images/menu/cheese-burger.jpg', 'status' => 'available'],
+        ['id' => 3, 'name' => 'Adobo with Rice', 'description' => 'Classic Filipino pork adobo', 'price' => 130.00, 'category_id' => 2, 'category_name' => 'Rice Meals', 'image_path' => 'assets/images/menu/adobo-with-rice.jpg', 'status' => 'available'],
+        ['id' => 4, 'name' => 'Sisig with Rice', 'description' => 'Sizzling chopped pork', 'price' => 120.00, 'category_id' => 2, 'category_name' => 'Rice Meals', 'image_path' => 'assets/images/menu/sisig-with-rice.jpg', 'status' => 'available'],
+        ['id' => 5, 'name' => 'Coke', 'description' => 'Refreshing cola drink', 'price' => 45.00, 'category_id' => 3, 'category_name' => 'Beverages', 'image_path' => 'assets/images/menu/coke.jpg', 'status' => 'available'],
+        ['id' => 6, 'name' => 'Mango Juice', 'description' => 'Fresh Philippine mango juice', 'price' => 55.00, 'category_id' => 3, 'category_name' => 'Beverages', 'image_path' => 'assets/images/menu/mango-juice.jpg', 'status' => 'available'],
+        ['id' => 7, 'name' => 'Halo-Halo', 'description' => 'Filipino shaved ice dessert', 'price' => 85.00, 'category_id' => 4, 'category_name' => 'Desserts', 'image_path' => 'assets/images/menu/halo-halo.jpg', 'status' => 'available'],
+        ['id' => 8, 'name' => 'Leche Flan', 'description' => 'Classic caramel custard', 'price' => 60.00, 'category_id' => 4, 'category_name' => 'Desserts', 'image_path' => 'assets/images/menu/leche-flan.jpg', 'status' => 'available']
+    ];
+    
     // Create a simple JSON-based storage class
     class JSONDatabase {
         private $data_dir;
+        private $sample_categories;
+        private $sample_menu_items;
         
-        public function __construct() {
+        public function __construct($categories, $menu_items) {
             $this->data_dir = dirname(__DIR__) . '/data';
+            $this->sample_categories = $categories;
+            $this->sample_menu_items = $menu_items;
             if (!is_dir($this->data_dir)) {
                 mkdir($this->data_dir, 0755, true);
             }
@@ -92,11 +125,19 @@ if (!$conn) {
         
         public function query($sql) {
             error_log("JSON DB Query: " . substr($sql, 0, 100));
+            $sql = strtolower($sql);
+            
+            if (strpos($sql, 'menu_items') !== false && strpos($sql, 'select') !== false) {
+                return new JSONResult($this->sample_menu_items);
+            } elseif (strpos($sql, 'categories') !== false && strpos($sql, 'select') !== false) {
+                return new JSONResult($this->sample_categories);
+            }
+            
             return new JSONResult([]);
         }
         
         public function prepare($sql) {
-            return new JSONStatement($sql, $this->data_dir);
+            return new JSONStatement($sql, $this->sample_categories, $this->sample_menu_items);
         }
         
         public function real_escape_string($str) {
@@ -134,12 +175,14 @@ if (!$conn) {
     
     class JSONStatement {
         private $sql;
-        private $data_dir;
+        private $sample_categories;
+        private $sample_menu_items;
         private $params = [];
         
-        public function __construct($sql, $data_dir) {
+        public function __construct($sql, $categories, $menu_items) {
             $this->sql = $sql;
-            $this->data_dir = $data_dir;
+            $this->sample_categories = $categories;
+            $this->sample_menu_items = $menu_items;
         }
         
         public function bind_param($types, ...$params) {
@@ -152,6 +195,12 @@ if (!$conn) {
         }
         
         public function get_result() {
+            $sql = strtolower($this->sql);
+            if (strpos($sql, 'categories') !== false && strpos($sql, 'select') !== false) {
+                return new JSONResult($this->sample_categories);
+            } elseif (strpos($sql, 'menu_items') !== false && strpos($sql, 'select') !== false) {
+                return new JSONResult($this->sample_menu_items);
+            }
             return new JSONResult([]);
         }
         
@@ -160,7 +209,7 @@ if (!$conn) {
         }
     }
     
-    $conn = new JSONDatabase();
+    $conn = new JSONDatabase($sample_categories, $sample_menu_items);
 }
 
 // PostgreSQL/MySQL wrapper for compatibility
@@ -209,33 +258,115 @@ if ($using_postgres || $using_mysql) {
 }
 
 // Global Procedural Shims for MySQLi compatibility
-if (!function_exists('mysqli_query')) { function mysqli_query($c, $q) { return ($c instanceof PDO_Conn_Wrapper) ? $c->query($q) : false; } }
-if (!function_exists('mysqli_fetch_assoc')) { function mysqli_fetch_assoc($r) { return ($r instanceof PDO_Result_Wrapper) ? $r->fetch_assoc() : false; } }
-if (!function_exists('mysqli_num_rows')) { function mysqli_num_rows($r) { return ($r instanceof PDO_Result_Wrapper) ? $r->num_rows : 0; } }
-if (!function_exists('mysqli_insert_id')) { function mysqli_insert_id($c) { 
-    if ($c instanceof PDO_Conn_Wrapper) {
-        try { return $c->getPDO()->lastInsertId(); } catch (Exception $e) { return 0; }
-    }
-    return 0;
-} }
-if (!function_exists('mysqli_prepare')) { function mysqli_prepare($c, $q) { return ($c instanceof PDO_Conn_Wrapper) ? $c->prepare($q) : false; } }
+if (!function_exists('mysqli_query')) { 
+    function mysqli_query($c, $q) { 
+        if ($c instanceof PDO_Conn_Wrapper || $c instanceof JSONDatabase) {
+            return $c->query($q); 
+        }
+        return false; 
+    } 
+}
+if (!function_exists('mysqli_fetch_assoc')) { 
+    function mysqli_fetch_assoc($r) { 
+        if ($r instanceof PDO_Result_Wrapper || $r instanceof JSONResult) {
+            return $r->fetch_assoc(); 
+        }
+        return false; 
+    } 
+}
+if (!function_exists('mysqli_num_rows')) { 
+    function mysqli_num_rows($r) { 
+        if ($r instanceof PDO_Result_Wrapper || $r instanceof JSONResult) {
+            return $r->num_rows; 
+        }
+        return 0; 
+    } 
+}
+if (!function_exists('mysqli_insert_id')) { 
+    function mysqli_insert_id($c) { 
+        if ($c instanceof PDO_Conn_Wrapper) {
+            try { return $c->getPDO()->lastInsertId(); } catch (Exception $e) { return 0; }
+        }
+        return 0;
+    } 
+}
+if (!function_exists('mysqli_prepare')) { 
+    function mysqli_prepare($c, $q) { 
+        if ($c instanceof PDO_Conn_Wrapper || $c instanceof JSONDatabase) {
+            return $c->prepare($q); 
+        }
+        return false; 
+    } 
+}
 if (!function_exists('mysqli_stmt_bind_param')) { function mysqli_stmt_bind_param($s, $t, ...$v) { return $s->bind_param($t, ...$v); } }
 if (!function_exists('mysqli_stmt_execute')) { function mysqli_stmt_execute($s) { return $s->execute(); } }
-if (!function_exists('mysqli_stmt_get_result')) { function mysqli_stmt_get_result($s) { return $s->get_result(); } }
+if (!function_exists('mysqli_stmt_get_result')) { 
+    function mysqli_stmt_get_result($s) { 
+        if ($s instanceof PDO_Stmt_Wrapper || $s instanceof JSONStatement) {
+            return $s->get_result(); 
+        }
+        return false; 
+    } 
+}
 if (!function_exists('mysqli_stmt_close')) { function mysqli_stmt_close($s) { return true; } }
 if (!function_exists('mysqli_free_result')) { function mysqli_free_result($r) { return true; } }
 if (!function_exists('mysqli_fetch_all')) { 
     function mysqli_fetch_all($r, $m = 1) { 
-        return ($r instanceof PDO_Result_Wrapper) ? $r->fetch_all($m) : []; 
+        if ($r instanceof PDO_Result_Wrapper || $r instanceof JSONResult) {
+            return $r->fetch_all($m); 
+        }
+        return []; 
     } 
 }
-if (!function_exists('mysqli_affected_rows')) { function mysqli_affected_rows($c) { return ($c instanceof PDO_Conn_Wrapper) ? $c->affected_rows() : 0; } }
-if (!function_exists('mysqli_begin_transaction')) { function mysqli_begin_transaction($c) { return ($c instanceof PDO_Conn_Wrapper) ? $c->begin_transaction() : false; } }
-if (!function_exists('mysqli_commit')) { function mysqli_commit($c) { return ($c instanceof PDO_Conn_Wrapper) ? $c->commit() : false; } }
-if (!function_exists('mysqli_rollback')) { function mysqli_rollback($c) { return ($c instanceof PDO_Conn_Wrapper) ? $c->rollback() : false; } }
-if (!function_exists('mysqli_real_escape_string')) { function mysqli_real_escape_string($c, $s) { return ($c instanceof PDO_Conn_Wrapper) ? $c->real_escape_string($s) : str_replace("'", "''", $s); } }
+if (!function_exists('mysqli_affected_rows')) { 
+    function mysqli_affected_rows($c) { 
+        if ($c instanceof PDO_Conn_Wrapper || $c instanceof JSONDatabase) {
+            return $c->affected_rows(); 
+        }
+        return 0; 
+    } 
+}
+if (!function_exists('mysqli_begin_transaction')) { 
+    function mysqli_begin_transaction($c) { 
+        if ($c instanceof PDO_Conn_Wrapper || $c instanceof JSONDatabase) {
+            return $c->begin_transaction(); 
+        }
+        return false; 
+    } 
+}
+if (!function_exists('mysqli_commit')) { 
+    function mysqli_commit($c) { 
+        if ($c instanceof PDO_Conn_Wrapper || $c instanceof JSONDatabase) {
+            return $c->commit(); 
+        }
+        return false; 
+    } 
+}
+if (!function_exists('mysqli_rollback')) { 
+    function mysqli_rollback($c) { 
+        if ($c instanceof PDO_Conn_Wrapper || $c instanceof JSONDatabase) {
+            return $c->rollback(); 
+        }
+        return false; 
+    } 
+}
+if (!function_exists('mysqli_real_escape_string')) { 
+    function mysqli_real_escape_string($c, $s) { 
+        if ($c instanceof PDO_Conn_Wrapper || $c instanceof JSONDatabase) {
+            return $c->real_escape_string($s); 
+        }
+        return str_replace("'", "''", $s); 
+    } 
+}
 if (!function_exists('mysqli_error')) { function mysqli_error($c) { return ($c instanceof PDO_Conn_Wrapper) ? ($c->connect_error ?? 'Unknown error') : ''; } }
-if (!function_exists('mysqli_fetch_array')) { function mysqli_fetch_array($r) { return ($r instanceof PDO_Result_Wrapper) ? $r->fetch_array() : false; } }
+if (!function_exists('mysqli_fetch_array')) { 
+    function mysqli_fetch_array($r) { 
+        if ($r instanceof PDO_Result_Wrapper || $r instanceof JSONResult) {
+            return $r->fetch_array(); 
+        }
+        return false; 
+    } 
+}
 if (!function_exists('mysqli_close')) { function mysqli_close($c) { return true; } }
 if (!function_exists('mysqli_report')) { function mysqli_report($flags) { return true; } }
 if (!function_exists('mysqli_stmt_affected_rows')) { function mysqli_stmt_affected_rows($s) { return 0; } }

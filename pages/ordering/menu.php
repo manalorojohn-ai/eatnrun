@@ -129,6 +129,7 @@ include 'includes/ui/loader.php';
 include 'includes/ui/navbar.php';
 ?>
 
+<main>
 <div class="menu-hero-aesthetic">
     <div class="container py-5 text-center">
         <div class="hero-content-zen">
@@ -229,8 +230,7 @@ include 'includes/ui/navbar.php';
         </div>
     </div>
 </div>
-
-
+</main>
 
 <?php 
 // Include JS

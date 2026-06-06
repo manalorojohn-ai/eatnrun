@@ -131,53 +131,48 @@ include 'includes/ui/navbar.php';
 
 <!-- Item Detail Modal -->
 <div class="modal fade" id="itemModal" tabindex="-1" aria-labelledby="itemModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden; background: #fff;">
-            <div class="modal-header" style="background: #f8f9fa; border: none; padding: 20px 30px;">
-                <h5 class="modal-title" id="itemModalLabel" style="color: #333; font-weight: 700; font-size: 1.2rem;">Item Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="font-size: 1.5rem;"></button>
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+        <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
+            <div class="modal-header" style="background: linear-gradient(135deg, #006C3B 0%, #00A65A 100%); border: none; padding: 15px 20px;">
+                <h5 class="modal-title" id="itemModalLabel" style="color: white; font-weight: 700; font-size: 1.1rem;">Item Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: brightness(0) invert(1);"></button>
             </div>
-            <div class="modal-body" style="padding: 0;">
-                <div class="row g-0">
-                    <!-- Left: Image Section -->
-                    <div class="col-md-6" style="background: #f8f9fa;">
-                        <div class="p-4">
-                            <div class="main-image-wrapper" style="border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08);">
-                                <img id="modalImage" src="" alt="" class="img-fluid" style="width: 100%; height: 450px; object-fit: cover;">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Right: Info Section -->
-                    <div class="col-md-6" style="padding: 40px;">
-                        <span id="modalCategory" class="badge" style="background: rgba(0, 108, 59, 0.1); color: #006C3B; padding: 8px 16px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; display: inline-block; margin-bottom: 15px;"></span>
-                        
-                        <h2 id="modalName" style="color: #2d3436; font-weight: 800; font-size: 2.2rem; margin-bottom: 10px; line-height: 1.2;"></h2>
-                        
-                        <p id="modalDescription" style="color: #636e72; font-size: 1rem; line-height: 1.6; margin-bottom: 25px;"></p>
-                        
-                        <p id="modalPrice" style="font-weight: 800; font-size: 2.5rem; color: #006C3B; margin: 0 0 30px 0;"></p>
-                        
-                        <!-- Quantity Control -->
-                        <div class="mb-4">
-                            <label class="form-label" style="font-weight: 600; color: #2d3436; font-size: 1rem; margin-bottom: 10px;">Quantity</label>
-                            <div class="quantity-control" style="display: flex; align-items: center; gap: 15px; background: #f8f9fa; padding: 10px 15px; border-radius: 12px; width: fit-content;">
-                                <button type="button" id="qtyDecrease" class="qty-btn" style="width: 50px; height: 50px; border-radius: 10px; border: none; background: #006C3B; color: white; font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; cursor: pointer;">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                                <input type="number" id="modalQuantity" value="1" min="1" style="width: 90px; height: 50px; text-align: center; font-size: 1.8rem; font-weight: 800; border: 2px solid #e0e0e0; border-radius: 10px; color: #006C3B; background: white;">
-                                <button type="button" id="qtyIncrease" class="qty-btn" style="width: 50px; height: 50px; border-radius: 10px; border: none; background: #006C3B; color: white; font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; cursor: pointer;">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Add to Cart Button -->
-                        <button type="button" id="modalAddBtn" style="background: linear-gradient(135deg, #006C3B 0%, #00A65A 100%); color: white; border: none; padding: 18px 40px; border-radius: 12px; font-weight: 700; font-size: 1.1rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 8px 24px rgba(0, 108, 59, 0.3); transition: all 0.3s ease; cursor: pointer;">
-                            <i class="fas fa-shopping-basket"></i> Add to Cart
+            <div class="modal-body" style="padding: 20px;">
+                <!-- Image -->
+                <div class="mb-3">
+                    <img id="modalImage" src="" alt="" class="img-fluid" style="width: 100%; height: 250px; object-fit: cover; border-radius: 12px;">
+                </div>
+                
+                <!-- Category -->
+                <span id="modalCategory" class="badge mb-2" style="background: rgba(0, 108, 59, 0.1); color: #006C3B; padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.8rem; display: inline-block;"></span>
+                
+                <!-- Name -->
+                <h3 id="modalName" style="color: #2d3436; font-weight: 800; font-size: 1.5rem; margin-bottom: 8px;"></h3>
+                
+                <!-- Description -->
+                <p id="modalDescription" style="color: #636e72; font-size: 0.95rem; line-height: 1.5; margin-bottom: 15px;"></p>
+                
+                <!-- Price -->
+                <p id="modalPrice" style="font-weight: 800; font-size: 1.8rem; color: #006C3B; margin-bottom: 15px;"></p>
+                
+                <!-- Quantity Control -->
+                <div class="mb-4">
+                    <label class="form-label" style="font-weight: 600; color: #2d3436; font-size: 0.9rem; margin-bottom: 8px;">Quantity</label>
+                    <div class="quantity-control" style="display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 8px 12px; border-radius: 10px; width: fit-content;">
+                        <button type="button" id="qtyDecrease" class="qty-btn" style="width: 40px; height: 40px; border-radius: 8px; border: none; background: #006C3B; color: white; font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" id="modalQuantity" value="1" min="1" style="width: 70px; height: 40px; text-align: center; font-size: 1.4rem; font-weight: 800; border: 2px solid #e0e0e0; border-radius: 8px; color: #006C3B; background: white;">
+                        <button type="button" id="qtyIncrease" class="qty-btn" style="width: 40px; height: 40px; border-radius: 8px; border: none; background: #006C3B; color: white; font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                            <i class="fas fa-plus"></i>
                         </button>
                     </div>
                 </div>
+                
+                <!-- Add to Cart Button -->
+                <button type="button" id="modalAddBtn" style="background: linear-gradient(135deg, #006C3B 0%, #00A65A 100%); color: white; border: none; padding: 14px 30px; border-radius: 10px; font-weight: 700; font-size: 1rem; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 20px rgba(0, 108, 59, 0.25); cursor: pointer;">
+                    <i class="fas fa-shopping-basket"></i> Add to Cart
+                </button>
             </div>
         </div>
     </div>

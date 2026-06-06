@@ -204,11 +204,6 @@ include 'includes/ui/navbar.php';
                                  alt="<?php echo htmlspecialchars($item['name']); ?>"
                                  class="food-img"
                                  loading="lazy">
-                            <div class="card-hover-overlay">
-                                <button class="btn-quick-view" data-item-id="<?php echo $item['id']; ?>">
-                                    <i class="fas fa-expand-alt"></i>
-                                </button>
-                            </div>
                             <span class="badge-custom"><?php echo htmlspecialchars($item['category_name']); ?></span>
                         </div>
                         <div class="card-body-aesthetic">
@@ -235,28 +230,43 @@ include 'includes/ui/navbar.php';
     </div>
 </div>
 
-<!-- Quick View Modal -->
-<div class="modal fade" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true">
+<!-- Add to Cart Modal -->
+<div class="modal fade" id="addToCartModal" tabindex="-1" aria-labelledby="addToCartModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="border-radius: 24px; border: none; overflow: hidden;">
             <div class="modal-header" style="background: linear-gradient(135deg, #006C3B 0%, #00A65A 100%); border: none; padding: 20px 24px;">
-                <h5 class="modal-title" id="quickViewModalLabel" style="color: white; font-weight: 700; font-size: 1.4rem;">🍽️ Item Details</h5>
+                <h5 class="modal-title" id="addToCartModalLabel" style="color: white; font-weight: 700; font-size: 1.4rem;">🛒 Add to Cart</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: brightness(0) invert(1);"></button>
             </div>
             <div class="modal-body" style="padding: 32px;">
                 <div class="row g-4">
                     <div class="col-md-6">
                         <div class="quick-view-image-wrapper" style="border-radius: 20px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.08);">
-                            <img id="quickViewImage" src="" alt="" class="img-fluid" style="width:100%;height:320px;object-fit:cover;">
+                            <img id="modalImage" src="" alt="" class="img-fluid" style="width:100%;height:320px;object-fit:cover;">
                         </div>
                     </div>
                     <div class="col-md-6 d-flex flex-column">
-                        <span id="quickViewCategory" class="badge" style="background: rgba(0, 108, 59, 0.1); color: #006C3B; padding: 8px 16px; border-radius: 50px; font-weight: 600; width: fit-content; margin-bottom: 16px;"></span>
-                        <h3 id="quickViewName" style="color: #2d3436; font-weight: 800; font-size: 2rem; margin-bottom: 12px; line-height: 1.2;"></h3>
-                        <p id="quickViewDescription" style="color: #636e72; font-size: 1.05rem; line-height: 1.6; margin-bottom: 24px; flex-grow: 1;"></p>
-                        <div class="quick-view-footer d-flex align-items-center justify-content-between gap-3">
-                            <p id="quickViewPrice" style="font-weight: 800; font-size: 2rem; color: #006C3B; margin: 0;"></p>
-                            <button type="button" class="btn-add-to-cart-modal" style="background: linear-gradient(135deg, #006C3B 0%, #00A65A 100%); color: white; border: none; padding: 14px 32px; border-radius: 16px; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 24px rgba(0, 108, 59, 0.25); transition: all 0.3s ease;">
+                        <span id="modalCategory" class="badge" style="background: rgba(0, 108, 59, 0.1); color: #006C3B; padding: 8px 16px; border-radius: 50px; font-weight: 600; width: fit-content; margin-bottom: 16px;"></span>
+                        <h3 id="modalName" style="color: #2d3436; font-weight: 800; font-size: 2rem; margin-bottom: 12px; line-height: 1.2;"></h3>
+                        <p id="modalDescription" style="color: #636e72; font-size: 1.05rem; line-height: 1.6; margin-bottom: 24px;"></p>
+                        
+                        <!-- Quantity Control -->
+                        <div class="mb-4">
+                            <label class="form-label" style="font-weight: 600; color: #2d3436; font-size: 1.1rem;">Quantity</label>
+                            <div class="quantity-control" style="display: flex; align-items: center; gap: 12px; background: rgba(0, 108, 59, 0.05); padding: 8px 12px; border-radius: 16px;">
+                                <button type="button" id="qtyDecrease" class="qty-btn" style="width: 48px; height: 48px; border-radius: 12px; border: none; background: linear-gradient(135deg, #006C3B 0%, #00A65A 100%); color: white; font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0, 108, 59, 0.2);">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" id="modalQuantity" value="1" min="1" style="width: 80px; height: 48px; text-align: center; font-size: 1.5rem; font-weight: 800; border: 2px solid rgba(0, 108, 59, 0.2); border-radius: 12px; color: #006C3B; background: white;">
+                                <button type="button" id="qtyIncrease" class="qty-btn" style="width: 48px; height: 48px; border-radius: 12px; border: none; background: linear-gradient(135deg, #006C3B 0%, #00A65A 100%); color: white; font-size: 1.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0, 108, 59, 0.2);">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer d-flex align-items-center justify-content-between gap-3 mt-auto" style="padding: 0; border: none;">
+                            <p id="modalPrice" style="font-weight: 800; font-size: 2rem; color: #006C3B; margin: 0;"></p>
+                            <button type="button" id="modalAddBtn" style="background: linear-gradient(135deg, #006C3B 0%, #00A65A 100%); color: white; border: none; padding: 14px 32px; border-radius: 16px; font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 24px rgba(0, 108, 59, 0.25); transition: all 0.3s ease;">
                                 <i class="fas fa-shopping-basket"></i> Add to Cart
                             </button>
                         </div>
@@ -268,11 +278,18 @@ include 'includes/ui/navbar.php';
 </div>
 
 <style>
-.btn-add-to-cart-modal:hover {
+.qty-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 18px rgba(0, 108, 59, 0.35);
+}
+.qty-btn:active {
+    transform: scale(0.95);
+}
+#modalAddBtn:hover {
     transform: translateY(-3px);
     box-shadow: 0 12px 32px rgba(0, 108, 59, 0.35);
 }
-.btn-add-to-cart-modal:active {
+#modalAddBtn:active {
     transform: translateY(-1px);
 }
 .quick-view-image-wrapper {
@@ -292,6 +309,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('menuSearch');
     const menuGrid = document.getElementById('menuGrid');
     const cards = document.querySelectorAll('.card-aesthetic');
+    let currentItemId = null;
     
     // Search functionality with aesthetic transitions
     if (searchInput) {
@@ -315,9 +333,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Quick View Button Handler
-    let currentItemId = null;
-    document.querySelectorAll('.btn-quick-view').forEach(btn => {
+    // Add to Cart Button Handler (opens modal)
+    document.querySelectorAll('.btn-add-aesthetic').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             const card = this.closest('.card-aesthetic');
@@ -328,53 +345,65 @@ document.addEventListener('DOMContentLoaded', function() {
             const image = card.dataset.image;
             currentItemId = this.dataset.itemId;
             
-            document.getElementById('quickViewName').textContent = name;
-            document.getElementById('quickViewCategory').textContent = category;
-            document.getElementById('quickViewDescription').textContent = description;
-            document.getElementById('quickViewPrice').textContent = `₱${price}`;
-            document.getElementById('quickViewImage').src = image;
-            document.getElementById('quickViewImage').alt = name;
+            // Populate modal
+            document.getElementById('modalName').textContent = name;
+            document.getElementById('modalCategory').textContent = category;
+            document.getElementById('modalDescription').textContent = description;
+            document.getElementById('modalPrice').textContent = `₱${price}`;
+            document.getElementById('modalImage').src = image;
+            document.getElementById('modalImage').alt = name;
+            document.getElementById('modalQuantity').value = 1;
             
-            const quickViewModal = new bootstrap.Modal(document.getElementById('quickViewModal'));
-            quickViewModal.show();
+            const addToCartModal = new bootstrap.Modal(document.getElementById('addToCartModal'));
+            addToCartModal.show();
         });
     });
 
-    // Modal Add to Cart Button Handler
-    document.querySelector('.btn-add-to-cart-modal')?.addEventListener('click', function() {
+    // Quantity Controls
+    const qtyInput = document.getElementById('modalQuantity');
+    const qtyIncrease = document.getElementById('qtyIncrease');
+    const qtyDecrease = document.getElementById('qtyDecrease');
+
+    if (qtyIncrease) {
+        qtyIncrease.addEventListener('click', function() {
+            let current = parseInt(qtyInput.value);
+            qtyInput.value = current + 1;
+        });
+    }
+
+    if (qtyDecrease) {
+        qtyDecrease.addEventListener('click', function() {
+            let current = parseInt(qtyInput.value);
+            if (current > 1) {
+                qtyInput.value = current - 1;
+            }
+        });
+    }
+
+    // Modal Add to Cart Button
+    document.getElementById('modalAddBtn')?.addEventListener('click', function() {
         if (currentItemId && typeof addToCart === 'function') {
             const originalHTML = this.innerHTML;
             this.classList.add('loading');
             this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Adding...';
-            addToCart(currentItemId);
+            
+            // Call addToCart for each quantity
+            const qty = parseInt(qtyInput.value);
+            for (let i = 0; i < qty; i++) {
+                addToCart(currentItemId);
+            }
+            
             setTimeout(() => {
                 this.classList.remove('loading');
                 this.innerHTML = '<i class="fas fa-check"></i> Added!';
                 setTimeout(() => {
                     this.innerHTML = '<i class="fas fa-shopping-basket"></i> Add to Cart';
-                }, 1500);
+                    // Close modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addToCartModal'));
+                    if (modal) modal.hide();
+                }, 1000);
             }, 800);
         }
-    });
-
-    // Add to cart click synergy
-    document.querySelectorAll('.btn-add-aesthetic').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const itemId = this.dataset.itemId;
-            const originalHTML = this.innerHTML;
-            
-            this.classList.add('loading');
-            this.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
-            
-            if (typeof addToCart === 'function') {
-                addToCart(itemId);
-                setTimeout(() => {
-                    this.classList.remove('loading');
-                    this.innerHTML = '<i class="fas fa-check"></i>';
-                    setTimeout(() => { this.innerHTML = originalHTML; }, 1500);
-                }, 800);
-            }
-        });
     });
 });
 </script>

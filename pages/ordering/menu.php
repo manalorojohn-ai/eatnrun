@@ -195,7 +195,7 @@ include 'includes/ui/navbar.php';
                 </div>
             <?php else: ?>
                 <?php foreach ($menu_items as $index => $item): ?>
-                    <div class="card-aesthetic animate-in" style="animation-delay: <?php echo $index * 0.05; ?>s" data-category="<?php echo htmlspecialchars($item['category_name']); ?>" data-name="<?php echo htmlspecialchars(strtolower($item['name'])); ?>" data-image="<?php echo htmlspecialchars($item['image_path']); ?>" data-description="<?php echo htmlspecialchars($item['description']); ?>" data-price="<?php echo htmlspecialchars(number_format($item['price'], 2)); ?>">
+                    <div class="card-aesthetic animate-in" style="animation-delay: <?php echo $index * 0.05; ?>s; cursor: pointer;" data-category="<?php echo htmlspecialchars($item['category_name']); ?>" data-name="<?php echo htmlspecialchars(strtolower($item['name'])); ?>" data-image="<?php echo htmlspecialchars($item['image_path']); ?>" data-description="<?php echo htmlspecialchars($item['description']); ?>" data-price="<?php echo htmlspecialchars(number_format($item['price'], 2)); ?>" data-item-id="<?php echo $item['id']; ?>">
                         <div class="card-image-wrapper">
                             <?php 
                             $image_url = (file_exists($item['image_path']) && !empty($item['image_path'])) ? $item['image_path'] : 'assets/images/menu/default-food.jpg';
@@ -333,17 +333,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Add to Cart Button Handler (opens modal)
-    document.querySelectorAll('.btn-add-aesthetic').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const card = this.closest('.card-aesthetic');
+    // Card Click Handler (opens modal)
+    document.querySelectorAll('.card-aesthetic').forEach(card => {
+        card.addEventListener('click', function(e) {
             const name = card.querySelector('.food-name').textContent;
             const category = card.dataset.category;
             const description = card.dataset.description;
             const price = card.dataset.price;
             const image = card.dataset.image;
-            currentItemId = this.dataset.itemId;
+            currentItemId = card.dataset.itemId;
             
             // Populate modal
             document.getElementById('modalName').textContent = name;

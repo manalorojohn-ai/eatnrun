@@ -19,10 +19,21 @@ $conn = null;
 // Try PostgreSQL first if available
 if (extension_loaded('pdo_pgsql') || $is_render || (getenv('DB_HOST') && strpos(getenv('DB_HOST'), 'neon') !== false)) {
     try {
-        $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
+        // For Neon: extract endpoint ID and add it to connection options
+        $host = DB_HOST;
+        $endpoint_id = '';
+        
+        if (strpos($host, 'neon') !== false) {
+            // Extract endpoint ID from host (first part of domain)
+            $endpoint_id = explode('.', $host)[0];
+            $dsn = "pgsql:host=" . $host . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require;options=" . urlencode('-c endpoint=' . $endpoint_id);
+        } else {
+            $dsn = "pgsql:host=" . $host . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
+        }
+        
         $conn = new PDO($dsn, DB_USER, DB_PASS, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_TIMEOUT => 5
+            PDO::ATTR_TIMEOUT => 10
         ]);
         $using_postgres = true;
     } catch (PDOException $e) {

@@ -236,45 +236,41 @@ include 'includes/ui/navbar.php';
 <div class="item-modal" id="itemModal">
     <div class="modal-overlay" id="modalOverlay"></div>
     <div class="modal-content">
-        <button class="modal-close" id="closeModal">&times;</button>
+        <button class="modal-close" id="closeModal">×</button>
+        
         <div class="modal-body">
-            <div class="modal-image-container">
+            <!-- Left: Image -->
+            <div class="modal-image-section">
                 <img id="modalImage" src="" alt="Item" class="modal-image">
             </div>
-            <div class="modal-info">
-                <h2 id="modalName" class="modal-title"></h2>
-                <p id="modalDescription" class="modal-description"></p>
+            
+            <!-- Right: Content -->
+            <div class="modal-content-section">
+                <div class="modal-category" id="modalCategory">Category</div>
+                <h2 id="modalName" class="modal-title">Item Name</h2>
                 
-                <div class="modal-rating">
-                    <span class="stars">
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star"></i>
-                        <i class="fas fa-star-half-alt"></i>
-                        <span class="rating-text">4.9 (156 reviews)</span>
-                    </span>
-                </div>
+                <p id="modalDescription" class="modal-description">Item description goes here</p>
                 
-                <div class="modal-price-section">
-                    <div class="price-display">
-                        <span class="currency">₱</span>
-                        <span id="modalPrice" class="price-large">0.00</span>
+                <div class="modal-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Price</span>
+                        <span class="meta-value">
+                            <span class="currency">₱</span><span id="modalPrice">0.00</span>
+                        </span>
                     </div>
-                </div>
-                
-                <div class="quantity-selector">
-                    <label>Quantity:</label>
-                    <div class="qty-control">
-                        <button class="qty-btn" id="qtyMinus">−</button>
-                        <input type="number" id="quantity" value="1" min="1" max="99">
-                        <button class="qty-btn" id="qtyPlus">+</button>
+                    <div class="meta-item">
+                        <span class="meta-label">Calories</span>
+                        <span class="meta-value">548 CAL</span>
                     </div>
                 </div>
                 
                 <div class="modal-actions">
-                    <button class="btn-cancel" id="cancelBtn">Cancel</button>
-                    <button class="btn-add-to-cart" id="addToCartBtn">Add to Cart</button>
+                    <div class="quantity-control">
+                        <button class="qty-btn qty-minus" id="qtyMinus">−</button>
+                        <input type="number" id="quantity" value="1" min="1" max="99" readonly>
+                        <button class="qty-btn qty-plus" id="qtyPlus">+</button>
+                    </div>
+                    <button class="btn-add-order" id="addToCartBtn">ADD TO ORDER</button>
                 </div>
             </div>
         </div>
@@ -282,40 +278,360 @@ include 'includes/ui/navbar.php';
 </div>
 
 <style>
-.item-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; }
-.item-modal.active { display: flex; }
-.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 999; }
-.modal-content { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 12px; max-width: 600px; width: 95%; max-height: 90vh; overflow-y: auto; z-index: 1001; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
-.modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 32px; cursor: pointer; color: #999; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; z-index: 1002; }
-.modal-close:hover { color: #333; }
-.modal-body { display: flex; flex-direction: column; padding: 0; }
-.modal-image-container { width: 100%; height: 300px; background: #f5f5f5; border-radius: 12px 12px 0 0; overflow: hidden; }
-.modal-image { width: 100%; height: 100%; object-fit: cover; }
-.modal-info { padding: 30px 25px; }
-.modal-title { font-size: 28px; font-weight: 700; margin: 0 0 15px 0; color: #333; }
-.modal-description { font-size: 15px; color: #666; margin: 0 0 20px 0; line-height: 1.5; }
-.modal-rating { margin-bottom: 20px; }
-.stars { display: flex; align-items: center; gap: 8px; }
-.stars i { color: #ffc107; font-size: 16px; }
-.rating-text { margin-left: 8px; font-size: 14px; color: #666; }
-.modal-price-section { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 25px; }
-.price-display { display: flex; align-items: baseline; gap: 5px; }
-.currency { font-size: 20px; font-weight: 600; color: #006C3B; }
-.price-large { font-size: 36px; font-weight: 700; color: #006C3B; }
-.quantity-selector { margin-bottom: 25px; }
-.quantity-selector label { display: block; font-weight: 600; margin-bottom: 10px; color: #333; }
-.qty-control { display: flex; align-items: center; gap: 10px; background: #f5f5f5; border-radius: 8px; padding: 8px; width: fit-content; }
-.qty-btn { background: white; border: 1px solid #ddd; width: 36px; height: 36px; border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: bold; color: #006C3B; transition: all 0.2s; }
-.qty-btn:hover { background: #006C3B; color: white; border-color: #006C3B; }
-#quantity { width: 50px; height: 36px; text-align: center; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; font-weight: 600; }
-#quantity:focus { outline: none; border-color: #006C3B; }
-.modal-actions { display: flex; gap: 12px; }
-.btn-cancel { flex: 1; padding: 12px 20px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; color: #666; transition: all 0.3s; }
-.btn-cancel:hover { background: #e8e8e8; }
-.btn-add-to-cart { flex: 1; padding: 12px 20px; background: #006C3B; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
-.btn-add-to-cart:hover { background: #005530; transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0, 108, 59, 0.3); }
-.btn-add-to-cart.loading { opacity: 0.7; pointer-events: none; }
-@media (max-width: 600px) { .modal-content { width: 98%; max-height: 95vh; } .modal-info { padding: 20px 15px; } .modal-title { font-size: 22px; } .price-large { font-size: 28px; } }
+/* Modern Aesthetic Modal Styles */
+.item-modal { 
+    display: none; 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    z-index: 1000;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.item-modal.active { 
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 999; 
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-content { 
+    position: relative;
+    background: white; 
+    border-radius: 4px; 
+    width: 100%;
+    max-width: 850px;
+    height: auto;
+    max-height: 90vh;
+    z-index: 1001; 
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    animation: slideIn 0.4s ease-out;
+    border: 1px solid #f0f0f0;
+    overflow: hidden;
+}
+
+.modal-close { 
+    position: absolute; 
+    top: 20px; 
+    right: 20px; 
+    background: none; 
+    border: none; 
+    font-size: 28px; 
+    cursor: pointer; 
+    color: #999; 
+    width: 30px; 
+    height: 30px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    z-index: 1002;
+    transition: all 0.2s ease;
+}
+
+.modal-close:hover { 
+    color: #333;
+}
+
+.modal-body { 
+    display: flex; 
+    flex-direction: row; 
+    height: 100%;
+}
+
+/* Left: Image Section */
+.modal-image-section { 
+    flex: 0 0 40%;
+    background: #f9f9f9;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px 0 0 4px;
+    border-right: 1px solid #f0f0f0;
+}
+
+.modal-image { 
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    display: block;
+    object-fit: cover;
+    border-radius: 2px;
+}
+
+/* Right: Content Section */
+.modal-content-section { 
+    flex: 0 0 60%;
+    padding: 35px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-content-section::-webkit-scrollbar { 
+    width: 4px; 
+}
+.modal-content-section::-webkit-scrollbar-track { 
+    background: transparent; 
+}
+.modal-content-section::-webkit-scrollbar-thumb { 
+    background: #ddd; 
+    border-radius: 2px;
+}
+
+.modal-category { 
+    font-size: 11px; 
+    font-weight: 600; 
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    font-style: italic;
+}
+
+.modal-title { 
+    font-size: 28px; 
+    font-weight: 600; 
+    margin: 0 0 12px 0; 
+    color: #333;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    font-family: Georgia, serif;
+}
+
+.modal-description { 
+    font-size: 13px; 
+    color: #666; 
+    margin: 0 0 20px 0; 
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+.modal-meta {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.meta-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.meta-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+
+.currency {
+    font-size: 13px;
+    color: #999;
+    margin-right: 2px;
+}
+
+.modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 20px;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.qty-btn {
+    background: white;
+    border: none;
+    border-right: 1px solid #ddd;
+    width: 38px;
+    height: 38px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qty-btn:last-of-type {
+    border-right: none;
+}
+
+.qty-btn:hover {
+    background: #f9f9f9;
+}
+
+#quantity { 
+    width: 45px;
+    height: 38px;
+    text-align: center;
+    border: none;
+    border-right: 1px solid #ddd;
+    font-size: 13px;
+    font-weight: 600;
+    background: white;
+    color: #333;
+}
+
+#quantity:focus {
+    outline: none;
+    background: #f9f9f9;
+}
+
+.btn-add-order {
+    flex: 1;
+    padding: 11px 20px;
+    background: #333;
+    color: white;
+    border: none;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.btn-add-order:hover {
+    background: #000;
+}
+
+.btn-add-order:active {
+    transform: scale(0.98);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .modal-content {
+        max-width: 90%;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: 95%;
+        border-radius: 4px;
+    }
+    
+    .modal-body {
+        flex-direction: column;
+    }
+    
+    .modal-image-section {
+        flex: 0 0 auto;
+        padding: 25px 20px;
+        border-radius: 4px 4px 0 0;
+        border-right: none;
+        border-bottom: 1px solid #f0f0f0;
+        max-height: 280px;
+    }
+    
+    .modal-content-section {
+        flex: 0 0 auto;
+        padding: 25px 20px;
+    }
+    
+    .modal-title {
+        font-size: 22px;
+    }
+    
+    .modal-meta {
+        gap: 25px;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .quantity-control {
+        width: 100%;
+    }
+    
+    .btn-add-order {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        max-width: 100%;
+        max-height: 95vh;
+    }
+    
+    .modal-image-section {
+        padding: 20px;
+        max-height: 240px;
+    }
+    
+    .modal-content-section {
+        padding: 20px;
+    }
+    
+    .modal-title {
+        font-size: 18px;
+    }
+    
+    .modal-description {
+        font-size: 12px;
+    }
+    
+    .modal-meta {
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+}
 </style>
 
 <?php 
@@ -327,7 +643,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('itemModal');
     const modalOverlay = document.getElementById('modalOverlay');
     const closeBtn = document.getElementById('closeModal');
-    const cancelBtn = document.getElementById('cancelBtn');
     const addToCartBtn = document.getElementById('addToCartBtn');
     const qtyMinus = document.getElementById('qtyMinus');
     const qtyPlus = document.getElementById('qtyPlus');
@@ -347,12 +662,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const itemImage = this.querySelector('.food-img').src;
             const itemDescription = this.querySelector('.food-desc').textContent;
             const itemPrice = this.querySelector('.price-value').textContent;
+            const itemCategory = this.querySelector('.badge-custom').textContent;
             
             currentItemId = itemId;
             document.getElementById('modalName').textContent = itemName;
             document.getElementById('modalImage').src = itemImage;
             document.getElementById('modalDescription').textContent = itemDescription;
             document.getElementById('modalPrice').textContent = itemPrice;
+            document.getElementById('modalCategory').textContent = itemCategory || 'Sandwiches';
             document.getElementById('quantity').value = 1;
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -366,17 +683,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     closeBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
     modalOverlay.addEventListener('click', closeModal);
     
     // Quantity minus
-    qtyMinus.addEventListener('click', function() {
+    qtyMinus.addEventListener('click', function(e) {
+        e.preventDefault();
         let qty = parseInt(qtyInput.value);
         if (qty > 1) qtyInput.value = qty - 1;
     });
     
     // Quantity plus
-    qtyPlus.addEventListener('click', function() {
+    qtyPlus.addEventListener('click', function(e) {
+        e.preventDefault();
         let qty = parseInt(qtyInput.value);
         if (qty < 99) qtyInput.value = qty + 1;
     });

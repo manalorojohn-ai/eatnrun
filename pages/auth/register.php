@@ -651,6 +651,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             transform: rotate(10deg);
         }
 
+        /* Spinner animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .fa-spin {
+            animation: spin 1s linear infinite;
+        }
+
         .login-link {
             text-align: center;
             margin-top: 2rem;
@@ -1047,6 +1057,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const password = document.querySelector('#password')
             const confirmPassword = document.querySelector('#confirm_password')
             const strengthBar = document.querySelector('#passwordStrengthBar')
+            const submitBtn = document.querySelector('.btn-register')
 
             function validatePassword() {
                 if (password.value !== confirmPassword.value) {
@@ -1080,9 +1091,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 form.addEventListener('submit', event => {
                     validatePassword()
                     
-                    if (!form.checkValidity()) {
+                    if (!form.checkValidity() === false) {
                         event.preventDefault()
                         event.stopPropagation()
+                    } else {
+                        // Form is valid, show loader
+                        event.preventDefault()
+                        if (submitBtn) {
+                            submitBtn.disabled = true
+                            const originalHTML = submitBtn.innerHTML
+                            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...'
+                            
+                            // Submit the form
+                            setTimeout(() => {
+                                form.submit()
+                            }, 300)
+                        }
                     }
 
                     form.classList.add('was-validated')

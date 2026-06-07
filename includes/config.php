@@ -21,12 +21,15 @@ if (file_exists($envFile)) {
 }
 
 // Session configuration - use a local temp directory
+// IMPORTANT: session_save_path MUST be called BEFORE session_start()
 $sessionDir = dirname(__DIR__) . '/tmp/sessions';
 if (!is_dir($sessionDir)) {
     mkdir($sessionDir, 0777, true);
 }
-session_save_path($sessionDir);
+
+// Only set session path if session hasn't started yet
 if (session_status() === PHP_SESSION_NONE) {
+    session_save_path($sessionDir);
     session_start();
 }
 

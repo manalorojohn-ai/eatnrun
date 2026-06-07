@@ -60,12 +60,12 @@ if (!isset($_SESSION['verification_code'])) {
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
-        $mail->Username = 'eatandruncapstone@gmail.com'; // Your Gmail
-        $mail->Password = 'mahb fomz qvbx ovas'; // Your app password
+        $mail->Username = 'eatnrun70@gmail.com';
+        $mail->Password = 'xeyf snnt dvnq bqpb';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
 
-        $mail->setFrom('eatandruncapstone@gmail.com', 'Eat&Run');
+        $mail->setFrom('eatnrun70@gmail.com', 'Eat&Run');
         $mail->addAddress($user_email);
 
         $mail->isHTML(true);

@@ -130,13 +130,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mail->isSMTP();
                 $mail->Host = 'smtp.gmail.com';
                 $mail->SMTPAuth = true;
-                $mail->Username = 'manalorojohn@gmail.com';
-                $mail->Password = 'jrsp vsza dxvw zcsa';
+                $mail->Username = 'eatnrun70@gmail.com';
+                $mail->Password = 'xeyf snnt dvnq bqpb';
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port = 587;
                 $mail->Timeout = 10; // Prevent 502 Bad Gateway timeouts
 
-                $mail->setFrom('miguelantonioramos140@gmail.com', 'Eat&Run');
+                $mail->setFrom('eatnrun70@gmail.com', 'Eat&Run');
                 $mail->addAddress($email, $full_name);
 
                 $mail->isHTML(true);

@@ -103,6 +103,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Debug logging
     error_log("Login attempt - Email: " . $email . ", Found user in DB: " . ($user ? "YES" : "NO"));
     
+    // If there is no DB user, fall back to test users only
+    if (!$user) {
+        foreach ($test_users as $test_user) {
+            if (strtolower($test_user['email']) === strtolower($email) || strtolower($test_user['username']) === strtolower($email)) {
+                error_log("Login: No DB user found. Falling back to test user - " . $test_user['email']);
+                $user = $test_user;
+                break;
+            }
+        }
+    }
+
     // Verify password (supports both plain text for migration/dev and hashes for security)
     $password_valid = false;
     if ($user) {
@@ -124,25 +135,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             $password_valid = $plain_match || $hash_match;
             error_log("Login: Final password valid: " . ($password_valid ? "YES" : "NO"));
-        }
-    }
-    
-    // If database user password failed or not found, check test users
-    if (!$password_valid) {
-        error_log("Login: Password verification failed, checking test users");
-        $user = null;
-        foreach ($test_users as $test_user) {
-            if (strtolower($test_user['email']) === strtolower($email) || strtolower($test_user['username']) === strtolower($email)) {
-                error_log("Login: Found test user - " . $test_user['email']);
-                $user = $test_user;
-                if (trim($password) === trim($user['password_plain'])) {
-                    error_log("Login: Test user password match: YES");
-                    $password_valid = true;
-                } else {
-                    error_log("Login: Test user password match: NO");
-                }
-                break;
-            }
         }
     }
     

@@ -178,7 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['full_name'] = $user['full_name'];
             
             // Redirect customer to dashboard
-            header("Location: dashboard");
+            header("Location: dashboard.php");
             exit();
         }
     } else {

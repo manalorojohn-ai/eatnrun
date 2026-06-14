@@ -343,23 +343,23 @@ if (isset($_GET['checkout']) && !empty($cart_items)) {
                                     </div>
 
                                     <div class="quantity-control">
-                                        <button class="quantity-btn minus" onclick="updateQuantity(<?php echo $item['cart_id']; ?>, 'decrease')">
+                                        <button class="quantity-btn minus" onclick="event.preventDefault(); removeFromCart(<?php echo $item['cart_id']; ?>)" style="display:none;">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <button class="quantity-btn minus" onclick="event.preventDefault(); const input = this.parentElement.querySelector('.quantity-input'); if(parseInt(input.value) > 1) input.value = parseInt(input.value) - 1;">
                                             <i class="fas fa-minus"></i>
                                         </button>
                                         <input type="number" 
                                                class="quantity-input" 
                                                value="<?php echo $item['quantity']; ?>" 
                                                min="1" 
-                                               max="99"
-                                               onchange="updateQuantityManual(<?php echo $item['cart_id']; ?>, this.value)"
-                                               onkeyup="updateQuantityManual(<?php echo $item['cart_id']; ?>, this.value)"
-                                               onkeypress="return event.charCode >= 48 && event.charCode <= 57">
-                                        <button class="quantity-btn plus" onclick="updateQuantity(<?php echo $item['cart_id']; ?>, 'increase')">
+                                               max="99">
+                                        <button class="quantity-btn plus" onclick="event.preventDefault(); const input = this.parentElement.querySelector('.quantity-input'); if(parseInt(input.value) < 99) input.value = parseInt(input.value) + 1;">
                                             <i class="fas fa-plus"></i>
                                         </button>
                                         </div>
 
-                                    <button class="remove-item" onclick="removeItem(<?php echo $item['cart_id']; ?>)">
+                                    <button class="remove-item" onclick="removeFromCart(<?php echo $item['cart_id']; ?>)">
                                         <i class="fas fa-trash-alt"></i>
                                         </button>
                                 </div>
@@ -391,162 +391,7 @@ if (isset($_GET['checkout']) && !empty($cart_items)) {
     
     <!-- Bootstrap 5 JS - Removed duplicate, navbar.php already includes Bootstrap 5.3.2 -->
 
-    <script>
-    function updateQuantity(cartId, action) {
-        const quantityInput = document.querySelector(`.cart-item[data-id="${cartId}"] .quantity-input`);
-        let newQuantity = parseInt(quantityInput.value);
-        
-        if (action === 'increase') {
-            if (newQuantity >= 99) return; // Prevent going over 99
-            newQuantity += 1;
-        } else if (action === 'decrease' && newQuantity > 1) {
-            newQuantity -= 1;
-        }
-        
-        updateCart(cartId, newQuantity);
-                    }
-
-    function updateQuantityManual(cartId, value) {
-        let quantity = parseInt(value) || 1;
-        
-        // Limit to 99
-        if (quantity > 99) {
-            quantity = 99;
-        } else if (quantity < 1) {
-            quantity = 1;
-        }
-        
-        updateCart(cartId, quantity);
-    }
-
-    function updateCart(cartId, newQuantity) {
-        const cartItem = document.querySelector(`.cart-item[data-id="${cartId}"]`);
-        const quantityInput = cartItem.querySelector('.quantity-input');
-        
-        // Ensure quantity is within limits before updating
-        if (newQuantity > 99) {
-            newQuantity = 99;
-        } else if (newQuantity < 1) {
-            newQuantity = 1;
-        }
-        
-        // Update input value immediately for better UX
-        quantityInput.value = newQuantity;
-        
-        const pricePerItem = parseFloat(cartItem.dataset.price);
-        const newItemTotal = pricePerItem * newQuantity;
-        
-        // Update item price display
-        cartItem.querySelector('.price-value').textContent = newItemTotal.toFixed(2);
-        
-        // Calculate new subtotal
-        let newSubtotal = 0;
-        document.querySelectorAll('.cart-item').forEach(item => {
-            const qty = parseInt(item.querySelector('.quantity-input').value);
-            const price = parseFloat(item.dataset.price);
-            newSubtotal += qty * price;
-        });
-        
-        // Update displays
-        document.getElementById('subtotal').textContent = newSubtotal.toFixed(2);
-        document.getElementById('total').textContent = (newSubtotal + 50).toFixed(2);
-
-        // Update database
-        fetch('update_cart.php', {
-                method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `cart_id=${cartId}&quantity=${newQuantity}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Update cart count in header
-                updateCartCount();
-            } else {
-                alert('Failed to update quantity. Please try again.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        });
-        }
-
-    function removeItem(cartId) {
-        if (!confirm('Are you sure you want to remove this item?')) return;
-
-        fetch('remove_from_cart.php', {
-                method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `cart_id=${cartId}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const item = document.querySelector(`.cart-item[data-id="${cartId}"]`);
-                item.style.animation = 'slideOut 0.3s ease-out forwards';
-                setTimeout(() => {
-                    item.remove();
-                
-                    // Recalculate totals
-                    let newSubtotal = 0;
-                    document.querySelectorAll('.cart-item').forEach(item => {
-                        const qty = parseInt(item.querySelector('.quantity-input').value);
-                        const price = parseFloat(item.dataset.price);
-                        newSubtotal += qty * price;
-                    });
-                    
-                    document.getElementById('subtotal').textContent = newSubtotal.toFixed(2);
-                    document.getElementById('total').textContent = (newSubtotal + 50).toFixed(2);
-                
-                    // Check if cart is empty
-                    const cartItems = document.querySelectorAll('.cart-item');
-                    if (cartItems.length === 0) {
-                        location.reload(); // Reload to show empty cart state
-                }
-                    
-                    // Update cart count in header
-                    updateCartCount();
-                }, 300);
-            } else {
-                alert('Failed to remove item. Please try again.');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred. Please try again.');
-        });
-    }
-
-    function updateCartCount() {
-        const cartCountElement = document.querySelector('.cart-count');
-        if (cartCountElement) {
-            fetch('get_cart_count.php')
-            .then(response => response.json())
-            .then(data => {
-                if (data.count > 0) {
-                    cartCountElement.textContent = data.count;
-                    cartCountElement.style.display = 'block';
-                } else {
-                    cartCountElement.style.display = 'none';
-                }
-            });
-        }
-    }
-    
-    // Add slideOut animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideOut {
-            from { opacity: 1; transform: translateX(0); }
-            to { opacity: 0; transform: translateX(-20px); }
-        }
-    `;
-    document.head.appendChild(style);
-    </script>
+    <script src="assets/js/ajax-handler.js"></script>
+    <script src="assets/js/cart-ajax.js"></script>
 </body>
 </html> 

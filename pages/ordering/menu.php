@@ -637,7 +637,9 @@ include 'includes/ui/navbar.php';
 <?php 
 // Include JS
 ob_start(); ?>
-<script src="assets/js/cart.js"></script>
+<script src="assets/js/ajax-handler.js"></script>
+<script src="assets/js/cart-ajax.js"></script>
+<script src="assets/js/menu-ajax.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('itemModal');
@@ -648,33 +650,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const qtyPlus = document.getElementById('qtyPlus');
     const qtyInput = document.getElementById('quantity');
     let currentItemId = null;
-    
-    // Open modal ONLY when clicking card (not Add button)
-    document.querySelectorAll('.card-aesthetic').forEach(card => {
-        card.addEventListener('click', function(e) {
-            // Don't open modal if clicked on the Add button
-            if (e.target.closest('.btn-add-aesthetic')) {
-                return;
-            }
-            
-            const itemId = this.dataset.itemId;
-            const itemName = this.querySelector('.food-name').textContent;
-            const itemImage = this.querySelector('.food-img').src;
-            const itemDescription = this.querySelector('.food-desc').textContent;
-            const itemPrice = this.querySelector('.price-value').textContent;
-            const itemCategory = this.querySelector('.badge-custom').textContent;
-            
-            currentItemId = itemId;
-            document.getElementById('modalName').textContent = itemName;
-            document.getElementById('modalImage').src = itemImage;
-            document.getElementById('modalDescription').textContent = itemDescription;
-            document.getElementById('modalPrice').textContent = itemPrice;
-            document.getElementById('modalCategory').textContent = itemCategory || 'Sandwiches';
-            document.getElementById('quantity').value = 1;
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        });
-    });
     
     // Close modal
     function closeModal() {
@@ -710,18 +685,10 @@ document.addEventListener('DOMContentLoaded', function() {
     addToCartBtn.addEventListener('click', function() {
         const quantity = parseInt(qtyInput.value);
         if (typeof addToCart === 'function') {
-            this.classList.add('loading');
-            const originalText = this.textContent;
-            this.textContent = 'Adding...';
             addToCart(currentItemId, quantity);
             setTimeout(() => {
-                this.textContent = 'Added!';
-                setTimeout(() => {
-                    this.textContent = originalText;
-                    this.classList.remove('loading');
-                    closeModal();
-                }, 1000);
-            }, 500);
+                closeModal();
+            }, 1000);
         }
     });
     
@@ -731,22 +698,15 @@ document.addEventListener('DOMContentLoaded', function() {
             closeModal();
         }
     });
-    
-    // Direct Add button functionality (without opening modal)
-    document.querySelectorAll('.btn-add-aesthetic').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            const itemId = this.dataset.itemId;
-            if (typeof addToCart === 'function') {
-                addToCart(itemId, 1);
-                const originalHTML = this.innerHTML;
-                this.innerHTML = '<i class="fas fa-check"></i>';
-                setTimeout(() => {
-                    this.innerHTML = originalHTML;
-                }, 1500);
-            }
-        });
-    });
+
+    // Store current item ID when modal is opened via menu-ajax.js
+    const originalOpenModal = window.openItemModal;
+    window.openItemModal = function(card) {
+        currentItemId = card.dataset.itemId;
+        if (originalOpenModal) {
+            originalOpenModal(card);
+        }
+    };
 });
 </script>
 <?php 

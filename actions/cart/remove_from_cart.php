@@ -1,17 +1,48 @@
 <?php
 session_start();
-require_once 'config/db.php';
+require_once dirname(__DIR__, 2) . '/config/db.php';
 
-$data = json_decode(file_get_contents('php://input'), true);
-$item_id = $data['item_id'];
+header('Content-Type: application/json');
 
-$query = "DELETE FROM cart WHERE user_id = ? AND menu_item_id = ?";
+if (!isset($_SESSION['user_id'])) {
+    echo json_encode(['success' => false, 'message' => 'Please login first']);
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+$cart_id = isset($_POST['cart_id']) ? (int)$_POST['cart_id'] : 0;
+
+if (!$cart_id) {
+    echo json_encode(['success' => false, 'message' => 'Invalid cart item']);
+    exit;
+}
+
+// Delete item from cart
+$query = "DELETE FROM cart WHERE id = ? AND user_id = ?";
 $stmt = mysqli_prepare($conn, $query);
-mysqli_stmt_bind_param($stmt, "ii", $_SESSION['user_id'], $item_id);
+mysqli_stmt_bind_param($stmt, "ii", $cart_id, $user_id);
 $success = mysqli_stmt_execute($stmt);
+mysqli_stmt_close($stmt);
 
-echo json_encode([
-    'success' => $success,
-    'message' => $success ? 'Item removed' : 'Failed to remove item'
-]);
+if ($success) {
+    // Get updated cart count
+    $count_query = "SELECT COUNT(*) as count FROM cart WHERE user_id = ?";
+    $stmt = mysqli_prepare($conn, $count_query);
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_execute($stmt);
+    $count_result = mysqli_stmt_get_result($stmt);
+    $count_row = mysqli_fetch_assoc($count_result);
+    mysqli_stmt_close($stmt);
+
+    echo json_encode([
+        'success' => true,
+        'message' => 'Item removed from cart',
+        'cartCount' => $count_row['count']
+    ]);
+} else {
+    echo json_encode([
+        'success' => false,
+        'message' => 'Failed to remove item from cart'
+    ]);
+}
 ?>

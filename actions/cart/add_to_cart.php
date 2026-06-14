@@ -11,10 +11,11 @@ if (!isset($_SESSION['user_id'])) {
 
 $data = json_decode(file_get_contents('php://input'), true);
 $item_id = isset($data['item_id']) ? (int)$data['item_id'] : 0;
+$quantity = isset($data['quantity']) ? max(1, (int)$data['quantity']) : 1;
 $user_id = $_SESSION['user_id'];
 
 // Verify if the menu item exists
-$check_item = "SELECT id, price FROM menu_items WHERE id = ?";
+$check_item = "SELECT id, name, price FROM menu_items WHERE id = ?";
 $stmt = mysqli_prepare($conn, $check_item);
 mysqli_stmt_bind_param($stmt, "i", $item_id);
 mysqli_stmt_execute($stmt);
@@ -30,16 +31,16 @@ if ($menu_item = mysqli_fetch_assoc($result)) {
 
     if ($cart_item = mysqli_fetch_assoc($cart_result)) {
         // Update quantity if item exists
-        $new_quantity = $cart_item['quantity'] + 1;
+        $new_quantity = $cart_item['quantity'] + $quantity;
         $update_query = "UPDATE cart SET quantity = ? WHERE id = ?";
         $stmt = mysqli_prepare($conn, $update_query);
         mysqli_stmt_bind_param($stmt, "ii", $new_quantity, $cart_item['id']);
         $success = mysqli_stmt_execute($stmt);
     } else {
         // Insert new item if it doesn't exist
-        $insert_query = "INSERT INTO cart (user_id, menu_item_id, quantity) VALUES (?, ?, 1)";
+        $insert_query = "INSERT INTO cart (user_id, menu_item_id, quantity) VALUES (?, ?, ?)";
         $stmt = mysqli_prepare($conn, $insert_query);
-        mysqli_stmt_bind_param($stmt, "ii", $user_id, $item_id);
+        mysqli_stmt_bind_param($stmt, "iii", $user_id, $item_id, $quantity);
         $success = mysqli_stmt_execute($stmt);
     }
 
@@ -55,6 +56,12 @@ if ($menu_item = mysqli_fetch_assoc($result)) {
         echo json_encode([
             'success' => true,
             'message' => 'Item added to cart successfully',
+            'item' => [
+                'id' => $menu_item['id'],
+                'name' => $menu_item['name'],
+                'price' => $menu_item['price'],
+                'quantity' => $quantity
+            ],
             'cartCount' => $count_row['count']
         ]);
     } else {

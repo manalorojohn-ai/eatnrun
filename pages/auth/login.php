@@ -53,14 +53,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Try database first
     $user = null;
     try {
-        $query = "SELECT * FROM users WHERE (LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)) AND status = 'active'";
-        $stmt = $conn->prepare($query);
-        $stmt->bind_param("ss", $email, $email);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $user = $result->fetch_assoc();
+        // Handle both PDO and MySQLi connections
+        if ($conn instanceof PDO) {
+            // PDO connection
+            $query = "SELECT * FROM users WHERE (LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)) AND status = 'active' LIMIT 1";
+            $stmt = $conn->prepare($query);
+            $stmt->execute([$email, $email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        } else {
+            // MySQLi connection
+            $query = "SELECT * FROM users WHERE (LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)) AND status = 'active' LIMIT 1";
+            $stmt = $conn->prepare($query);
+            $stmt->bind_param("ss", $email, $email);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $user = $result->fetch_assoc();
+        }
     } catch (Exception $e) {
         // Database error, continue with test users
+        error_log("Login database query error: " . $e->getMessage());
     }
     
     // If no database user found, check test users

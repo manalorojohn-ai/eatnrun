@@ -138,16 +138,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         error_log("Login: No user found for email/username: " . $email);
     }
-            $password_valid = (trim($password) === trim($user['password_plain']));
-            error_log("Test user password check: " . ($password_valid ? "VALID" : "INVALID"));
-        } else {
-            // Database user with hashed password
-            $password_valid = (trim($password) === trim($user['password']) || password_verify(trim($password), $user['password']));
-            error_log("Database user password check: " . ($password_valid ? "VALID" : "INVALID"));
-        }
-    } else {
-        error_log("No user found for: " . $email);
-    }
     
     if ($user && $password_valid) {
         error_log("Login: SUCCESS - User authenticated: " . $user['email']);

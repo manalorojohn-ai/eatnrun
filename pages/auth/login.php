@@ -52,26 +52,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Try database first
     $user = null;
+    $db_error = null;
     try {
         // Handle both PDO and MySQLi connections
         if ($conn instanceof PDO) {
             // PDO connection
+            error_log("Login: Using PDO connection");
             $query = "SELECT * FROM users WHERE (LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)) AND status = 'active' LIMIT 1";
             $stmt = $conn->prepare($query);
-            $stmt->execute([$email, $email]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$stmt) {
+                $db_error = "Failed to prepare PDO statement";
+                error_log("Login PDO prepare error: " . $db_error);
+            } else {
+                $execute_result = $stmt->execute([$email, $email]);
+                if (!$execute_result) {
+                    $db_error = "Failed to execute PDO statement";
+                    error_log("Login PDO execute error: " . $db_error);
+                } else {
+                    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+                    error_log("Login: PDO query returned user: " . ($user ? "Yes" : "No"));
+                }
+            }
         } else {
             // MySQLi connection
+            error_log("Login: Using MySQLi connection");
             $query = "SELECT * FROM users WHERE (LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)) AND status = 'active' LIMIT 1";
             $stmt = $conn->prepare($query);
-            $stmt->bind_param("ss", $email, $email);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $user = $result->fetch_assoc();
+            if (!$stmt) {
+                $db_error = "Failed to prepare MySQLi statement";
+                error_log("Login MySQLi prepare error: " . $db_error);
+            } else {
+                $stmt->bind_param("ss", $email, $email);
+                $execute_result = $stmt->execute();
+                if (!$execute_result) {
+                    $db_error = "Failed to execute MySQLi statement";
+                    error_log("Login MySQLi execute error: " . $db_error);
+                } else {
+                    $result = $stmt->get_result();
+                    $user = $result->fetch_assoc();
+                    error_log("Login: MySQLi query returned user: " . ($user ? "Yes" : "No"));
+                }
+            }
         }
     } catch (Exception $e) {
         // Database error, continue with test users
-        error_log("Login database query error: " . $e->getMessage());
+        $db_error = $e->getMessage();
+        error_log("Login database exception: " . $db_error);
     }
     
     // If no database user found, check test users
@@ -84,21 +110,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // Debug logging
+    error_log("Login attempt - Email: " . $email . ", Found user: " . ($user ? "YES" : "NO"));
+    
     // Verify password (supports both plain text for migration/dev and hashes for security)
     $password_valid = false;
     if ($user) {
+        error_log("Login: User found - " . $user['email'] . ", ID: " . $user['id']);
+        
         if (isset($user['password_plain'])) {
             // Test user with plain password
+            error_log("Login: Using plain text password (test user)");
             $password_valid = (trim($password) === trim($user['password_plain']));
+            error_log("Login: Plain password match: " . ($password_valid ? "YES" : "NO"));
+        } else {
+            // Database user with hashed password
+            error_log("Login: Checking hashed password from database");
+            $plain_match = (trim($password) === trim($user['password']));
+            $hash_match = password_verify(trim($password), $user['password']);
+            
+            error_log("Login: Plain text match: " . ($plain_match ? "YES" : "NO"));
+            error_log("Login: Bcrypt hash verify: " . ($hash_match ? "YES" : "NO"));
+            
+            $password_valid = $plain_match || $hash_match;
+            error_log("Login: Final password valid: " . ($password_valid ? "YES" : "NO"));
+        }
+    } else {
+        error_log("Login: No user found for email/username: " . $email);
+    }
+            $password_valid = (trim($password) === trim($user['password_plain']));
+            error_log("Test user password check: " . ($password_valid ? "VALID" : "INVALID"));
         } else {
             // Database user with hashed password
             $password_valid = (trim($password) === trim($user['password']) || password_verify(trim($password), $user['password']));
+            error_log("Database user password check: " . ($password_valid ? "VALID" : "INVALID"));
         }
+    } else {
+        error_log("No user found for: " . $email);
     }
     
     if ($user && $password_valid) {
+        error_log("Login: SUCCESS - User authenticated: " . $user['email']);
+        
         // Admin users
         if ($user['role'] === 'admin') {
+            error_log("Login: Admin login - redirecting to admin/dashboard");
             // Login successful for admin
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
@@ -111,8 +167,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Regular customer verification checks
         if (!isset($user['is_verified']) || !$user['is_verified']) {
+            error_log("Login: User not verified - " . $user['email']);
             $error_message = "Please verify your email address first. Check your inbox for the verification code.";
         } else {
+            error_log("Login: User verified - redirecting to dashboard - " . $user['email']);
             // Login successful for regular user
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'] ?? 'user';
@@ -123,6 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
     } else {
+        error_log("Login: FAILED - Invalid credentials for: " . $email);
         // Login failed
         $error_message = "Invalid email or password.";
     }

@@ -1,8 +1,11 @@
 <?php
+// Session is already started by includes/config.php
+// Only start if not started elsewhere (for direct includes outside of config.php)
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Ensure database connection
 require_once dirname(__DIR__, 2) . '/config/database/db.php';
 
 // Get current page for active link highlighting
@@ -137,31 +140,43 @@ if ($is_logged_in && !$is_admin && $conn) {
                     <li class="nav-item dropdown notification-bell-wrapper">
                         <!-- Desktop Bell -->
                         <div class="desktop-only">
-                            <button class="notification-btn" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <button class="notification-btn" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
                                 <i class="fas fa-bell"></i>
                                 <?php if($unread_count > 0): ?>
                                     <span class="notification-counter"><?php echo $unread_count; ?></span>
                                 <?php endif; ?>
                             </button>
-                            <div class="dropdown-menu dropdown-menu-end notif-box animate__animated animate__fadeIn" id="notificationDropdown" aria-labelledby="notifDropdown">
+                            <div class="dropdown-menu dropdown-menu-end notif-box" id="notificationDropdown" aria-labelledby="notifDropdown">
                                 <div class="notif-header">
-                                    <span>Notifications</span>
+                                    <span><i class="fas fa-bell"></i> Notifications</span>
                                     <?php if($unread_count > 0): ?>
                                         <button onclick="markAllAsRead()" class="mark-all">Mark all as read</button>
                                     <?php endif; ?>
                                 </div>
                                 <div class="notif-scroll">
                                     <?php if(empty($notifications)): ?>
-                                        <div class="notif-empty">No new notifications</div>
+                                        <div class="notif-empty">
+                                            No new notifications yet
+                                        </div>
                                     <?php else: ?>
                                         <?php foreach($notifications as $notif): ?>
-                                            <a href="<?php echo $notif['link'] ?: '#'; ?>" class="notif-item <?php echo $notif['is_read'] ? '' : 'unread'; ?>">
+                                            <a href="<?php echo $notif['link'] ?: '#'; ?>" class="notif-item <?php echo $notif['is_read'] ? '' : 'unread'; ?>" data-type="<?php echo $notif['type'] ?? 'system'; ?>">
                                                 <div class="notif-icon">
-                                                    <i class="fas <?php echo $notif['type'] == 'order' ? 'fa-shopping-bag' : 'fa-info-circle'; ?>"></i>
+                                                    <i class="fas <?php 
+                                                        if($notif['type'] == 'order') {
+                                                            echo 'fa-shopping-bag';
+                                                        } elseif($notif['type'] == 'payment') {
+                                                            echo 'fa-credit-card';
+                                                        } elseif($notif['type'] == 'delivery') {
+                                                            echo 'fa-truck';
+                                                        } else {
+                                                            echo 'fa-bell';
+                                                        }
+                                                    ?>"></i>
                                                 </div>
                                                 <div class="notif-content">
                                                     <span class="block"><?php echo htmlspecialchars($notif['message']); ?></span>
-                                                    <span class="time"><?php echo date('M d, g:i a', strtotime($notif['created_at'])); ?></span>
+                                                    <span class="time"><i class="fas fa-clock"></i> <?php echo date('M d, g:i a', strtotime($notif['created_at'])); ?></span>
                                                 </div>
                                             </a>
                                         <?php endforeach; ?>

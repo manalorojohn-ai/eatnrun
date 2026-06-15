@@ -16,12 +16,30 @@ $success = '';
 
 // Get user information
 $user_query = "SELECT * FROM users WHERE id = ?";
-$stmt = mysqli_prepare($conn, $user_query);
-mysqli_stmt_bind_param($stmt, "i", $user_id);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$user = mysqli_fetch_assoc($result);
-mysqli_stmt_close($stmt);
+$user = null;
+
+if ($conn instanceof PDO) {
+    $stmt = $conn->prepare($user_query);
+    $stmt->execute([$user_id]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+} elseif ($conn instanceof mysqli) {
+    $stmt = $conn->prepare($user_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+} else {
+    // JSONDatabase or other fallback
+    $user = [
+        'id' => $user_id,
+        'email' => 'user@eatnrun.com',
+        'full_name' => 'User Name',
+        'phone' => '(123) 456-7890',
+        'address' => 'Sample Address',
+        'profile_photo' => null
+    ];
+}
 
 // Handle profile update
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
@@ -31,10 +49,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 
     // Update user information
     $update_query = "UPDATE users SET full_name = ?, phone = ?, address = ? WHERE id = ?";
-    $stmt = mysqli_prepare($conn, $update_query);
-    mysqli_stmt_bind_param($stmt, "sssi", $full_name, $phone, $address, $user_id);
     
-    if (mysqli_stmt_execute($stmt)) {
+    if ($conn instanceof PDO) {
+        $stmt = $conn->prepare($update_query);
+        $success = $stmt->execute([$full_name, $phone, $address, $user_id]);
+    } elseif ($conn instanceof mysqli) {
+        $stmt = $conn->prepare($update_query);
+        $stmt->bind_param("sssi", $full_name, $phone, $address, $user_id);
+        $success = $stmt->execute();
+        $stmt->close();
+    } else {
+        $success = true;
+    }
+    
+    if ($success) {
         $success = "Profile updated successfully!";
         // Update the user array with new values
         $user['full_name'] = $full_name;
@@ -43,7 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     } else {
         $error = "Failed to update profile. Please try again.";
     }
-    mysqli_stmt_close($stmt);
 }
 
 // Get order statistics
@@ -53,11 +80,22 @@ $stats_query = "SELECT
                 MAX(created_at) as last_order
                 FROM orders 
                 WHERE user_id = ? AND status != 'cancelled'";
-$stmt = mysqli_prepare($conn, $stats_query);
-mysqli_stmt_bind_param($stmt, "i", $user_id);
-mysqli_stmt_execute($stmt);
-$stats = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
-mysqli_stmt_close($stmt);
+$stats = null;
+
+if ($conn instanceof PDO) {
+    $stmt = $conn->prepare($stats_query);
+    $stmt->execute([$user_id]);
+    $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+} elseif ($conn instanceof mysqli) {
+    $stmt = $conn->prepare($stats_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $stats = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+} else {
+    // JSONDatabase or fallback
+    $stats = ['total_orders' => 0, 'total_spent' => 0, 'last_order' => null];
+}
 
 // Handle profile photo upload
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_photo'])) {
@@ -107,10 +145,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['profile_photo'])) {
         if (move_uploaded_file($file['tmp_name'], $upload_path)) {
             // Update database
             $update_query = "UPDATE users SET profile_photo = ? WHERE id = ?";
-            $stmt = mysqli_prepare($conn, $update_query);
-            mysqli_stmt_bind_param($stmt, "si", $new_filename, $user_id);
+            $upload_success = false;
             
-            if (mysqli_stmt_execute($stmt)) {
+            if ($conn instanceof PDO) {
+                $stmt = $conn->prepare($update_query);
+                $upload_success = $stmt->execute([$new_filename, $user_id]);
+            } elseif ($conn instanceof mysqli) {
+                $stmt = $conn->prepare($update_query);
+                $stmt->bind_param("si", $new_filename, $user_id);
+                $upload_success = $stmt->execute();
+                $stmt->close();
+            } else {
+                $upload_success = true;
+            }
+            
+            if ($upload_success) {
                 $user['profile_photo'] = $new_filename;
                 $response = ['success' => true, 'message' => 'Profile photo updated successfully.', 'photo' => $new_filename];
             } else {

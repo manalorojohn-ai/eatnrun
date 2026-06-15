@@ -12,6 +12,23 @@
  * - Error handling and 404 responses
  */
 
+// Initialize session before anything else
+if (session_status() === PHP_SESSION_NONE) {
+    // Set session parameters before starting
+    ini_set('session.gc_maxlifetime', 604800);
+    ini_set('session.cookie_lifetime', 604800);
+    session_set_cookie_params([
+        'lifetime' => 604800,
+        'path' => '/',
+        'domain' => '',
+        'secure' => false,
+        'httponly' => true,
+        'samesite' => 'Lax'
+    ]);
+    session_name('EATNRUN_SESSION');
+    session_start();
+}
+
 // Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1); // Display errors for debugging

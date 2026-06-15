@@ -20,17 +20,31 @@ $cart_query = "SELECT c.id as cart_id, c.quantity, c.menu_item_id, m.name, m.pri
                FROM cart c 
                JOIN menu_items m ON c.menu_item_id = m.id 
                WHERE c.user_id = ?";
+$cart_items = [];
+$total = 0;
 
-$stmt = mysqli_prepare($conn, $cart_query);
-mysqli_stmt_bind_param($stmt, "i", $user_id);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
+if ($conn instanceof PDO) {
+    $stmt = $conn->prepare($cart_query);
+    $stmt->execute([$user_id]);
+    $cart_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} elseif ($conn instanceof mysqli) {
+    $stmt = $conn->prepare($cart_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($item = $result->fetch_assoc()) {
+        $cart_items[] = $item;
+    }
+    $stmt->close();
+} else {
+    // JSONDatabase or fallback - empty cart
+    $cart_items = [];
+}
 
-while ($item = mysqli_fetch_assoc($result)) {
-    $cart_items[] = $item;
+// Calculate total
+foreach ($cart_items as $item) {
     $total += $item['subtotal'];
 }
-mysqli_stmt_close($stmt);
 
 // Handle quantity updates
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -38,17 +52,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $cart_id = $_POST['cart_id'];
         $quantity = max(1, intval($_POST['quantity'])); // Ensure quantity is at least 1
 
-        $stmt = mysqli_prepare($conn, "UPDATE cart SET quantity = ? WHERE id = ? AND user_id = ?");
-        mysqli_stmt_bind_param($stmt, "iii", $quantity, $cart_id, $_SESSION['user_id']);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
+        $update_query = "UPDATE cart SET quantity = ? WHERE id = ? AND user_id = ?";
+        
+        if ($conn instanceof PDO) {
+            $stmt = $conn->prepare($update_query);
+            $stmt->execute([$quantity, $cart_id, $_SESSION['user_id']]);
+        } elseif ($conn instanceof mysqli) {
+            $stmt = $conn->prepare($update_query);
+            $stmt->bind_param("iii", $quantity, $cart_id, $_SESSION['user_id']);
+            $stmt->execute();
+            $stmt->close();
+        }
     } elseif (isset($_POST['remove_item'])) {
         $cart_id = $_POST['cart_id'];
 
-        $stmt = mysqli_prepare($conn, "DELETE FROM cart WHERE id = ? AND user_id = ?");
-        mysqli_stmt_bind_param($stmt, "ii", $cart_id, $_SESSION['user_id']);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
+        $delete_query = "DELETE FROM cart WHERE id = ? AND user_id = ?";
+        
+        if ($conn instanceof PDO) {
+            $stmt = $conn->prepare($delete_query);
+            $stmt->execute([$cart_id, $_SESSION['user_id']]);
+        } elseif ($conn instanceof mysqli) {
+            $stmt = $conn->prepare($delete_query);
+            $stmt->bind_param("ii", $cart_id, $_SESSION['user_id']);
+            $stmt->execute();
+            $stmt->close();
+        }
     }
 
     // Redirect to prevent form resubmission

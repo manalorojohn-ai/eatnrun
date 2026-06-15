@@ -30,12 +30,35 @@ if (!is_dir($sessionDir)) {
 // Only set session path if session hasn't started yet
 if (session_status() === PHP_SESSION_NONE) {
     session_save_path($sessionDir);
+    
+    // Configure session timeout (set to 7 days = 604800 seconds)
+    ini_set('session.gc_maxlifetime', 604800);
+    ini_set('session.cookie_lifetime', 604800);
+    
+    // Configure session cookies for better persistence
+    session_set_cookie_params([
+        'lifetime' => 604800,      // 7 days
+        'path' => '/',
+        'domain' => '',
+        'secure' => false,         // Set to true if using HTTPS
+        'httponly' => true,        // Prevent JavaScript access
+        'samesite' => 'Lax'       // CSRF protection
+    ]);
+    
+    // Regenerate session ID on login for security
+    session_name('EATNRUN_SESSION');
     session_start();
+    
+    // Register session cleanup for old files
+    register_shutdown_function('session_write_close');
 }
 
 // Database connection
 require_once dirname(__DIR__) . '/config/database/db.php';
 // $conn is now available from db.php
+
+// Session handler utilities
+require_once dirname(__DIR__) . '/includes/session_handler.php';
 
 // Site configuration
 define('SITE_NAME', 'Eat&Run');

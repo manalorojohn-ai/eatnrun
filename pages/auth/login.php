@@ -163,10 +163,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Admin users
         if ($user['role'] === 'admin') {
             error_log("Admin user detected, setting session and redirecting to /admin/dashboard");
+            // Regenerate session ID for security
+            session_regenerate_id(true);
+            
             // Login successful for admin
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['full_name'] = $user['full_name'];
+            $_SESSION['login_time'] = time();
+            $_SESSION['last_activity'] = time();
             
             error_log("Session set - user_id: " . $_SESSION['user_id'] . ", role: " . $_SESSION['role']);
             error_log("About to redirect to /admin/dashboard");
@@ -182,10 +187,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error_message = "Please verify your email address first. Check your inbox for the verification code.";
         } else {
             error_log("Regular user verified, setting session and redirecting to /dashboard");
+            // Regenerate session ID for security
+            session_regenerate_id(true);
+            
             // Login successful for regular user
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'] ?? 'user';
             $_SESSION['full_name'] = $user['full_name'];
+            $_SESSION['login_time'] = time();
+            $_SESSION['last_activity'] = time();
             
             error_log("Session set - user_id: " . $_SESSION['user_id'] . ", role: " . $_SESSION['role']);
             error_log("About to redirect to /dashboard");

@@ -1,4 +1,6 @@
 <?php
+// Session is already started by includes/config.php
+// Only start if not started elsewhere (for direct includes)
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }

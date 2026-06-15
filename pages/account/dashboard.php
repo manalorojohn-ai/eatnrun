@@ -6,30 +6,77 @@ require_once "config/db.php";
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login");
+    header("Location: /login");
     exit();
 }
 
 // Get user information
-$user_id = mysqli_real_escape_string($conn, $_SESSION['user_id']);
-$query = "SELECT * FROM users WHERE id = '$user_id'";
-$result = mysqli_query($conn, $query);
-$user = mysqli_fetch_assoc($result);
+$user_id = $_SESSION['user_id'];
+$user = null;
+
+try {
+    if ($conn instanceof PDO) {
+        // PDO connection
+        $query = "SELECT * FROM users WHERE id = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->execute([$user_id]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    } elseif ($conn instanceof mysqli) {
+        // MySQLi connection
+        $query = "SELECT * FROM users WHERE id = ?";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+    } else {
+        // Fallback/JSONDatabase - use test user from session
+        $user = [
+            'id' => $_SESSION['user_id'],
+            'username' => $_SESSION['username'] ?? (explode('@', $_SESSION['email'] ?? 'user')[0]),
+            'full_name' => $_SESSION['full_name'] ?? 'User',
+            'email' => $_SESSION['email'] ?? 'test@example.com',
+            'phone' => $_SESSION['phone'] ?? 'N/A',
+            'address' => $_SESSION['address'] ?? 'N/A',
+        ];
+    }
+} catch (Exception $e) {
+    error_log("Dashboard - Error fetching user: " . $e->getMessage());
+    $user = null;
+}
 
 if (!$user) {
     session_destroy();
-    header("Location: login");
+    header("Location: /login");
     exit();
 }
 
 // Get recent orders
-$query = "SELECT * FROM orders WHERE user_id = '$user_id' ORDER BY created_at DESC LIMIT 5";
-$recent_orders_result = mysqli_query($conn, $query);
 $recent_orders = [];
-if ($recent_orders_result) {
-    while ($row = mysqli_fetch_assoc($recent_orders_result)) {
-        $recent_orders[] = $row;
+try {
+    if ($conn instanceof PDO) {
+        // PDO connection
+        $query = "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT 5";
+        $stmt = $conn->prepare($query);
+        $stmt->execute([$user_id]);
+        $recent_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } elseif ($conn instanceof mysqli) {
+        // MySQLi connection
+        $query = "SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT 5";
+        $stmt = $conn->prepare($query);
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while ($row = $result->fetch_assoc()) {
+            $recent_orders[] = $row;
+        }
+    } else {
+        // Fallback - no orders
+        $recent_orders = [];
     }
+} catch (Exception $e) {
+    error_log("Dashboard - Error fetching orders: " . $e->getMessage());
+    $recent_orders = [];
 }
 ?>
 
@@ -270,7 +317,7 @@ include 'includes/ui/header.php';
         <div class="dashboard-container">
             <div class="dashboard-header">
                 <div class="welcome-text">
-                    <h1>Welcome back, <?php echo htmlspecialchars($user['username']); ?>!</h1>
+                    <h1>Welcome back, <?php echo htmlspecialchars($user['username'] ?? $user['full_name'] ?? 'User'); ?>!</h1>
                     <p>Manage your orders and account settings</p>
                 </div>
                 <div class="dashboard-actions">

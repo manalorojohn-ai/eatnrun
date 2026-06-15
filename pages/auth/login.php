@@ -1,20 +1,35 @@
 <?php
 session_start();
 
+error_log("========== LOGIN PAGE DEBUG ==========");
+error_log("Login page loaded!");
+error_log("Session ID: " . session_id());
+error_log("Is logged in: " . (isset($_SESSION['user_id']) ? "YES (ID: " . $_SESSION['user_id'] . ")" : "NO"));
+error_log("Request method: " . $_SERVER['REQUEST_METHOD']);
+error_log("======================================");
+
 // Redirect if already logged in
 if (isset($_SESSION['user_id'])) {
-    header("Location: index");
+    error_log("User already logged in, redirecting to /index");
+    header("Location: /index");
     exit();
 }
 
 require_once 'config/db.php';
 
+error_log("POST request to login - Email: " . ($_POST['email'] ?? 'NOT PROVIDED'));
+error_log("Database connection available: " . ($conn ? "YES" : "NO"));
+
 $error_message = '';
 $success_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    error_log("Processing login form submission...");
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
+    
+    error_log("Email received: " . $email);
+    error_log("Password received: " . (strlen($password) > 0 ? "YES (length: " . strlen($password) . ")" : "NO"));
     
     // Hardcoded test users for development/testing (when database is unavailable)
     $test_users = [
@@ -147,14 +162,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Admin users
         if ($user['role'] === 'admin') {
-            error_log("Login: Admin login - redirecting to admin/dashboard");
+            error_log("Admin user detected, setting session and redirecting to /admin/dashboard");
             // Login successful for admin
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'];
             $_SESSION['full_name'] = $user['full_name'];
             
+            error_log("Session set - user_id: " . $_SESSION['user_id'] . ", role: " . $_SESSION['role']);
+            error_log("About to redirect to /admin/dashboard");
+            
             // Redirect admin to dashboard
-            header("Location: admin/dashboard");
+            header("Location: /admin/dashboard");
             exit();
         }
         
@@ -163,14 +181,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             error_log("Login: User not verified - " . $user['email']);
             $error_message = "Please verify your email address first. Check your inbox for the verification code.";
         } else {
-            error_log("Login: User verified - redirecting to dashboard - " . $user['email']);
+            error_log("Regular user verified, setting session and redirecting to /dashboard");
             // Login successful for regular user
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['role'] = $user['role'] ?? 'user';
             $_SESSION['full_name'] = $user['full_name'];
             
-            // Redirect customer to dashboard
-            header("Location: dashboard.php");
+            error_log("Session set - user_id: " . $_SESSION['user_id'] . ", role: " . $_SESSION['role']);
+            error_log("About to redirect to /dashboard");
+            
+            // Redirect customer to dashboard route (absolute path)
+            header("Location: /dashboard");
             exit();
         }
     } else {
@@ -497,7 +518,7 @@ include 'includes/ui/navbar.php';
                     </div>
                 <?php endif; ?>
                 
-                <form action="login" method="POST">
+                <form action="" method="POST">
                     <div class="form-group">
                         <label for="email">Email</label>
                         <input type="email" id="email" name="email" required>

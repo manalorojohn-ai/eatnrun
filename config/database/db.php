@@ -16,8 +16,8 @@ $using_json = false;
 $is_render = (bool)getenv('RENDER');
 $conn = null;
 
-// Try PostgreSQL first if available
-if (extension_loaded('pdo_pgsql') || $is_render || (getenv('DB_HOST') && strpos(getenv('DB_HOST'), 'neon') !== false)) {
+// Try PostgreSQL first ONLY if the extension is actually loaded
+if (extension_loaded('pdo_pgsql')) {
     try {
         // For Neon: extract endpoint ID and add it to connection options
         $host = DB_HOST;
@@ -50,38 +50,83 @@ if (extension_loaded('pdo_pgsql') || $is_render || (getenv('DB_HOST') && strpos(
         error_log("PostgreSQL connection failed: " . $e->getMessage());
         $conn = null;
     }
+} else {
+    error_log("PostgreSQL PDO extension not loaded, skipping PostgreSQL connection attempt");
 }
 
 // Try MySQL with PDO if PostgreSQL failed
 if (!$using_postgres && !isset($conn) && extension_loaded('pdo_mysql')) {
     try {
-        $dsn = "mysql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";charset=utf8mb4";
-        $conn = new PDO($dsn, DB_USER, DB_PASS, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_TIMEOUT => 5
-        ]);
-        $using_mysql = true;
+        // Use standard MySQL port (3306) for MySQL fallback, regardless of config
+        $mysql_port = (DB_PORT == 5432) ? 3306 : DB_PORT;  // Don't use PostgreSQL port for MySQL
+        
+        // Check if host looks like a remote server
+        $is_local_mysql = in_array(DB_HOST, ['localhost', '127.0.0.1', '::1']);
+        
+        if (!$is_local_mysql) {
+            // For remote hosts, skip if port suggests PostgreSQL
+            if (DB_PORT == 5432) {
+                error_log("Skipping MySQL for PostgreSQL-like remote configuration");
+                $conn = null;
+            } else {
+                // Try with very short timeout for remote MySQL
+                $old_max_exec = ini_get('max_execution_time');
+                ini_set('max_execution_time', 3);
+                
+                $dsn = "mysql:host=" . DB_HOST . ";port=" . $mysql_port . ";dbname=" . DB_NAME . ";charset=utf8mb4;connect_timeout=2";
+                $conn = new PDO($dsn, DB_USER, DB_PASS, [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+                ]);
+                $using_mysql = true;
+                
+                ini_set('max_execution_time', $old_max_exec);
+                error_log("MySQL PDO connection successful!");
+            }
+        } else {
+            // Local MySQL can have a slightly longer timeout
+            $dsn = "mysql:host=" . DB_HOST . ";port=" . $mysql_port . ";dbname=" . DB_NAME . ";charset=utf8mb4;connect_timeout=3";
+            $conn = new PDO($dsn, DB_USER, DB_PASS, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+            ]);
+            $using_mysql = true;
+            error_log("MySQL PDO connection successful!");
+        }
     } catch (PDOException $e) {
         error_log("MySQL PDO connection failed: " . $e->getMessage());
         $conn = null;
     }
 }
 
-// Try MySQLi if PDO MySQL failed
-if (!$using_postgres && !$using_mysql && !isset($conn) && extension_loaded('mysqli')) {
+// Try MySQLi if PDO MySQL failed (but skip for remote hosts to avoid long timeouts)
+$is_localhost = in_array(DB_HOST, ['localhost', '127.0.0.1', '::1']);
+if (!$using_postgres && !$using_mysql && !isset($conn) && extension_loaded('mysqli') && $is_localhost) {
     try {
-        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, DB_PORT);
+        // Use standard MySQL port (3306) for MySQL fallback, regardless of config
+        $mysql_port = (DB_PORT == 5432) ? 3306 : DB_PORT;
+        
+        // Set a short timeout using ini_set for the connection attempt
+        $old_timeout = ini_get('default_socket_timeout');
+        ini_set('default_socket_timeout', 3);  // 3 second timeout
+        
+        $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME, $mysql_port);
+        
+        ini_set('default_socket_timeout', $old_timeout);  // Restore timeout
+        
         if ($conn->connect_error) {
             error_log("MySQLi connection failed: " . $conn->connect_error);
             $conn = null;
         } else {
             $conn->set_charset("utf8mb4");
             $using_mysql = true;
+            error_log("MySQLi connection successful!");
         }
     } catch (Exception $e) {
+        ini_set('default_socket_timeout', $old_timeout);  // Restore timeout
         error_log("MySQLi connection error: " . $e->getMessage());
         $conn = null;
     }
+} else if (!$using_postgres && !$using_mysql && !isset($conn) && extension_loaded('mysqli')) {
+    error_log("Skipping MySQLi for remote host '" . DB_HOST . "' to avoid long timeout");
 }
 
 // Fallback to JSON file storage for development/testing

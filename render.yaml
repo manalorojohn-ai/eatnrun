@@ -1,0 +1,78 @@
+services:
+  - type: web
+    name: eatnrun
+    runtime: php
+    plan: free
+    
+    # Build configuration
+    buildCommand: |
+      composer install --no-interaction --prefer-dist --optimize-autoloader
+      mkdir -p tmp/sessions
+      chmod -R 755 tmp/sessions
+    
+    # Start command
+    startCommand: "apache2-foreground"
+    
+    # Environment variables
+    envVars:
+      - key: DB_HOST
+        scope: build,runtime
+        value: ${DATABASE_HOST}
+      
+      - key: DB_USER
+        scope: build,runtime
+        value: ${DATABASE_USER}
+      
+      - key: DB_PASS
+        scope: build,runtime
+        value: ${DATABASE_PASSWORD}
+      
+      - key: DB_NAME
+        scope: build,runtime
+        value: ${DATABASE_NAME}
+      
+      - key: DB_PORT
+        scope: build,runtime
+        value: 5432
+      
+      - key: RENDER
+        scope: build,runtime
+        value: 1
+      
+      - key: APP_ENV
+        scope: build,runtime
+        value: production
+      
+      - key: APP_DEBUG
+        scope: build,runtime
+        value: 0
+      
+      - key: MAIL_USERNAME
+        scope: build,runtime
+        value: eatnrun70@gmail.com
+      
+      - key: MAIL_PASSWORD
+        scope: build,runtime
+        value: ${GMAIL_APP_PASSWORD}
+      
+      - key: SITE_URL
+        scope: build,runtime
+        value: ${RENDER_EXTERNAL_URL}
+    
+    # Health check
+    healthCheckPath: /
+    
+    # Root directory
+    rootDir: .
+    
+    # Disk configuration
+    disk:
+      name: eatnrun-storage
+      mountPath: /var/www/html/uploads
+      sizeGB: 1
+    
+    # Region
+    region: oregon
+    
+    # Auto-deploy
+    autoDeploy: true

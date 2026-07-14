@@ -111,167 +111,99 @@ if ($is_logged_in && !$is_admin && $conn) {
 
 <nav class="navbar">
     <div class="nav-container">
-        <!-- Brand/Logo -->
         <a href="/index" class="navbar-brand">
             <img src="assets/images/logo.png" alt="Logo" class="logo">
-            <span class="desktop-only">Eat&Run</span>
+            <span>Eat&Run</span>
         </a>
 
-        <!-- DESKTOP NAVIGATION -->
-        <div class="nav-menu desktop-nav">
-            <ul class="nav-links-container desktop-only">
-                <?php if(!$is_admin): ?>
-                    <li><a href="/index" class="nav-link <?php echo $current_page === 'index' ? 'active' : ''; ?>">Home</a></li>
-                    <li><a href="/menu" class="nav-link <?php echo $current_page === 'menu' ? 'active' : ''; ?>">Menu</a></li>
-                    <li><a href="/about" class="nav-link <?php echo $current_page === 'about' ? 'active' : ''; ?>">About</a></li>
-                <?php else: ?>
-                    <li><a href="/admin/dashboard" class="nav-link <?php echo strpos($current_page, 'admin') !== false ? 'active' : ''; ?>">Dashboard</a></li>
-                <?php endif; ?>
-            </ul>
-        </div>
-
-        <!-- DESKTOP RIGHT SECTION (Icons + User) -->
-        <div class="nav-right desktop-only">
-            <?php if($is_logged_in): ?>
-                <?php if(!$is_admin): ?>
-                    <!-- Desktop Cart Icon -->
-                    <a href="/cart" class="nav-icon-link cart-icon" title="Shopping Cart">
-                        <i class="fas fa-shopping-cart"></i>
-                        <?php if($cartCount > 0): ?>
-                            <span class="cart-badge"><?php echo $cartCount; ?></span>
-                        <?php endif; ?>
-                    </a>
-                    
-                    <!-- Desktop Notifications Dropdown -->
-                    <div class="dropdown-wrapper">
-                        <button class="nav-icon-link notification-icon" id="notifDropdown" title="Notifications">
-                            <i class="fas fa-bell"></i>
-                            <?php if($unread_count > 0): ?>
-                                <span class="notification-badge"><?php echo $unread_count; ?></span>
-                            <?php endif; ?>
-                        </button>
-                        <div class="dropdown-menu notif-box" id="notificationDropdown">
-                            <div class="notif-header">
-                                <span><i class="fas fa-bell"></i> Notifications</span>
-                                <?php if($unread_count > 0): ?>
-                                    <button onclick="markAllAsRead()" class="mark-all">Mark all as read</button>
-                                <?php endif; ?>
-                            </div>
-                            <div class="notif-scroll">
-                                <?php if(empty($notifications)): ?>
-                                    <div class="notif-empty">No new notifications</div>
-                                <?php else: ?>
-                                    <?php foreach($notifications as $notif): ?>
-                                        <a href="<?php echo $notif['link'] ?: '#'; ?>" class="notif-item <?php echo !$notif['is_read'] ? 'unread' : ''; ?>">
-                                            <div class="notif-icon">
-                                                <i class="fas <?php 
-                                                    echo ($notif['type'] == 'order') ? 'fa-shopping-bag' : 
-                                                         (($notif['type'] == 'payment') ? 'fa-credit-card' : 
-                                                         (($notif['type'] == 'delivery') ? 'fa-truck' : 'fa-bell'));
-                                                ?>"></i>
-                                            </div>
-                                            <div class="notif-content">
-                                                <span class="notif-msg"><?php echo htmlspecialchars($notif['message']); ?></span>
-                                                <span class="notif-time"><i class="fas fa-clock"></i> <?php echo date('M d, g:i a', strtotime($notif['created_at'])); ?></span>
-                                            </div>
-                                        </a>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </div>
-                            <a href="/notifications" class="see-all">See All Notifications</a>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-                <!-- Desktop User Menu -->
-                <div class="dropdown-wrapper user-menu-wrapper">
-                    <button class="nav-icon-link user-icon" id="userDropdown" title="User Menu">
-                        <i class="fas fa-user-circle"></i>
-                    </button>
-                    <div class="dropdown-menu user-menu" id="userMenuDropdown">
-                        <a href="/profile" class="dropdown-item"><i class="fas fa-user"></i> Profile</a>
-                        <?php if(!$is_admin): ?>
-                            <a href="/orders" class="dropdown-item"><i class="fas fa-history"></i> My Orders</a>
-                        <?php endif; ?>
-                        <a href="/logout" class="dropdown-item logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
-                    </div>
-                </div>
-            <?php else: ?>
-                <!-- Desktop Login/Register -->
-                <a href="/login" class="nav-btn btn-login">Login</a>
-                <a href="/register" class="nav-btn btn-register">Register</a>
-            <?php endif; ?>
-        </div>
-
-        <!-- MOBILE MENU TOGGLE BUTTON -->
-        <button class="burger-trigger mobile-only" id="mobileMenuToggle" aria-label="Toggle menu">
+        <button class="burger-trigger" id="mobileMenuToggle">
             <span class="hamburger-line"></span>
             <span class="hamburger-line"></span>
             <span class="hamburger-line"></span>
         </button>
 
-        <!-- MOBILE NAVIGATION MENU -->
-        <div class="mobile-nav mobile-only" id="mobileMenu">
-            <div class="mobile-nav-header">
-                <span>Menu</span>
-                <button class="close-btn" id="closeMobileMenu" aria-label="Close menu">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-
-            <ul class="mobile-nav-links">
+        <div class="nav-menu" id="navMenu">
+            <ul class="nav-links-container" id="navbar-menu">
                 <?php if(!$is_admin): ?>
-                    <li><a href="/index" class="mobile-nav-link">
-                        <i class="fas fa-home"></i>
-                        <span>Home</span>
-                    </a></li>
-                    <li><a href="/menu" class="mobile-nav-link">
-                        <i class="fas fa-utensils"></i>
-                        <span>Menu</span>
-                    </a></li>
-                    <li><a href="/about" class="mobile-nav-link">
-                        <i class="fas fa-info-circle"></i>
-                        <span>About</span>
-                    </a></li>
+                    <li class="mobile-background-icons"><a href="/index" class="nav-link"><i class="fas fa-home"></i> <span class="nav-text">Home</span></a></li>
+                    <li class="mobile-background-icons"><a href="/menu" class="nav-link"><i class="fas fa-utensils"></i> <span class="nav-text">Menu</span></a></li>
+                    <li class="mobile-background-icons"><a href="/about" class="nav-link"><i class="fas fa-info-circle"></i> <span class="nav-text">About</span></a></li>
                 <?php else: ?>
-                    <li><a href="/admin/dashboard" class="mobile-nav-link">
-                        <i class="fas fa-chart-line"></i>
-                        <span>Dashboard</span>
-                    </a></li>
+                    <li class="mobile-background-icons"><a href="/admin/dashboard" class="nav-link"><i class="fas fa-chart-line"></i> <span class="nav-text">Admin</span></a></li>
                 <?php endif; ?>
 
                 <?php if($is_logged_in): ?>
                     <?php if(!$is_admin): ?>
-                        <li><a href="/cart" class="mobile-nav-link">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>Cart <?php echo $cartCount > 0 ? "($cartCount)" : ''; ?></span>
-                        </a></li>
-                        <li><a href="/orders" class="mobile-nav-link">
-                            <i class="fas fa-list-alt"></i>
-                            <span>My Orders</span>
-                        </a></li>
-                        <li><a href="/notifications" class="mobile-nav-link">
-                            <i class="fas fa-bell"></i>
-                            <span>Notifications <?php echo $unread_count > 0 ? "($unread_count)" : ''; ?></span>
-                        </a></li>
+                        <li class="mobile-background-icons mobile-only"><a href="/orders" class="nav-link"><i class="fas fa-list-alt"></i> <span class="nav-text">My Orders</span></a></li>
                     <?php endif; ?>
-                    <li><a href="/profile" class="mobile-nav-link">
-                        <i class="fas fa-user"></i>
-                        <span>Profile</span>
-                    </a></li>
-                    <li><a href="/logout" class="mobile-nav-link logout-link">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a></li>
+                    <!-- Notification Bell (Mobile: Link, Desktop: Dropdown) -->
+                    <li class="nav-item dropdown notification-bell-wrapper">
+                        <!-- Desktop Bell -->
+                        <div class="desktop-only">
+                            <button class="notification-btn" id="notifDropdown" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                                <i class="fas fa-bell"></i>
+                                <?php if($unread_count > 0): ?>
+                                    <span class="notification-counter"><?php echo $unread_count; ?></span>
+                                <?php endif; ?>
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-end notif-box" id="notificationDropdown" aria-labelledby="notifDropdown">
+                                <div class="notif-header">
+                                    <span><i class="fas fa-bell"></i> Notifications</span>
+                                    <?php if($unread_count > 0): ?>
+                                        <button onclick="markAllAsRead()" class="mark-all">Mark all as read</button>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="notif-scroll">
+                                    <?php if(empty($notifications)): ?>
+                                        <div class="notif-empty">
+                                            No new notifications yet
+                                        </div>
+                                    <?php else: ?>
+                                        <?php foreach($notifications as $notif): ?>
+                                            <a href="<?php echo $notif['link'] ?: '#'; ?>" class="notif-item <?php echo $notif['is_read'] ? '' : 'unread'; ?>" data-type="<?php echo $notif['type'] ?? 'system'; ?>">
+                                                <div class="notif-icon">
+                                                    <i class="fas <?php 
+                                                        if($notif['type'] == 'order') {
+                                                            echo 'fa-shopping-bag';
+                                                        } elseif($notif['type'] == 'payment') {
+                                                            echo 'fa-credit-card';
+                                                        } elseif($notif['type'] == 'delivery') {
+                                                            echo 'fa-truck';
+                                                        } else {
+                                                            echo 'fa-bell';
+                                                        }
+                                                    ?>"></i>
+                                                </div>
+                                                <div class="notif-content">
+                                                    <span class="block"><?php echo htmlspecialchars($notif['message']); ?></span>
+                                                    <span class="time"><i class="fas fa-clock"></i> <?php echo date('M d, g:i a', strtotime($notif['created_at'])); ?></span>
+                                                </div>
+                                            </a>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </div>
+                                <a href="/notifications" class="see-all">See All Messages</a>
+                            </div>
+                        </div>
+                        
+                        <!-- Mobile Bell -->
+                        <a href="/notifications" class="nav-link mobile-only">
+                            <i class="fas fa-bell"></i>
+                            <span class="nav-text">Notifications</span>
+                            <?php if($unread_count > 0): ?>
+                                <span class="notification-count"><?php echo $unread_count; ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </li>
+
+                    <?php if(!$is_admin): ?>
+                        <li class="mobile-background-icons"><a href="/cart" class="nav-link"><i class="fas fa-shopping-cart"></i> <span class="nav-text">Cart</span></a></li>
+                    <?php endif; ?>
+                    <li><a href="/profile" class="nav-link"><i class="fas fa-user"></i> <span class="nav-text">Profile</span></a></li>
+                    <li><a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i> <span class="nav-text">Logout</span></a></li>
                 <?php else: ?>
-                    <li><a href="/login" class="mobile-nav-link">
-                        <i class="fas fa-sign-in-alt"></i>
-                        <span>Login</span>
-                    </a></li>
-                    <li><a href="/register" class="mobile-nav-link">
-                        <i class="fas fa-user-plus"></i>
-                        <span>Register</span>
-                    </a></li>
+                    <li><a href="/login" class="nav-link"><i class="fas fa-sign-in-alt"></i> <span class="nav-text">Login</span></a></li>
+                    <li><a href="/register" class="nav-link"><i class="fas fa-user-plus"></i> <span class="nav-text">Register</span></a></li>
                 <?php endif; ?>
             </ul>
         </div>
@@ -280,70 +212,28 @@ if ($is_logged_in && !$is_admin && $conn) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Mobile Menu Toggle
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const mobileMenu = document.getElementById('mobileMenu');
-    const closeMobileMenu = document.getElementById('closeMobileMenu');
-
-    if (mobileMenuToggle && mobileMenu) {
-        // Open menu
+    const navMenu = document.getElementById('navMenu');
+    
+    if (mobileMenuToggle && navMenu) {
         mobileMenuToggle.addEventListener('click', function() {
-            mobileMenu.classList.add('active');
-            document.body.style.overflow = 'hidden';
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+            const menuList = document.getElementById('navbar-menu');
+            this.setAttribute('aria-expanded', !isExpanded);
+            navMenu.classList.toggle('active');
+            if (menuList) menuList.classList.toggle('active');
+            this.classList.toggle('active');
+            document.body.style.overflow = isExpanded ? '' : 'hidden';
         });
 
-        // Close menu
-        closeMobileMenu?.addEventListener('click', function() {
-            mobileMenu.classList.remove('active');
-            document.body.style.overflow = '';
-        });
-
-        // Close on link click
-        mobileMenu.querySelectorAll('.mobile-nav-link').forEach(link => {
+        // Close menu on link click
+        navMenu.querySelectorAll('.nav-link').forEach(link => {
             link.addEventListener('click', () => {
-                mobileMenu.classList.remove('active');
+                navMenu.classList.remove('active');
+                mobileMenuToggle.classList.remove('active');
+                mobileMenuToggle.setAttribute('aria-expanded', 'false');
                 document.body.style.overflow = '';
             });
-        });
-
-        // Close on overlay click
-        document.addEventListener('click', (e) => {
-            if (!mobileMenu.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
-                mobileMenu.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-        });
-    }
-
-    // Desktop Notification Dropdown
-    const notifDropdown = document.getElementById('notifDropdown');
-    const notificationDropdown = document.getElementById('notificationDropdown');
-
-    if (notifDropdown && notificationDropdown) {
-        notifDropdown.addEventListener('click', function() {
-            notificationDropdown.classList.toggle('show');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!notifDropdown.contains(e.target) && !notificationDropdown.contains(e.target)) {
-                notificationDropdown.classList.remove('show');
-            }
-        });
-    }
-
-    // Desktop User Menu Dropdown
-    const userDropdown = document.getElementById('userDropdown');
-    const userMenuDropdown = document.getElementById('userMenuDropdown');
-
-    if (userDropdown && userMenuDropdown) {
-        userDropdown.addEventListener('click', function() {
-            userMenuDropdown.classList.toggle('show');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!userDropdown.contains(e.target) && !userMenuDropdown.contains(e.target)) {
-                userMenuDropdown.classList.remove('show');
-            }
         });
     }
 
@@ -359,14 +249,15 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function markAllAsRead() {
-    fetch('/actions/notifications/mark_all_notifications_read.php', { method: 'POST' })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                location.reload();
-            }
-        })
-        .catch(e => console.error('Error:', e));
+    fetch('mark_all_notifications_read', { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const badge = document.querySelector('.notification-counter');
+            if (badge) badge.remove();
+            document.querySelectorAll('.notification-item.unread').forEach(i => i.classList.remove('unread'));
+        }
+    });
 }
 </script>
 

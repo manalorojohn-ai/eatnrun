@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             // Direct PDO connection to Neon
-            $dsn = "pgsql:host=$db_host;port=$db_port;dbname=$db_name;sslmode=require";
+            $dsn = "pgsql:host=$db_host;port=$db_port;dbname=$db_name;sslmode=require;application_name=eatnrun";
             $pdo = new PDO($dsn, $db_user, $db_pass, [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_TIMEOUT => 10

@@ -21,8 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = '❌ Email and password required';
     } else {
         try {
-            // Direct PDO connection to Neon
-            $dsn = "pgsql:host=$db_host;port=$db_port;dbname=$db_name;sslmode=require;application_name=eatnrun";
+            // Direct PDO connection to Neon with endpoint ID
+            $endpoint_id = 'ep-odd-art-apysk1bo-pooler';
+            $dsn = "pgsql:host=$db_host;port=$db_port;dbname=$db_name;sslmode=require;options='-c%20endpoint%3D" . urlencode($endpoint_id) . "'";
             $pdo = new PDO($dsn, $db_user, $db_pass, [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_TIMEOUT => 10

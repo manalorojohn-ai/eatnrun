@@ -1,7 +1,9 @@
 <?php
-// Error reporting
+// Error reporting - production safe
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+$is_production = getenv('APP_ENV') === 'production' || getenv('RENDER');
+ini_set('display_errors', $is_production ? 0 : 1);
+ini_set('log_errors', 1);
 
 // Load .env file if it exists
 $envFile = dirname(__DIR__) . '/.env';

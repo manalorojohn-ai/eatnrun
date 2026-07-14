@@ -29,9 +29,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Enable error reporting for debugging
+// Error reporting configuration
 error_reporting(E_ALL);
-ini_set('display_errors', 1); // Display errors for debugging
+// In production, don't display errors to users
+$is_production = getenv('APP_ENV') === 'production' || getenv('RENDER');
+ini_set('display_errors', $is_production ? 0 : 1);
 ini_set('log_errors', 1);
 
 // Basic routing logic

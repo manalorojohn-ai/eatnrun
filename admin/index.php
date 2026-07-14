@@ -11,9 +11,11 @@
  * - Admin authentication (optional)
  */
 
-// Enable error reporting for debugging
+// Error reporting configuration
 error_reporting(E_ALL);
-ini_set('display_errors', 0); // Don't display errors to users
+// In production, don't display errors to users
+$is_production = getenv('APP_ENV') === 'production' || getenv('RENDER');
+ini_set('display_errors', $is_production ? 0 : 1);
 ini_set('log_errors', 1);
 
 // Basic routing logic

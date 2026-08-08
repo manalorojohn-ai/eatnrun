@@ -498,7 +498,6 @@ ob_start(); ?>
     }
     .password-toggle:hover { color: #006C3B; }
 
-    /* Privacy & Cookie Consent Modal */
     .privacy-modal-overlay {
         position: fixed;
         top: 0;
@@ -506,13 +505,13 @@ ob_start(); ?>
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
-        display: none;
-        z-index: 998;
+        display: none !important;
+        z-index: 998 !important;
         backdrop-filter: blur(4px);
     }
 
     .privacy-modal-overlay.show {
-        display: block;
+        display: block !important;
         animation: fadeIn 0.3s ease-out;
     }
 
@@ -521,11 +520,11 @@ ob_start(); ?>
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%) scale(0);
-        z-index: 999;
-        display: none;
+        z-index: 999 !important;
+        display: none !important;
         width: 100%;
         height: 100%;
-        display: flex;
+        display: flex !important;
         align-items: center;
         justify-content: center;
     }
@@ -826,20 +825,19 @@ include 'includes/ui/navbar.php';
             const acceptBtn = document.querySelector('.accept-btn');
             const moreOptionsBtn = document.querySelector('.more-options-btn');
             
-            const privacyAccepted = localStorage.getItem('privacyAccepted');
-            console.log('Privacy accepted status:', privacyAccepted);
+            console.log('Elements found - overlay:', !!privacyOverlay, 'modal:', !!privacyCardModal, 'accept:', !!acceptBtn);
             
-            // Show privacy card if not previously accepted
-            if (!privacyAccepted) {
-                console.log('Showing privacy card modal on login page');
-                if (privacyOverlay) {
-                    privacyOverlay.classList.add('show');
-                    privacyOverlay.style.display = 'block';
-                }
-                if (privacyCardModal) {
-                    privacyCardModal.classList.add('show');
-                    privacyCardModal.style.display = 'flex';
-                }
+            // FORCE SHOW - Always show the modal on login page
+            console.log('FORCING privacy modal to show on login page');
+            if (privacyOverlay) {
+                privacyOverlay.classList.add('show');
+                privacyOverlay.style.display = 'block !important';
+                privacyOverlay.style.zIndex = '998';
+            }
+            if (privacyCardModal) {
+                privacyCardModal.classList.add('show');
+                privacyCardModal.style.display = 'flex !important';
+                privacyCardModal.style.zIndex = '999';
             }
 
             // Accept button handler

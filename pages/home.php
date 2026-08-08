@@ -172,14 +172,19 @@ include 'includes/ui/navbar.php';
 ob_start(); ?>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded - DOMContentLoaded fired');
+    
     // Smooth scroll for link
-    document.querySelector('.scroll-down').addEventListener('click', function(e) {
-        e.preventDefault();
-        const menuSection = document.querySelector('#menu');
-        if (menuSection) {
-            menuSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    });
+    const scrollDownBtn = document.querySelector('.scroll-down');
+    if (scrollDownBtn) {
+        scrollDownBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const menuSection = document.querySelector('#menu');
+            if (menuSection) {
+                menuSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    }
 
     // Intersection Observer for menu items
     const observerOptions = { threshold: 0.15, rootMargin: '0px 0px -50px 0px' };
@@ -197,19 +202,18 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(item);
     });
 
-    // Privacy Card Functionality - Always show on first visit
+    // ==================== PRIVACY CARD MODAL ====================
     const privacyOverlay = document.querySelector('.privacy-modal-overlay');
     const privacyCardModal = document.querySelector('.privacy-card-modal');
     const acceptBtn = document.querySelector('.accept-btn');
     const moreOptionsBtn = document.querySelector('.more-options-btn');
     
-    // Check if privacy was already accepted
     const privacyAccepted = localStorage.getItem('privacyAccepted');
+    console.log('Privacy accepted status:', privacyAccepted);
     
-    // Show the modal if privacy not yet accepted
+    // Show privacy card if not previously accepted
     if (!privacyAccepted) {
-        console.log('Privacy card showing - first visit');
-        // Force show the overlay and modal
+        console.log('Showing privacy card modal');
         if (privacyOverlay) {
             privacyOverlay.classList.add('show');
             privacyOverlay.style.display = 'block';
@@ -218,13 +222,12 @@ document.addEventListener('DOMContentLoaded', function() {
             privacyCardModal.classList.add('show');
             privacyCardModal.style.display = 'flex';
         }
-    } else {
-        console.log('Privacy already accepted');
     }
 
+    // Accept button handler
     if (acceptBtn) {
         acceptBtn.addEventListener('click', function() {
-            console.log('Privacy accepted');
+            console.log('Privacy accepted - closing modal');
             localStorage.setItem('privacyAccepted', 'true');
             if (privacyCardModal && privacyOverlay) {
                 privacyCardModal.style.animation = 'slideOut 0.4s ease-out forwards';
@@ -233,21 +236,25 @@ document.addEventListener('DOMContentLoaded', function() {
                     privacyCardModal.style.display = 'none';
                     privacyOverlay.classList.remove('show');
                     privacyOverlay.style.display = 'none';
+                    // Show popup after privacy is closed
+                    showPopup();
                 }, 400);
             }
         });
     }
 
+    // More Options button handler
     if (moreOptionsBtn) {
         moreOptionsBtn.addEventListener('click', function() {
             window.location.href = 'info/privacy';
         });
     }
 
-    // Close overlay on background click
+    // Overlay click handler
     if (privacyOverlay) {
         privacyOverlay.addEventListener('click', function(e) {
             if (e.target === privacyOverlay) {
+                console.log('Privacy overlay clicked - closing');
                 localStorage.setItem('privacyAccepted', 'true');
                 privacyCardModal.style.animation = 'slideOut 0.4s ease-out forwards';
                 setTimeout(() => {
@@ -255,47 +262,77 @@ document.addEventListener('DOMContentLoaded', function() {
                     privacyCardModal.style.display = 'none';
                     privacyOverlay.classList.remove('show');
                     privacyOverlay.style.display = 'none';
+                    // Show popup after privacy is closed
+                    showPopup();
                 }, 400);
             }
         });
     }
 
-    // Popup Logic - Only show if privacy was already accepted
+    // ==================== POPUP AD LOGIC ====================
     const isLoggedIn = <?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>;
-    if (!isLoggedIn && !sessionStorage.getItem('popupShown') && privacyAccepted) {
+    console.log('User logged in:', isLoggedIn);
+    console.log('Privacy accepted:', privacyAccepted);
+    
+    // Only show popup if user not logged in, privacy was already accepted
+    if (!isLoggedIn && privacyAccepted && !sessionStorage.getItem('popupShown')) {
+        console.log('Will show popup after 3 seconds');
         setTimeout(showPopup, 3000);
+    } else if (!isLoggedIn && !privacyAccepted) {
+        console.log('Privacy not accepted - popup will show after privacy modal closes');
     }
 
-    document.getElementById('signupButton').addEventListener('click', closePopup);
-    document.getElementById('popupOverlay').addEventListener('click', closePopup);
+    // Popup event listeners
+    const signupButton = document.getElementById('signupButton');
+    const popupOverlay = document.getElementById('popupOverlay');
+    
+    if (signupButton) {
+        signupButton.addEventListener('click', closePopup);
+    }
+    if (popupOverlay) {
+        popupOverlay.addEventListener('click', closePopup);
+    }
 });
 
+// ==================== POPUP FUNCTIONS ====================
 function showPopup() {
+    console.log('showPopup() called');
     const overlay = document.getElementById('popupOverlay');
     const ad = document.getElementById('popupAd');
+    
     if (overlay && ad) {
+        console.log('Showing popup ad');
         overlay.classList.add('show');
         ad.classList.add('show');
         document.body.style.overflow = 'hidden';
+    } else {
+        console.log('Popup elements not found - overlay:', !!overlay, 'ad:', !!ad);
     }
 }
 
 function closePopup() {
+    console.log('closePopup() called');
     const overlay = document.getElementById('popupOverlay');
     const ad = document.getElementById('popupAd');
+    
     if (overlay && ad) {
         overlay.classList.remove('show');
         ad.classList.remove('show');
         document.body.style.overflow = '';
-        if (document.getElementById('dontShowAgain').checked) {
+        
+        const dontShowAgain = document.getElementById('dontShowAgain');
+        if (dontShowAgain && dontShowAgain.checked) {
             sessionStorage.setItem('popupShown', 'true');
         }
     }
 }
 
-// Close popup with ESC
+// Close popup with ESC key
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closePopup();
+    if (e.key === 'Escape') {
+        console.log('ESC pressed - closing popup');
+        closePopup();
+    }
 });
 </script>
 <?php 

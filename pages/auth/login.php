@@ -864,18 +864,17 @@ include 'includes/ui/navbar.php';
                 });
             }
 
-            // Overlay click handler
+            // Overlay click handler - DO NOT close on overlay click
             if (privacyOverlay) {
                 privacyOverlay.addEventListener('click', function(e) {
+                    // Only close if clicking directly on overlay, not on card
                     if (e.target === privacyOverlay) {
-                        console.log('Privacy overlay clicked - closing');
-                        localStorage.setItem('privacyAccepted', 'true');
-                        privacyCardModal.style.animation = 'slideOut 0.4s ease-out forwards';
-                        setTimeout(() => {
-                            privacyCardModal.classList.remove('show');
-                            privacyCardModal.style.display = 'none';
-                            privacyOverlay.classList.remove('show');
-                            privacyOverlay.style.display = 'none';
+                        console.log('Overlay background clicked - but NOT closing modal');
+                        // Don't close - user must click Accept button or More Options
+                        return false;
+                    }
+                });
+            }
                         }, 400);
                     }
                 });
@@ -909,17 +908,8 @@ include 'includes/ui/navbar.php';
                 }
             });
 
-            // Close modal with ESC key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && privacyCardModal && privacyCardModal.classList.contains('show')) {
-                    console.log('ESC pressed - closing privacy modal');
-                    localStorage.setItem('privacyAccepted', 'true');
-                    privacyCardModal.classList.remove('show');
-                    privacyCardModal.style.display = 'none';
-                    privacyOverlay.classList.remove('show');
-                    privacyOverlay.style.display = 'none';
-                }
-            });
+            // Close modal with ESC key - DISABLED (user must click Accept or More Options)
+            // Removed ESC handler to force user interaction
         });
     </script>
 <?php // Footer already included above ?>

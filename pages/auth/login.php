@@ -738,9 +738,9 @@ include 'includes/ui/navbar.php';
     <!-- Privacy & Cookie Consent Modal -->
     <div class="privacy-modal-overlay" id="privacyOverlay"></div>
     <div class="privacy-card-modal" id="privacyCardModal">
-        <div class="privacy-card">
-            <div class="privacy-content">
-                <span class="privacy-icon">
+        <div class="card">
+            <div class="content">
+                <span class="icon">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" height="46" width="65" viewBox="0 0 65 46">
                         <path stroke="#000" fill="#EAB789" d="M49.157 15.69L44.58.655l-12.422 1.96L21.044.654l-8.499 2.615-6.538 5.23-4.576 9.153v11.114l4.576 8.5 7.846 5.23 10.46 1.96 7.845-2.614 9.153 2.615 11.768-2.615 7.846-7.846 1.96-5.884.655-7.191-7.846-1.308-6.537-3.922z"></path>
                         <path fill="#9C6750" d="M32.286 3.749c-6.94 3.65-11.69 11.053-11.69 19.591 0 8.137 4.313 15.242 10.724 19.052a20.513 20.513 0 01-8.723 1.937c-11.598 0-21-9.626-21-21.5 0-11.875 9.402-21.5 21-21.5 3.495 0 6.79.874 9.689 2.42z" clip-rule="evenodd" fill-rule="evenodd"></path>
@@ -753,12 +753,10 @@ include 'includes/ui/navbar.php';
                         <path fill="#644647" d="M33.129 29.18l-2.803 1.065a.953.953 0 00-.053 1.764.957.957 0 00.73.022l2.803-1.065a.953.953 0 00-.677-1.783v-.003zm24.373-3.628l-2.167.823a.956.956 0 00-.054 1.764.954.954 0 00.73.021l2.169-.823a.954.954 0 10-.678-1.784v-.001z"></path>
                     </svg>
                 </span>
-                <p class="privacy-title">Your privacy is important to us</p>
-                <p class="privacy-description">We process your personal information to measure and improve our sites and services, to assist our campaigns and to provide personalized content.<br />For more information see our<a href="info/privacy" class="privacy-link"> Privacy Policy</a>.</p>
-                <div class="privacy-actions">
-                    <button class="more-options-btn">More Options</button>
-                    <button class="accept-btn">Accept</button>
-                </div>
+                <p class="title">Your privacy is important to us</p>
+                <p class="description">We process your personal information to measure and improve our sites and services, to assist our campaigns and to provide personalized content.<br />For more information see our <a href="info/privacy" class="privacy-link">Privacy Policy</a>.</p>
+                <button class="more-options">More Options</button>
+                <button class="accept-button" type="button">Accept</button>
             </div>
         </div>
     </div>
@@ -824,8 +822,8 @@ include 'includes/ui/navbar.php';
             // ==================== PRIVACY CARD MODAL ====================
             const privacyOverlay = document.querySelector('.privacy-modal-overlay');
             const privacyCardModal = document.querySelector('.privacy-card-modal');
-            const acceptBtn = document.querySelector('.accept-btn');
-            const moreOptionsBtn = document.querySelector('.more-options-btn');
+            const acceptBtn = document.querySelector('.accept-button');
+            const moreOptionsBtn = document.querySelector('.more-options');
             
             console.log('Elements found - overlay:', !!privacyOverlay, 'modal:', !!privacyCardModal, 'accept:', !!acceptBtn);
             

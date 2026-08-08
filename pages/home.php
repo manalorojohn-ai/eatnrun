@@ -197,7 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(item);
     });
 
-    // Privacy Card Functionality
+    // Privacy Card Functionality - Always show on first visit
     const privacyOverlay = document.querySelector('.privacy-modal-overlay');
     const privacyCardModal = document.querySelector('.privacy-card-modal');
     const acceptBtn = document.querySelector('.accept-btn');
@@ -206,20 +206,33 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check if privacy was already accepted
     const privacyAccepted = localStorage.getItem('privacyAccepted');
     
+    // Show the modal if privacy not yet accepted
     if (!privacyAccepted) {
-        // Show privacy card modal
-        if (privacyOverlay) privacyOverlay.classList.add('show');
-        if (privacyCardModal) privacyCardModal.classList.add('show');
+        console.log('Privacy card showing - first visit');
+        // Force show the overlay and modal
+        if (privacyOverlay) {
+            privacyOverlay.classList.add('show');
+            privacyOverlay.style.display = 'block';
+        }
+        if (privacyCardModal) {
+            privacyCardModal.classList.add('show');
+            privacyCardModal.style.display = 'flex';
+        }
+    } else {
+        console.log('Privacy already accepted');
     }
 
     if (acceptBtn) {
         acceptBtn.addEventListener('click', function() {
+            console.log('Privacy accepted');
             localStorage.setItem('privacyAccepted', 'true');
             if (privacyCardModal && privacyOverlay) {
                 privacyCardModal.style.animation = 'slideOut 0.4s ease-out forwards';
                 setTimeout(() => {
                     privacyCardModal.classList.remove('show');
+                    privacyCardModal.style.display = 'none';
                     privacyOverlay.classList.remove('show');
+                    privacyOverlay.style.display = 'none';
                 }, 400);
             }
         });
@@ -233,19 +246,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Close overlay on background click
     if (privacyOverlay) {
-        privacyOverlay.addEventListener('click', function() {
-            localStorage.setItem('privacyAccepted', 'true');
-            privacyCardModal.style.animation = 'slideOut 0.4s ease-out forwards';
-            setTimeout(() => {
-                privacyCardModal.classList.remove('show');
-                privacyOverlay.classList.remove('show');
-            }, 400);
+        privacyOverlay.addEventListener('click', function(e) {
+            if (e.target === privacyOverlay) {
+                localStorage.setItem('privacyAccepted', 'true');
+                privacyCardModal.style.animation = 'slideOut 0.4s ease-out forwards';
+                setTimeout(() => {
+                    privacyCardModal.classList.remove('show');
+                    privacyCardModal.style.display = 'none';
+                    privacyOverlay.classList.remove('show');
+                    privacyOverlay.style.display = 'none';
+                }, 400);
+            }
         });
     }
 
-    // Popup Logic
+    // Popup Logic - Only show if privacy was already accepted
     const isLoggedIn = <?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>;
-    if (!isLoggedIn && !sessionStorage.getItem('popupShown')) {
+    if (!isLoggedIn && !sessionStorage.getItem('popupShown') && privacyAccepted) {
         setTimeout(showPopup, 3000);
     }
 

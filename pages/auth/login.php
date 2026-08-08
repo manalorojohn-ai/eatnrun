@@ -522,11 +522,13 @@ ob_start(); ?>
         transform: translate(-50%, -50%);
         z-index: 999 !important;
         display: none !important;
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
         display: flex !important;
         align-items: center;
         justify-content: center;
+        padding: 20px;
+        box-sizing: border-box;
     }
 
     .privacy-card-modal.show {
@@ -546,8 +548,8 @@ ob_start(); ?>
 
     .privacy-card {
         --shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 2px 6px 2px;
-        width: 90%;
-        max-width: 420px;
+        width: 95%;
+        max-width: 400px;
         background-color: white;
         border-radius: 1.5rem;
         box-shadow: var(--shadow);

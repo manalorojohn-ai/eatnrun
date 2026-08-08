@@ -107,8 +107,9 @@ include 'includes/ui/navbar.php';
     </div>
 </section>
 
-<!-- Privacy & Cookie Consent Card -->
-<section class="privacy-section">
+<!-- Privacy & Cookie Consent Card (Modal Overlay) -->
+<div class="privacy-modal-overlay" id="privacyOverlay"></div>
+<div class="privacy-card-modal" id="privacyCardModal">
     <div class="privacy-card">
         <div class="privacy-content">
             <span class="privacy-icon">
@@ -132,7 +133,7 @@ include 'includes/ui/navbar.php';
             </div>
         </div>
     </div>
-</section>
+</div>
 
 <!-- Popup Advertisement -->
 <div class="popup-overlay" id="popupOverlay"></div>
@@ -197,24 +198,28 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Privacy Card Functionality
-    const privacyCard = document.querySelector('.privacy-card');
+    const privacyOverlay = document.querySelector('.privacy-modal-overlay');
+    const privacyCardModal = document.querySelector('.privacy-card-modal');
     const acceptBtn = document.querySelector('.accept-btn');
     const moreOptionsBtn = document.querySelector('.more-options-btn');
     
-    if (privacyCard && !localStorage.getItem('privacyAccepted')) {
-        // Show privacy card
-        privacyCard.style.display = 'block';
-    } else if (privacyCard) {
-        privacyCard.style.display = 'none';
+    // Check if privacy was already accepted
+    const privacyAccepted = localStorage.getItem('privacyAccepted');
+    
+    if (!privacyAccepted) {
+        // Show privacy card modal
+        if (privacyOverlay) privacyOverlay.classList.add('show');
+        if (privacyCardModal) privacyCardModal.classList.add('show');
     }
 
     if (acceptBtn) {
         acceptBtn.addEventListener('click', function() {
             localStorage.setItem('privacyAccepted', 'true');
-            if (privacyCard) {
-                privacyCard.style.animation = 'slideOut 0.4s ease-out forwards';
+            if (privacyCardModal && privacyOverlay) {
+                privacyCardModal.style.animation = 'slideOut 0.4s ease-out forwards';
                 setTimeout(() => {
-                    privacyCard.style.display = 'none';
+                    privacyCardModal.classList.remove('show');
+                    privacyOverlay.classList.remove('show');
                 }, 400);
             }
         });
@@ -223,6 +228,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (moreOptionsBtn) {
         moreOptionsBtn.addEventListener('click', function() {
             window.location.href = 'info/privacy';
+        });
+    }
+
+    // Close overlay on background click
+    if (privacyOverlay) {
+        privacyOverlay.addEventListener('click', function() {
+            localStorage.setItem('privacyAccepted', 'true');
+            privacyCardModal.style.animation = 'slideOut 0.4s ease-out forwards';
+            setTimeout(() => {
+                privacyCardModal.classList.remove('show');
+                privacyOverlay.classList.remove('show');
+            }, 400);
         });
     }
 

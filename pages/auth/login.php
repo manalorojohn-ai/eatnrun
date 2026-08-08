@@ -875,10 +875,6 @@ include 'includes/ui/navbar.php';
                     }
                 });
             }
-                        }, 400);
-                    }
-                });
-            }
 
             // ==================== PASSWORD TOGGLE ====================
             const passwordInput = document.getElementById('password');

@@ -519,7 +519,7 @@ ob_start(); ?>
         position: fixed;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%) scale(0);
+        transform: translate(-50%, -50%);
         z-index: 999 !important;
         display: none !important;
         width: 100%;
@@ -531,7 +531,7 @@ ob_start(); ?>
 
     .privacy-card-modal.show {
         display: flex !important;
-        animation: modalShow 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        animation: slideUp 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
     @keyframes modalShow {
@@ -552,17 +552,17 @@ ob_start(); ?>
         border-radius: 1.5rem;
         box-shadow: var(--shadow);
         overflow: hidden;
-        animation: cardSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        animation: cardSlideUp 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     }
 
     @keyframes cardSlideUp {
         from {
             opacity: 0;
-            transform: scale(0.8);
+            transform: scale(0.85) translateY(20px);
         }
         to {
             opacity: 1;
-            transform: scale(1);
+            transform: scale(1) translateY(0);
         }
     }
 
@@ -827,17 +827,19 @@ include 'includes/ui/navbar.php';
             
             console.log('Elements found - overlay:', !!privacyOverlay, 'modal:', !!privacyCardModal, 'accept:', !!acceptBtn);
             
-            // FORCE SHOW - Always show the modal on login page
+            // FORCE SHOW - Always show the modal on login page with smooth animation
             console.log('FORCING privacy modal to show on login page');
             if (privacyOverlay) {
                 privacyOverlay.classList.add('show');
                 privacyOverlay.style.display = 'block !important';
                 privacyOverlay.style.zIndex = '998';
+                privacyOverlay.style.animation = 'fadeIn 0.6s ease-out forwards';
             }
             if (privacyCardModal) {
                 privacyCardModal.classList.add('show');
                 privacyCardModal.style.display = 'flex !important';
                 privacyCardModal.style.zIndex = '999';
+                privacyCardModal.style.animation = 'slideUp 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards';
             }
 
             // Accept button handler

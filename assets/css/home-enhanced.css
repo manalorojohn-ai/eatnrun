@@ -599,3 +599,225 @@
         opacity: 1;
     }
 }
+
+
+/* Privacy & Cookie Consent Card */
+.privacy-section {
+    padding: 60px 24px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.privacy-card {
+    --shadow: rgba(60, 64, 67, 0.3) 0 1px 2px 0, rgba(60, 64, 67, 0.15) 0 2px 6px 2px;
+    width: 80%;
+    max-width: 350px;
+    background-color: white;
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+}
+
+.privacy-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 2rem 1.5rem;
+    position: relative;
+    gap: 1rem;
+}
+
+.privacy-icon {
+    position: relative;
+    margin: -4rem auto 2rem;
+    width: 80px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.privacy-icon svg {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.privacy-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    text-align: center;
+    color: #4b5563;
+    letter-spacing: -0.5px;
+}
+
+.privacy-description {
+    width: 100%;
+    margin: 0 0 2rem 0;
+    font-size: 0.875rem;
+    text-align: justify;
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+.privacy-link {
+    font-weight: 600;
+    color: #634647;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.privacy-link:hover {
+    color: #845556;
+    text-decoration: underline;
+}
+
+.privacy-actions {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.more-options-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.more-options-btn:hover {
+    color: #634647;
+    text-decoration: underline;
+}
+
+.accept-btn {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #634647;
+    background-color: #ddad81;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.accept-btn:hover {
+    background-color: #634647;
+    color: #ddad81;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(99, 70, 71, 0.2);
+}
+
+.accept-btn:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+    .privacy-section {
+        padding: 40px 16px;
+        min-height: 350px;
+    }
+
+    .privacy-card {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .privacy-content {
+        padding: 1.5rem 1.25rem;
+    }
+
+    .privacy-icon {
+        margin: -3rem auto 1.5rem;
+        width: 70px;
+        height: 50px;
+    }
+
+    .privacy-title {
+        font-size: 0.95rem;
+    }
+
+    .privacy-description {
+        font-size: 0.8rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .privacy-actions {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .more-options-btn,
+    .accept-btn {
+        flex: 1;
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .privacy-section {
+        padding: 30px 12px;
+    }
+
+    .privacy-card {
+        border-radius: 1rem;
+    }
+
+    .privacy-content {
+        padding: 1.25rem 1rem;
+    }
+
+    .privacy-icon {
+        margin: -2.5rem auto 1rem;
+        width: 60px;
+        height: 45px;
+    }
+
+    .privacy-title {
+        font-size: 0.9rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .privacy-description {
+        font-size: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+}

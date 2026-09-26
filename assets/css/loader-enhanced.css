@@ -1,6 +1,5 @@
 /* ===================================================
-   Eat&Run Premium Delivery Truck Page Loader
-   Based on Uiverse.io by vinodjangid07
+   Exact Uiverse.io Loader by vinodjangid07
    =================================================== */
 
 .page-loader {
@@ -9,17 +8,12 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: radial-gradient(circle at center, #ffffff 0%, #f4fbf7 100%);
+    background: #ffffff;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
     z-index: 99999;
-    transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), 
-                visibility 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-                transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    transition: opacity 0.4s ease, visibility 0.4s ease;
     overflow: hidden;
 }
 
@@ -27,182 +21,106 @@
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
-    transform: scale(1.04);
 }
 
-.loader-backdrop-glow {
-    position: absolute;
-    width: 380px;
-    height: 380px;
-    background: radial-gradient(circle, rgba(0, 108, 59, 0.12) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    animation: glowPulse 3s ease-in-out infinite alternate;
-}
-
-@keyframes glowPulse {
-    0% {
-        transform: scale(0.85);
-        opacity: 0.6;
-    }
-    100% {
-        transform: scale(1.15);
-        opacity: 1;
-    }
-}
-
-/* =========================================
-   Uiverse Truck Animation Structure
-   ========================================= */
-
+/* From Uiverse.io by vinodjangid07 */ 
 .loader {
-    width: fit-content;
-    height: fit-content;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    z-index: 2;
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .truckWrapper {
-    width: 240px;
-    height: 120px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    align-items: center;
-    justify-content: flex-end;
-    overflow-x: hidden;
-    padding-bottom: 2px;
+  width: 200px;
+  height: 100px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  align-items: center;
+  justify-content: flex-end;
+  overflow-x: hidden;
 }
-
 /* truck upper body */
 .truckBody {
-    width: 130px;
-    height: fit-content;
-    margin-bottom: 6px;
-    animation: motion 1s linear infinite;
-    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.12));
+  width: 130px;
+  height: fit-content;
+  margin-bottom: 6px;
+  animation: motion 1s linear infinite;
 }
-
-.trucksvg {
-    display: block;
-    width: 100%;
-    height: auto;
-}
-
-/* truck suspension animation */
+/* truck suspension animation*/
 @keyframes motion {
-    0% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(3px);
-    }
-    100% {
-        transform: translateY(0px);
-    }
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
 }
-
 /* truck's tires */
 .truckTires {
-    width: 130px;
-    height: fit-content;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0px 10px 0px 15px;
-    position: absolute;
-    bottom: 2px;
+  width: 130px;
+  height: fit-content;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0px 10px 0px 15px;
+  position: absolute;
+  bottom: 0;
 }
-
 .truckTires svg {
-    width: 24px;
-    height: 24px;
-    animation: tireSpin 0.7s linear infinite;
-}
-
-@keyframes tireSpin {
-    0% {
-        transform: rotate(0deg);
-    }
-    100% {
-        transform: rotate(360deg);
-    }
+  width: 24px;
 }
 
 .road {
-    width: 100%;
-    height: 2px;
-    background-color: #282828;
-    position: relative;
-    bottom: 0;
-    align-self: flex-end;
-    border-radius: 3px;
+  width: 100%;
+  height: 1.5px;
+  background-color: #282828;
+  position: relative;
+  bottom: 0;
+  align-self: flex-end;
+  border-radius: 3px;
 }
-
 .road::before {
-    content: "";
-    position: absolute;
-    width: 24px;
-    height: 100%;
-    background-color: #282828;
-    right: -50%;
-    border-radius: 3px;
-    animation: roadAnimation 1.4s linear infinite;
-    border-left: 10px solid white;
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 100%;
+  background-color: #282828;
+  right: -50%;
+  border-radius: 3px;
+  animation: roadAnimation 1.4s linear infinite;
+  border-left: 10px solid white;
+}
+.road::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 100%;
+  background-color: #282828;
+  right: -65%;
+  border-radius: 3px;
+  animation: roadAnimation 1.4s linear infinite;
+  border-left: 4px solid white;
 }
 
-.road::after {
-    content: "";
-    position: absolute;
-    width: 14px;
-    height: 100%;
-    background-color: #282828;
-    right: -65%;
-    border-radius: 3px;
-    animation: roadAnimation 1.4s linear infinite;
-    border-left: 4px solid white;
+.lampPost {
+  position: absolute;
+  bottom: 0;
+  right: -90%;
+  height: 90px;
+  animation: roadAnimation 1.4s linear infinite;
 }
 
 @keyframes roadAnimation {
-    0% {
-        transform: translateX(0px);
-    }
-    100% {
-        transform: translateX(-350px);
-    }
-}
-
-/* =========================================
-   Eat&Run Status & Progress Bar Below Truck
-   ========================================= */
-
-.loader-status {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 18px;
-    text-align: center;
-}
-
-.loader-title {
-    font-family: 'Poppins', sans-serif;
-    font-size: 22px;
-    font-weight: 800;
-    color: #006C3B;
-    letter-spacing: -0.5px;
-    margin-bottom: 4px;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.loader-caption {
-    font-family: 'Poppins', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    color: #636e72;
-    letter-spacing: 0.2px;
+  0% {
+    transform: translateX(0px);
+  }
+  100% {
+    transform: translateX(-350px);
+  }
 }

@@ -166,15 +166,6 @@
     border-left: 4px solid white;
 }
 
-.lampPost {
-    position: absolute;
-    bottom: 0;
-    right: -90%;
-    height: 90px;
-    animation: roadAnimation 1.4s linear infinite;
-    opacity: 0.85;
-}
-
 @keyframes roadAnimation {
     0% {
         transform: translateX(0px);

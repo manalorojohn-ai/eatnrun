@@ -1122,6 +1122,25 @@ body {
 }
 
 @media (max-width: 991px) {
+    .navbar {
+        padding: 0.5rem 1rem !important;
+    }
+
+    .nav-container {
+        height: 52px !important;
+        gap: 0.5rem;
+    }
+
+    .navbar-brand {
+        font-size: 1.2rem;
+        padding: 0.25rem 0;
+    }
+
+    .navbar-brand .logo {
+        width: 36px;
+        height: 36px;
+    }
+
     .burger-trigger {
         display: flex !important;
         margin-left: auto;
@@ -1129,7 +1148,7 @@ body {
 
     .nav-menu {
         position: fixed;
-        top: 60px;
+        top: 64px;
         /* Adjusted for compact navbar */
         left: 0;
         right: 0;
@@ -1267,17 +1286,23 @@ body {
         margin-top: 1rem !important;
         z-index: 10000 !important;
     }
-        right: 3vw;
-        left: 3vw;
-        margin-top: 0.5rem;
-    }
 
     .notif-scroll {
         max-height: 50vh;
     }
 }
 
+@media (max-width: 991px) {
+    body {
+        padding-top: 64px !important;
+    }
+}
+
 @media (max-width: 480px) {
+    body {
+        padding-top: 60px !important;
+    }
+
     .nav-container {
         padding: 0 0.75rem;
     }
@@ -1287,37 +1312,25 @@ body {
     }
 
     .logo {
-        height: 32px;
+        height: 34px;
+        width: 34px;
     }
 
-    .nav-link {
-        padding: 18px 20px;
-        font-size: 1.2rem;
-    }
-
-    .login-btn,
-    .register-btn {
-        padding: 18px 24px;
-        font-size: 1.2rem;
-    }
-
-    /* Extra large touch targets for small Android devices */
-    .nav-link,
-    .login-btn,
-    .register-btn {
-        min-height: 52px;
+    .nav-links-container {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 6px;
     }
 
     /* Enhanced mobile menu toggle for small screens */
     .burger-trigger {
-        width: 52px;
-        height: 52px;
-        padding: 10px;
+        width: 44px !important;
+        height: 44px !important;
+        padding: 6px;
     }
 
     .hamburger-line {
-        width: 26px;
-        height: 3px;
+        width: 22px;
+        height: 2.5px;
     }
 }
 

@@ -59,8 +59,6 @@
             y="1.5"
             x="6.5"
           ></rect>
-          <!-- Eat&Run Logo/Brand Decal on Truck Container -->
-          <text x="32" y="52" fill="#006C3B" font-family="'Poppins', sans-serif" font-weight="800" font-size="20" letter-spacing="-0.5">Eat&amp;Run</text>
           <rect
             stroke-width="2"
             stroke="#282828"
@@ -137,40 +135,18 @@
   <div class="loader-status">
     <div class="loader-title">Eat&amp;Run</div>
     <div class="loader-caption">Delivering freshly prepared orders...</div>
-    <div class="loader-progress-wrap">
-      <div class="loader-progress-bar"></div>
-    </div>
   </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const progressBar = document.querySelector('.page-loader .loader-progress-bar');
-    let progress = 0;
-    
-    const interval = setInterval(function() {
-        if (progress < 95) {
-            progress += (100 - progress) * 0.08;
-            if (progressBar) progressBar.style.width = progress + '%';
-        }
-        if (progress >= 98) {
-            clearInterval(interval);
-        }
-    }, 100);
-});
-
 window.addEventListener('load', function() {
     const loader = document.querySelector('.page-loader');
-    const progressBar = document.querySelector('.page-loader .loader-progress-bar');
-
-    if (progressBar) progressBar.style.width = '100%';
-    
     setTimeout(function() {
         if (loader) {
             loader.classList.add('hidden');
         }
         document.body.style.overflow = '';
-    }, 550);
+    }, 500);
 });
 
 // Fallback safety timeout
@@ -180,12 +156,10 @@ setTimeout(function() {
         loader.classList.add('hidden');
         document.body.style.overflow = '';
     }
-}, 4500);
+}, 4000);
 
 window.addEventListener('beforeunload', function() {
     const loader = document.querySelector('.page-loader');
-    const progressBar = document.querySelector('.page-loader .loader-progress-bar');
     if (loader) loader.classList.remove('hidden');
-    if (progressBar) progressBar.style.width = '0%';
 });
 </script>

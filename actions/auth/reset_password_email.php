@@ -7,10 +7,17 @@ use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 $composerAutoload = dirname(__DIR__, 2) . '/vendor/autoload.php';
-if (!file_exists($composerAutoload)) {
-    die('Composer dependencies are missing.');
+$bundledPHPMailer = dirname(__DIR__, 2) . '/includes/vendor/PHPMailer/src/PHPMailer.php';
+
+if (file_exists($composerAutoload)) {
+    require_once $composerAutoload;
+} elseif (file_exists($bundledPHPMailer)) {
+    require_once dirname(__DIR__, 2) . '/includes/vendor/PHPMailer/src/Exception.php';
+    require_once dirname(__DIR__, 2) . '/includes/vendor/PHPMailer/src/PHPMailer.php';
+    require_once dirname(__DIR__, 2) . '/includes/vendor/PHPMailer/src/SMTP.php';
+} else {
+    die('Mailer dependencies are missing.');
 }
-require_once $composerAutoload;
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

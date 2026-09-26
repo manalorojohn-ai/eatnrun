@@ -23,6 +23,12 @@ Test and setup scripts
 - `test_db_connection.php` - Test database connection
 - `setup_neon_connection.php` - Interactive setup wizard
 
+### 🚀 [deployment/](deployment/)
+Production and hosting deployment guides
+- `START_HERE.md` - Fast-track 5-minute deployment guide
+- `READY_FOR_DEPLOYMENT.md` - Deployment checklist & setup
+- `DEPLOYMENT_SUMMARY.md` - Status & environment reference
+
 ## 🚀 Quick Start
 
 1. **Routing**: Read `routing/ROUTING_QUICK_REFERENCE.md`

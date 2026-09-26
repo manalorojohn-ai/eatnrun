@@ -5,12 +5,17 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-// Check if vendor directory exists in project root
-if (!file_exists(__DIR__ . '/../vendor/autoload.php')) {
-    die('Please run "composer install" to install dependencies');
+// Autoload PHPMailer via Composer or bundled copy
+$composerAutoload = dirname(__DIR__, 2) . '/vendor/autoload.php';
+if (file_exists($composerAutoload)) {
+    require_once $composerAutoload;
+} elseif (file_exists(__DIR__ . '/../vendor/PHPMailer/src/PHPMailer.php')) {
+    require_once __DIR__ . '/../vendor/PHPMailer/src/Exception.php';
+    require_once __DIR__ . '/../vendor/PHPMailer/src/PHPMailer.php';
+    require_once __DIR__ . '/../vendor/PHPMailer/src/SMTP.php';
+} else {
+    die('PHPMailer dependencies are missing. Please run "composer install".');
 }
-
-require_once __DIR__ . '/../vendor/autoload.php';
 
 class EmailService {
     private $mailer;

@@ -3,9 +3,16 @@ session_start();
 include_once 'config/db.php';
 
 // Import PHPMailer classes
-require_once __DIR__ . '/PHPMailer/src/Exception.php';
-require_once __DIR__ . '/PHPMailer/src/PHPMailer.php';
-require_once __DIR__ . '/PHPMailer/src/SMTP.php';
+$composerAutoload = dirname(__DIR__, 2) . '/vendor/autoload.php';
+$bundledPHPMailer = dirname(__DIR__, 2) . '/includes/vendor/PHPMailer/src/PHPMailer.php';
+
+if (file_exists($composerAutoload)) {
+    require_once $composerAutoload;
+} elseif (file_exists($bundledPHPMailer)) {
+    require_once dirname(__DIR__, 2) . '/includes/vendor/PHPMailer/src/Exception.php';
+    require_once dirname(__DIR__, 2) . '/includes/vendor/PHPMailer/src/PHPMailer.php';
+    require_once dirname(__DIR__, 2) . '/includes/vendor/PHPMailer/src/SMTP.php';
+}
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;

@@ -40,6 +40,9 @@ php setup_neon_database.php
 php -S localhost:8000
 ```
 
+### 🚀 Deployment
+For comprehensive production deployment guides (Render, Neon DB, Environment Variables), see [Deployment Documentation](docs/deployment/START_HERE.md).
+
 ## 📁 Project Structure
 
 ```

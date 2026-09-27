@@ -134,16 +134,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mail = new PHPMailer(true);
             
             try {
-                $mail->isSMTP();
-                $mail->Host = 'smtp.gmail.com';
-                $mail->SMTPAuth = true;
-                $mail->Username = 'eatnrun70@gmail.com';
-                $mail->Password = 'xeyf snnt dvnq bqpb';
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port = 587;
-                $mail->Timeout = 10; // Prevent 502 Bad Gateway timeouts
+                $smtp_user = getenv('MAIL_USERNAME') ?: 'eatnrun70@gmail.com';
+                $smtp_pass = getenv('MAIL_PASSWORD') ?: 'xeyf snnt dvnq bqpb';
+                $smtp_port = (int)(getenv('MAIL_PORT') ?: 465);
 
-                $mail->setFrom('eatnrun70@gmail.com', 'Eat&Run');
+                $mail->isSMTP();
+                $mail->Host = getenv('MAIL_HOST') ?: 'smtp.gmail.com';
+                $mail->SMTPAuth = true;
+                $mail->Username = $smtp_user;
+                $mail->Password = $smtp_pass;
+                if ($smtp_port == 465) {
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+                } else {
+                    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                }
+                $mail->Port = $smtp_port;
+                $mail->Timeout = 15; // Prevent hanging
+
+                // Stream context options for SSL
+                $mail->SMTPOptions = [
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                        'allow_self_signed' => true
+                    ]
+                ];
+
+                $mail->setFrom($smtp_user, 'Eat&Run');
                 $mail->addAddress($email, $full_name);
 
                 $mail->isHTML(true);

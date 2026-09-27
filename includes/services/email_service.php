@@ -27,18 +27,27 @@ class EmailService {
             $this->mailer = new PHPMailer(true);
             
             // Server settings
+            $smtp_user = getenv('MAIL_USERNAME') ?: 'manalorojohn@gmail.com';
+            $smtp_pass = getenv('MAIL_PASSWORD') ?: 'jiihlatfltappohw';
+            $smtp_port = (int)(getenv('MAIL_PORT') ?: 465);
+
             $this->mailer->isSMTP();
-            $this->mailer->Host = 'smtp.gmail.com';
+            $this->mailer->Host = getenv('MAIL_HOST') ?: 'smtp.gmail.com';
             $this->mailer->SMTPAuth = true;
-            $this->mailer->SMTPDebug = SMTP::DEBUG_SERVER;
+            $this->mailer->SMTPDebug = 0; // Disable verbose debug for production
             
             // Gmail credentials
-            $this->mailer->Username = 'manalorojohn@gmail.com';
-            $this->mailer->Password = 'jiihlatfltappohw';
+            $this->mailer->Username = $smtp_user;
+            $this->mailer->Password = $smtp_pass;
             
             // SSL/TLS Configuration
-            $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $this->mailer->Port = 587;
+            if ($smtp_port == 465) {
+                $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            } else {
+                $this->mailer->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            }
+            $this->mailer->Port = $smtp_port;
+            $this->mailer->Timeout = 15;
             
             // Disable SSL verification for testing
             $this->mailer->SMTPOptions = array(
@@ -50,7 +59,7 @@ class EmailService {
             );
             
             // Set default sender
-            $this->from_email = 'miguelantonioramos140@gmail.com';
+            $this->from_email = $smtp_user;
             $this->from_name = 'Eat&Run';
             $this->mailer->setFrom($this->from_email, $this->from_name);
             

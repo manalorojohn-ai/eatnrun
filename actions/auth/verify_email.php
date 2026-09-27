@@ -64,15 +64,31 @@ if (!isset($_SESSION['verification_code'])) {
     $mail = new PHPMailer(true);
 
     try {
-        $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = 'eatnrun70@gmail.com';
-        $mail->Password = 'xeyf snnt dvnq bqpb';
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
+        $smtp_user = getenv('MAIL_USERNAME') ?: 'eatnrun70@gmail.com';
+        $smtp_pass = getenv('MAIL_PASSWORD') ?: 'xeyf snnt dvnq bqpb';
+        $smtp_port = (int)(getenv('MAIL_PORT') ?: 465);
 
-        $mail->setFrom('eatnrun70@gmail.com', 'Eat&Run');
+        $mail->isSMTP();
+        $mail->Host = getenv('MAIL_HOST') ?: 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = $smtp_user;
+        $mail->Password = $smtp_pass;
+        if ($smtp_port == 465) {
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        } else {
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        }
+        $mail->Port = $smtp_port;
+        $mail->Timeout = 15;
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+                'allow_self_signed' => true
+            ]
+        ];
+
+        $mail->setFrom($smtp_user, 'Eat&Run');
         $mail->addAddress($user_email);
 
         $mail->isHTML(true);

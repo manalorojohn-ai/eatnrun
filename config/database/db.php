@@ -4,11 +4,11 @@
  * Supports: PostgreSQL (PDO), MySQL (MySQLi/PDO), and JSON fallback
  */
 
-if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'root');
-if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: '');
-if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'food_ordering');
-if (!defined('DB_PORT')) define('DB_PORT', getenv('DB_PORT') ?: (getenv('RENDER') ? 5432 : 3306));
+if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: 'ep-curly-credit-axiez489-pooler.c-4.us-east-2.aws.neon.tech');
+if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'neondb_owner');
+if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: 'npg_tkMWUe79uGi0');
+if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'neondb');
+if (!defined('DB_PORT')) define('DB_PORT', getenv('DB_PORT') ?: 5432);
 
 $using_postgres = false;
 $using_mysql = false;

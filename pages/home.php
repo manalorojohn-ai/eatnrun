@@ -9,6 +9,7 @@ $page_title = 'Delicious Food Delivery';
 
 // Pass extra styles for the home page
 ob_start(); ?>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,800;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="assets/css/home-enhanced.css">
 <?php 
 $extra_styles = ob_get_clean();
@@ -114,27 +115,54 @@ include 'includes/ui/navbar.php';
         <i class="fas fa-times"></i>
     </div>
     <div class="popup-content">
-        <div class="popup-image-container" style="background: linear-gradient(45deg, #8B4513, #A0522D);">
-            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1NiIgaGVpZ2h0PSIyOCI+CiAgPHBhdGggZD0iTTI4IDAgTDU2IDE0IEwyOCAyOCBMMCAxNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiIHN0cm9rZS13aWR0aD0iMiI+PC9wYXRoPgo8L3N2Zz4=') center/cover"></div>
-            <div style="position: relative; z-index: 1; padding: 40px 20px; color: white; text-align: center;">
-                <i class="fas fa-hotel" style="font-size: 40px; margin-bottom: 15px;"></i>
-                <h2 style="font-size: 32px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">EXCLUSIVE OFFER</h2>
+        <div class="hotel-ad-hero">
+            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80" alt="FAWNA Luxury Hotel & Resort" class="hotel-ad-img" loading="lazy">
+            <div class="hotel-ad-overlay"></div>
+            <div class="hotel-badge-tag"><i class="fas fa-crown"></i> SPECIAL PARTNER OFFER</div>
+            <div class="hotel-discount-pill">
+                <span class="disc-num">25%</span>
+                <span class="disc-lbl">OFF</span>
+            </div>
+            <div class="hotel-hero-caption">
+                <div class="hotel-stars">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <span class="hotel-rating-txt">5-Star Luxury Stay</span>
+                </div>
+                <h2 class="hotel-hero-title">FAWNA HOTEL &amp; SUITES</h2>
+                <p class="hotel-hero-sub"><i class="fas fa-map-marker-alt"></i> Scenic Mountain View &amp; Luxury Spa</p>
             </div>
         </div>
-        <div class="popup-text-content">
-            <h3 class="popup-title" id="popupTitle">Get 25% OFF</h3>
-            <p class="popup-description">Book now and enjoy an exclusive discount on your first stay at FAWNA Hotel! Limited time offer package for new customers.</p>
-            <a href="https://fawna-hotel.onrender.com/" class="popup-cta" id="signupButton" target="_blank">
-                <i class="fas fa-bed" style="margin-right: 8px;"></i>
-                Book Now & Save
-            </a>
-            <div class="popup-footer">
-                *Limited time offer for new guests only
+
+        <div class="hotel-ad-body">
+            <div class="hotel-perks-row">
+                <div class="hotel-perk"><i class="fas fa-wifi"></i><span>Free Wi-Fi</span></div>
+                <div class="hotel-perk"><i class="fas fa-utensils"></i><span>Free Breakfast</span></div>
+                <div class="hotel-perk"><i class="fas fa-swimming-pool"></i><span>Infinity Pool</span></div>
+                <div class="hotel-perk"><i class="fas fa-spa"></i><span>Luxury Spa</span></div>
             </div>
-            <label class="dont-show-again">
-                <input type="checkbox" id="dontShowAgain">
-                Don't show this again
-            </label>
+
+            <p class="hotel-ad-desc">
+                Experience world-class hospitality! Book your first stay today and unlock an instant <strong>25% discount</strong> with complimentary breakfast &amp; welcome drinks.
+            </p>
+
+            <a href="https://fawna-hotel.onrender.com/" class="hotel-ad-cta" id="signupButton" target="_blank" rel="noopener noreferrer">
+                <span>Book Your Luxury Stay</span>
+                <i class="fas fa-arrow-right"></i>
+            </a>
+
+            <div class="hotel-ad-footer">
+                <span class="hotel-terms"><i class="fas fa-shield-alt"></i> Best Rate Guaranteed &bull; Limited Time</span>
+                <label class="dont-show-again">
+                    <input type="checkbox" id="dontShowAgain">
+                    Don't show this again
+                </label>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Privacy & Cookie Consent Modal -->

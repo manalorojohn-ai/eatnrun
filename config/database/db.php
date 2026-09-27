@@ -19,33 +19,36 @@ $conn = null;
 // Try PostgreSQL first ONLY if the extension is actually loaded
 if (extension_loaded('pdo_pgsql')) {
     try {
-        // For Neon: extract endpoint ID and add it to connection options
         $host = DB_HOST;
-        $endpoint_id = '';
         $password = DB_PASS;
+        $user = DB_USER;
         
-        if (strpos($host, 'neon') !== false) {
-            // Extract endpoint ID from host (first part of domain)
-            $host_parts = explode('.', $host);
-            if (count($host_parts) > 0) {
+        // Neon handles authentication via standard user/pass or options=endpoint=<id>
+        $dsn = "pgsql:host=" . $host . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
+        
+        // Try connecting directly first (modern Neon SNI-based routing)
+        try {
+            $conn = new PDO($dsn, $user, $password, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_TIMEOUT => 5
+            ]);
+            $using_postgres = true;
+            error_log("PostgreSQL direct connection successful!");
+        } catch (PDOException $e1) {
+            // If host has neon endpoint, try with options parameter
+            if (strpos($host, 'neon') !== false) {
+                $host_parts = explode('.', $host);
                 $endpoint_id = $host_parts[0];
-                // Workaround D: Specify endpoint ID in password field
-                // Use $ as separator if ; is problematic
-                $password = "endpoint=" . $endpoint_id . ";" . DB_PASS;
-                error_log("Neon endpoint ID: " . $endpoint_id);
+                $dsn_endpoint = $dsn . ";options='endpoint=" . $endpoint_id . "'";
+                error_log("Trying Neon with options endpoint: " . $endpoint_id);
+                $conn = new PDO($dsn_endpoint, $user, $password, [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_TIMEOUT => 5
+                ]);
+                $using_postgres = true;
+                error_log("PostgreSQL Neon options connection successful!");
             }
-            $dsn = "pgsql:host=" . $host . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
-        } else {
-            $dsn = "pgsql:host=" . $host . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
         }
-        
-        error_log("PostgreSQL DSN: " . $dsn);
-        $conn = new PDO($dsn, DB_USER, $password, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_TIMEOUT => 10
-        ]);
-        $using_postgres = true;
-        error_log("PostgreSQL connection successful!");
     } catch (PDOException $e) {
         error_log("PostgreSQL connection failed: " . $e->getMessage());
         $conn = null;
@@ -153,36 +156,58 @@ if (!$conn) {
         ['id' => 8, 'name' => 'Leche Flan', 'description' => 'Classic caramel custard', 'price' => 60.00, 'category_id' => 4, 'category_name' => 'Desserts', 'image_path' => 'assets/images/menu/Desserts/leche-flan.jpg', 'status' => 'available']
     ];
     
-    // Create a simple JSON-based storage class
+    // Create a robust JSON-based storage class
     class JSONDatabase {
         private $data_dir;
         private $sample_categories;
         private $sample_menu_items;
+        public $last_id = 0;
         
         public function __construct($categories, $menu_items) {
-            $this->data_dir = dirname(__DIR__) . '/data';
+            $this->data_dir = dirname(__DIR__, 2) . '/data';
             $this->sample_categories = $categories;
             $this->sample_menu_items = $menu_items;
             if (!is_dir($this->data_dir)) {
-                mkdir($this->data_dir, 0755, true);
+                @mkdir($this->data_dir, 0777, true);
             }
+        }
+
+        public function getFile($table) {
+            return $this->data_dir . '/' . preg_replace('/[^a-zA-Z0-9_]/', '', $table) . '.json';
+        }
+
+        public function readTable($table) {
+            $file = $this->getFile($table);
+            if (file_exists($file)) {
+                $content = @file_get_contents($file);
+                $data = json_decode($content, true);
+                if (is_array($data)) return $data;
+            }
+            return [];
+        }
+
+        public function writeTable($table, $data) {
+            $file = $this->getFile($table);
+            @file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT));
         }
         
         public function query($sql) {
             error_log("JSON DB Query: " . substr($sql, 0, 100));
-            $sql = strtolower($sql);
+            $sql_clean = strtolower($sql);
             
-            if (strpos($sql, 'menu_items') !== false && strpos($sql, 'select') !== false) {
+            if (strpos($sql_clean, 'menu_items') !== false && strpos($sql_clean, 'select') !== false) {
                 return new JSONResult($this->sample_menu_items);
-            } elseif (strpos($sql, 'categories') !== false && strpos($sql, 'select') !== false) {
+            } elseif (strpos($sql_clean, 'categories') !== false && strpos($sql_clean, 'select') !== false) {
                 return new JSONResult($this->sample_categories);
+            } elseif (strpos($sql_clean, 'users') !== false && strpos($sql_clean, 'select') !== false) {
+                return new JSONResult($this->readTable('users'));
             }
             
             return new JSONResult([]);
         }
         
         public function prepare($sql) {
-            return new JSONStatement($sql, $this->sample_categories, $this->sample_menu_items);
+            return new JSONStatement($sql, $this->sample_categories, $this->sample_menu_items, $this);
         }
         
         public function real_escape_string($str) {
@@ -192,7 +217,7 @@ if (!$conn) {
         public function begin_transaction() { return true; }
         public function commit() { return true; }
         public function rollback() { return true; }
-        public function affected_rows() { return 0; }
+        public function affected_rows() { return 1; }
         public $connect_error = null;
     }
     
@@ -201,8 +226,8 @@ if (!$conn) {
         public $num_rows = 0;
         
         public function __construct($data = []) {
-            $this->data = $data;
-            $this->num_rows = count($data);
+            $this->data = is_array($data) ? array_values($data) : [];
+            $this->num_rows = count($this->data);
         }
         
         public function fetch_assoc() {
@@ -222,12 +247,15 @@ if (!$conn) {
         private $sql;
         private $sample_categories;
         private $sample_menu_items;
+        private $db;
         private $params = [];
+        private $last_result = [];
         
-        public function __construct($sql, $categories, $menu_items) {
+        public function __construct($sql, $categories, $menu_items, $db = null) {
             $this->sql = $sql;
             $this->sample_categories = $categories;
             $this->sample_menu_items = $menu_items;
+            $this->db = $db;
         }
         
         public function bind_param($types, ...$params) {
@@ -236,10 +264,67 @@ if (!$conn) {
         }
         
         public function execute() {
+            $sql = $this->sql;
+            $sql_clean = strtolower($sql);
+
+            // SELECT COUNT(*) on users (check email/username)
+            if (strpos($sql_clean, 'users') !== false && strpos($sql_clean, 'count(*)') !== false && $this->db) {
+                $users = $this->db->readTable('users');
+                $count = 0;
+                $searchVal = isset($this->params[0]) ? strtolower(trim($this->params[0])) : '';
+                foreach ($users as $u) {
+                    if (strpos($sql_clean, 'username') !== false && strtolower($u['username'] ?? '') === $searchVal) {
+                        $count++;
+                    }
+                    if (strpos($sql_clean, 'email') !== false && strtolower($u['email'] ?? '') === $searchVal) {
+                        $count++;
+                    }
+                }
+                $this->last_result = [['count' => $count]];
+                return true;
+            }
+
+            // INSERT INTO users
+            if (strpos($sql_clean, 'insert into users') !== false && $this->db) {
+                $users = $this->db->readTable('users');
+                $newId = count($users) + 1;
+                $newUser = [
+                    'id' => $newId,
+                    'full_name' => $this->params[0] ?? '',
+                    'username' => $this->params[1] ?? '',
+                    'email' => $this->params[2] ?? '',
+                    'phone' => $this->params[3] ?? '',
+                    'password' => $this->params[4] ?? '',
+                    'is_verified' => 0,
+                    'created_at' => date('Y-m-d H:i:s')
+                ];
+                $users[] = $newUser;
+                $this->db->writeTable('users', $users);
+                $this->db->last_id = $newId;
+                return true;
+            }
+
+            // INSERT INTO email_verifications
+            if (strpos($sql_clean, 'insert into email_verifications') !== false && $this->db) {
+                $verifications = $this->db->readTable('email_verifications');
+                $verifications[] = [
+                    'user_id' => $this->params[0] ?? 0,
+                    'email' => $this->params[1] ?? '',
+                    'otp' => $this->params[2] ?? '',
+                    'expiry' => $this->params[3] ?? '',
+                    'created_at' => date('Y-m-d H:i:s')
+                ];
+                $this->db->writeTable('email_verifications', $verifications);
+                return true;
+            }
+
             return true;
         }
         
         public function get_result() {
+            if (!empty($this->last_result)) {
+                return new JSONResult($this->last_result);
+            }
             $sql = strtolower($this->sql);
             if (strpos($sql, 'categories') !== false && strpos($sql, 'select') !== false) {
                 return new JSONResult($this->sample_categories);
@@ -331,6 +416,8 @@ if (!function_exists('mysqli_insert_id')) {
     function mysqli_insert_id($c) { 
         if ($c instanceof PDO_Conn_Wrapper) {
             try { return $c->getPDO()->lastInsertId(); } catch (Exception $e) { return 0; }
+        } elseif ($c instanceof JSONDatabase) {
+            return $c->last_id ?? 0;
         }
         return 0;
     } 

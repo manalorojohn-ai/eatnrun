@@ -168,12 +168,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['temp_user_id'] = $user_id;
                 $_SESSION['temp_email'] = $email;
                 
-                header("Location: verify-email.php");
+                header("Location: verify-email");
                 exit();
             } catch (Exception $e) {
                 $conn->rollback();
                 error_log("Email error: " . $mail->ErrorInfo);
-                $error = "Failed to send verification email. Please try again.";
+                $error = "Failed to send verification email. Details: " . ($mail->ErrorInfo ?: $e->getMessage());
             }
         } catch (Exception $e) {
             $conn->rollback();
@@ -932,6 +932,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
+    <?php include 'includes/ui/loader.php'; ?>
     <?php include 'includes/ui/navbar.php'; ?>
     
     <main class="flex-grow-1">
@@ -954,7 +955,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
                                 </div>
                             <?php endif; ?>
-                    <form method="POST" action="register.php" class="needs-validation" novalidate>
+                    <form method="POST" action="register" class="needs-validation" novalidate id="registerForm">
                         <div class="row g-3">
                             <div class="col-12">
                                 <label for="full_name" class="form-label">Full Name</label>
@@ -1098,21 +1099,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 form.addEventListener('submit', event => {
                     validatePassword()
                     
-                    if (!form.checkValidity() === false) {
+                    if (!form.checkValidity()) {
                         event.preventDefault()
                         event.stopPropagation()
                     } else {
-                        // Form is valid, show loader
-                        event.preventDefault()
+                        // Form is valid: show button spinner & trigger page loader
                         if (submitBtn) {
                             submitBtn.disabled = true
-                            const originalHTML = submitBtn.innerHTML
-                            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...'
-                            
-                            // Submit the form
-                            setTimeout(() => {
-                                form.submit()
-                            }, 300)
+                            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing Registration...'
+                        }
+                        const pageLoader = document.querySelector('.page-loader')
+                        if (pageLoader) {
+                            pageLoader.classList.remove('hidden')
                         }
                     }
 

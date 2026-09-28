@@ -15,7 +15,8 @@ if (isset($_SESSION['user_id'])) {
     exit();
 }
 
-require_once 'config/db.php';
+require_once dirname(__DIR__, 2) . '/config/db.php';
+global $conn;
 
 error_log("POST request to login - Email: " . ($_POST['email'] ?? 'NOT PROVIDED'));
 error_log("Database connection available: " . ($conn ? "YES" : "NO"));
@@ -73,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($conn instanceof PDO) {
             // PDO connection
             error_log("Login: Using PDO connection");
-            $query = "SELECT * FROM users WHERE (LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)) AND status = 'active' LIMIT 1";
+            $query = "SELECT * FROM users WHERE LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?) LIMIT 1";
             $stmt = $conn->prepare($query);
             if (!$stmt) {
                 $db_error = "Failed to prepare PDO statement";
@@ -88,10 +89,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     error_log("Login: PDO query returned user: " . ($user ? "Yes" : "No"));
                 }
             }
-        } else {
+        } elseif ($conn instanceof mysqli) {
             // MySQLi connection
             error_log("Login: Using MySQLi connection");
-            $query = "SELECT * FROM users WHERE (LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)) AND status = 'active' LIMIT 1";
+            $query = "SELECT * FROM users WHERE LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?) LIMIT 1";
             $stmt = $conn->prepare($query);
             if (!$stmt) {
                 $db_error = "Failed to prepare MySQLi statement";
@@ -106,6 +107,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $result = $stmt->get_result();
                     $user = $result->fetch_assoc();
                     error_log("Login: MySQLi query returned user: " . ($user ? "Yes" : "No"));
+                }
+            }
+        } elseif (is_object($conn) && method_exists($conn, 'readTable')) {
+            // JSON fallback connection
+            $all_users = $conn->readTable('users');
+            $search = strtolower(trim($email));
+            foreach ($all_users as $u) {
+                if (strtolower($u['email'] ?? '') === $search || strtolower($u['username'] ?? '') === $search) {
+                    $user = $u;
+                    break;
                 }
             }
         }
@@ -185,9 +196,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         // Regular customer verification checks
-        if (!isset($user['is_verified']) || !$user['is_verified']) {
+        $is_verified = false;
+        if (isset($user['is_verified'])) {
+            $is_verified = ($user['is_verified'] === true || $user['is_verified'] === 1 || $user['is_verified'] === '1' || $user['is_verified'] === 't');
+        }
+        
+        if (!$is_verified) {
             error_log("Login: User not verified - " . $user['email']);
-            $error_message = "Please verify your email address first. Check your inbox for the verification code.";
+            $_SESSION['temp_user_id'] = $user['id'];
+            $_SESSION['temp_email'] = $user['email'];
+            $error_message = 'Please verify your email address first. <a href="/verify-email" class="fw-bold text-decoration-underline" style="color: inherit;">Click here to enter your OTP code.</a>';
         } else {
             error_log("Regular user verified, setting session and redirecting to /dashboard");
             // Regenerate session ID for security
@@ -527,7 +545,7 @@ include 'includes/ui/navbar.php';
                 
                 <?php if (!empty($error_message)): ?>
                     <div class="alert alert-danger" style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border: 1px solid #f5c6cb;">
-                        <i class="fas fa-exclamation-triangle"></i> <?php echo htmlspecialchars($error_message); ?>
+                        <i class="fas fa-exclamation-triangle"></i> <?php echo $error_message; ?>
                     </div>
                 <?php endif; ?>
                 
@@ -554,7 +572,7 @@ include 'includes/ui/navbar.php';
                     </div>
 
                     <div class="forgot-password">
-                        <a href="forgot_password">Forgot Password?</a>
+                        <a href="/forgot-password">Forgot Password?</a>
                     </div>
 
                     <button type="submit" class="sign-in-btn">

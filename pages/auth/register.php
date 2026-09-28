@@ -144,12 +144,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // If PostgreSQL (Neon), RETURNING id is preferred and foolproof
                 $driver = $conn->getAttribute(PDO::ATTR_DRIVER_NAME);
                 if ($driver === 'pgsql') {
-                    $insertUser = "INSERT INTO users (full_name, username, email, phone, password, role, is_verified) VALUES (?, ?, ?, ?, ?, 'user', 0) RETURNING id";
+                    $insertUser = "INSERT INTO users (full_name, username, email, phone, password, role, status, is_verified) VALUES (?, ?, ?, ?, ?, 'user', 'active', 0) RETURNING id";
                     $stmt = $conn->prepare($insertUser);
                     $stmt->execute([$full_name, $username, $email, $phone, $hashed_password]);
                     $user_id = (int)$stmt->fetchColumn();
                 } else {
-                    $insertUser = "INSERT INTO users (full_name, username, email, phone, password, role, is_verified) VALUES (?, ?, ?, ?, ?, 'user', 0)";
+                    $insertUser = "INSERT INTO users (full_name, username, email, phone, password, role, status, is_verified) VALUES (?, ?, ?, ?, ?, 'user', 'active', 0)";
                     $stmt = $conn->prepare($insertUser);
                     $stmt->execute([$full_name, $username, $email, $phone, $hashed_password]);
                     $user_id = (int)$conn->lastInsertId();
@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmtOtp = $conn->prepare($insertOtp);
                 $stmtOtp->execute([$user_id, $email, $otp, $otp_expiry]);
             } elseif ($conn instanceof mysqli) {
-                $stmt = mysqli_prepare($conn, "INSERT INTO users (full_name, username, email, phone, password, role, is_verified) VALUES (?, ?, ?, ?, ?, 'user', 0)");
+                $stmt = mysqli_prepare($conn, "INSERT INTO users (full_name, username, email, phone, password, role, status, is_verified) VALUES (?, ?, ?, ?, ?, 'user', 'active', 0)");
                 mysqli_stmt_bind_param($stmt, "sssss", $full_name, $username, $email, $phone, $hashed_password);
                 mysqli_stmt_execute($stmt);
                 $user_id = (int)mysqli_insert_id($conn);

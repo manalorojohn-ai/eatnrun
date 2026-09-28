@@ -151,7 +151,7 @@ if (isset($_SESSION['user_id'])) {
     </style>
 </head>
 <body>
-    <?php include dirname(__DIR__) . '/includes/ui/navbar.php'; ?>
+    <?php include dirname(__DIR__, 2) . '/includes/ui/navbar.php'; ?>
 
     <div class="page-wrapper">
         <div class="forgot-container">
@@ -221,7 +221,7 @@ if (isset($_SESSION['user_id'])) {
         </div>
     </div>
 
-    <?php include dirname(__DIR__) . '/includes/ui/footer.php'; ?>
+    <?php include dirname(__DIR__, 2) . '/includes/ui/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

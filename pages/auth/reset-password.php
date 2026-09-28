@@ -227,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </style>
 </head>
 <body>
-    <?php include dirname(__DIR__) . '/includes/ui/navbar.php'; ?>
+    <?php include dirname(__DIR__, 2) . '/includes/ui/navbar.php'; ?>
 
     <div class="page-wrapper">
         <div class="reset-container">
@@ -292,7 +292,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
-    <?php include dirname(__DIR__) . '/includes/ui/footer.php'; ?>
+    <?php include dirname(__DIR__, 2) . '/includes/ui/footer.php'; ?>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>

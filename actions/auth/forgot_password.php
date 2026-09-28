@@ -1,5 +1,4 @@
 <?php
-// This file is a convenience wrapper for forgot-password.php
-// It handles both naming conventions (with hyphens or underscores)
-include_once 'forgot-password.php';
+// Wrapper for forgot_password route
+require_once dirname(__DIR__, 2) . '/pages/auth/forgot-password.php';
 ?> 

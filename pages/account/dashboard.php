@@ -1,8 +1,8 @@
 <?php
 // Remove any whitespace before opening PHP tag
-ob_start(); // Add output buffering
-session_start();
-require_once "config/db.php";
+ob_start();
+require_once dirname(__DIR__, 2) . '/includes/helpers/init_session.php';
+require_once dirname(__DIR__, 2) . '/config/db.php';
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -29,24 +29,26 @@ try {
         $stmt->execute();
         $result = $stmt->get_result();
         $user = $result->fetch_assoc();
-    } else {
-        // Fallback/JSONDatabase - use test user from session
-        $user = [
-            'id' => $_SESSION['user_id'],
-            'username' => $_SESSION['username'] ?? (explode('@', $_SESSION['email'] ?? 'user')[0]),
-            'full_name' => $_SESSION['full_name'] ?? 'User',
-            'email' => $_SESSION['email'] ?? 'test@example.com',
-            'phone' => $_SESSION['phone'] ?? 'N/A',
-            'address' => $_SESSION['address'] ?? 'N/A',
-        ];
     }
 } catch (Exception $e) {
     error_log("Dashboard - Error fetching user: " . $e->getMessage());
     $user = null;
 }
 
+// Fallback to session details if database is unavailable or test user
+if (!$user && isset($_SESSION['user_id'])) {
+    $user = [
+        'id' => $_SESSION['user_id'],
+        'username' => $_SESSION['username'] ?? 'User',
+        'full_name' => $_SESSION['full_name'] ?? 'Valued Customer',
+        'email' => $_SESSION['email'] ?? '',
+        'phone' => $_SESSION['phone'] ?? 'N/A',
+        'address' => $_SESSION['address'] ?? 'N/A',
+    ];
+}
+
 if (!$user) {
-    session_destroy();
+    unset($_SESSION['user_id']);
     header("Location: /login");
     exit();
 }

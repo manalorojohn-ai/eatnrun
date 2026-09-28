@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once dirname(__DIR__, 2) . '/includes/helpers/init_session.php';
 require_once dirname(__DIR__, 2) . '/config/db.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -29,56 +29,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($otp)) {
         $error = 'Please enter the 6-digit OTP code.';
     } else {
-        // Query verification code
-        $verify_query = "SELECT * FROM email_verifications WHERE user_id = ? AND email = ? ORDER BY created_at DESC LIMIT 1";
-        $stmt = mysqli_prepare($conn, $verify_query);
-        if ($stmt) {
-            mysqli_stmt_bind_param($stmt, "is", $user_id, $email);
-            mysqli_stmt_execute($stmt);
-            $result = mysqli_stmt_get_result($stmt);
-            $verification = mysqli_fetch_assoc($result);
-            mysqli_stmt_close($stmt);
-
-            $matched = false;
-            if ($verification && isset($verification['otp'])) {
-                if ($verification['otp'] === $otp) {
-                    $matched = true;
-                }
+        $verification = null;
+        if ($conn instanceof PDO) {
+            $stmt = $conn->prepare("SELECT * FROM email_verifications WHERE user_id = ? AND email = ? ORDER BY id DESC LIMIT 1");
+            $stmt->execute([$user_id, $email]);
+            $verification = $stmt->fetch(PDO::FETCH_ASSOC);
+        } elseif ($conn instanceof mysqli) {
+            $verify_query = "SELECT * FROM email_verifications WHERE user_id = ? AND email = ? ORDER BY id DESC LIMIT 1";
+            $stmt = mysqli_prepare($conn, $verify_query);
+            if ($stmt) {
+                mysqli_stmt_bind_param($stmt, "is", $user_id, $email);
+                mysqli_stmt_execute($stmt);
+                $result = mysqli_stmt_get_result($stmt);
+                $verification = mysqli_fetch_assoc($result);
+                mysqli_stmt_close($stmt);
             }
+        }
 
-            if ($matched) {
-                // Update user to verified
-                $update_query = "UPDATE users SET is_verified = 1 WHERE id = ?";
-                $stmt = mysqli_prepare($conn, $update_query);
+        $matched = false;
+        if ($verification && isset($verification['otp'])) {
+            if (trim($verification['otp']) === $otp) {
+                $matched = true;
+            }
+        }
+
+        if ($matched) {
+            if ($conn instanceof PDO) {
+                $updateStmt = $conn->prepare("UPDATE users SET is_verified = 1 WHERE id = ?");
+                $updateStmt->execute([$user_id]);
+
+                $delStmt = $conn->prepare("DELETE FROM email_verifications WHERE user_id = ?");
+                $delStmt->execute([$user_id]);
+            } elseif ($conn instanceof mysqli) {
+                $stmt = mysqli_prepare($conn, "UPDATE users SET is_verified = 1 WHERE id = ?");
                 if ($stmt) {
                     mysqli_stmt_bind_param($stmt, "i", $user_id);
                     mysqli_stmt_execute($stmt);
                     mysqli_stmt_close($stmt);
                 }
 
-                // Delete verifications
-                $del_query = "DELETE FROM email_verifications WHERE user_id = ?";
-                $stmt = mysqli_prepare($conn, $del_query);
+                $stmt = mysqli_prepare($conn, "DELETE FROM email_verifications WHERE user_id = ?");
                 if ($stmt) {
                     mysqli_stmt_bind_param($stmt, "i", $user_id);
                     mysqli_stmt_execute($stmt);
                     mysqli_stmt_close($stmt);
                 }
-
-                // Log the user in
-                $_SESSION['user_id'] = $user_id;
-                $_SESSION['role'] = 'customer';
-                $_SESSION['email_verified'] = true;
-                unset($_SESSION['temp_user_id']);
-                unset($_SESSION['temp_email']);
-
-                header("Location: /?registered=1");
-                exit();
-            } else {
-                $error = "Invalid verification code. Please check your email or request a new code.";
             }
+
+            // Log the user in with synchronized session variables
+            $_SESSION['user_id'] = $user_id;
+            $_SESSION['role'] = 'user';
+            $_SESSION['user_role'] = 'user';
+            $_SESSION['email'] = $email;
+            if (isset($_SESSION['temp_full_name'])) {
+                $_SESSION['full_name'] = $_SESSION['temp_full_name'];
+            }
+            $_SESSION['email_verified'] = true;
+            $_SESSION['login_time'] = time();
+            $_SESSION['last_activity'] = time();
+
+            unset($_SESSION['temp_user_id']);
+            unset($_SESSION['temp_email']);
+            unset($_SESSION['temp_full_name']);
+
+            header("Location: /dashboard?registered=1");
+            exit();
         } else {
-            $error = "Verification service temporarily unavailable.";
+            $error = "Invalid verification code. Please check your email or request a new code.";
         }
     }
 }

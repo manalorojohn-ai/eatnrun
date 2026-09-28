@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once dirname(__DIR__, 2) . '/includes/helpers/init_session.php';
 require_once dirname(__DIR__, 2) . '/config/db.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -27,27 +27,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (empty($email)) {
         $_SESSION['error'] = 'Email is required';
-        header("Location: ../../pages/auth/forgot-password.php");
+        header("Location: /forgot-password");
         exit();
     }
     
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $_SESSION['error'] = 'Invalid email format';
-        header("Location: ../../pages/auth/forgot-password.php");
+        header("Location: /forgot-password");
         exit();
     }
     
     // Check if user exists
-    $stmt = mysqli_prepare($conn, "SELECT id, full_name FROM users WHERE email = ?");
-    mysqli_stmt_bind_param($stmt, "s", $email);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-    $user = mysqli_fetch_assoc($result);
-    mysqli_stmt_close($stmt);
+    $user = null;
+    if ($conn instanceof PDO) {
+        $stmt = $conn->prepare("SELECT id, full_name FROM users WHERE LOWER(email) = LOWER(?) LIMIT 1");
+        $stmt->execute([$email]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    } elseif ($conn instanceof mysqli) {
+        $stmt = mysqli_prepare($conn, "SELECT id, full_name FROM users WHERE LOWER(email) = LOWER(?)");
+        mysqli_stmt_bind_param($stmt, "s", $email);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $user = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+    }
     
     if (!$user) {
         $_SESSION['error'] = 'Email not found';
-        header("Location: ../../pages/auth/forgot-password.php");
+        header("Location: /forgot-password");
         exit();
     }
     
@@ -56,11 +63,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $token_expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
     
     // Store reset token
-    $stmt = mysqli_prepare($conn, "UPDATE users SET reset_token = ?, reset_expiry = ? WHERE id = ?");
-    mysqli_stmt_bind_param($stmt, "ssi", $reset_token, $token_expiry, $user['id']);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
-    
+    if ($conn instanceof PDO) {
+        $stmt = $conn->prepare("UPDATE users SET reset_token = ?, reset_expiry = ? WHERE id = ?");
+        $stmt->execute([$reset_token, $token_expiry, $user['id']]);
+    } elseif ($conn instanceof mysqli) {
+        $stmt = mysqli_prepare($conn, "UPDATE users SET reset_token = ?, reset_expiry = ? WHERE id = ?");
+        mysqli_stmt_bind_param($stmt, "ssi", $reset_token, $token_expiry, $user['id']);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+    }
+
     // Send password reset email
     $mail = new PHPMailer(true);
     
@@ -95,12 +107,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mail->isHTML(true);
         $mail->Subject = 'Reset Your Password - Eat&Run';
         
-        $reset_link = "http://" . $_SERVER['HTTP_HOST'] . "/pages/auth/reset-password.php?token=" . $reset_token;
+        $reset_link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'] . "/reset-password?token=" . $reset_token;
         
         $mail->Body = "
             <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>
                 <h2 style='color: #006C3B; text-align: center;'>Password Reset Request</h2>
-                <p>Dear {$user['full_name']},</p>
+                <p>Dear " . htmlspecialchars($user['full_name']) . ",</p>
                 <p>We received a request to reset your password. Click the button below to proceed:</p>
                 <div style='text-align: center; margin: 30px 0;'>
                     <a href='{$reset_link}' style='background: #006C3B; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;'>
@@ -117,13 +129,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mail->send();
         
         $_SESSION['success'] = 'Password reset link has been sent to your email';
-        header("Location: ../../pages/auth/forgot-password.php");
+        header("Location: /forgot-password");
         exit();
         
     } catch (Exception $e) {
         error_log("Email error: " . $mail->ErrorInfo);
         $_SESSION['error'] = 'Failed to send reset email. Please try again.';
-        header("Location: ../../pages/auth/forgot-password.php");
+        header("Location: /forgot-password");
         exit();
     }
 }

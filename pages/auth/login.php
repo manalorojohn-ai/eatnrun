@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once dirname(__DIR__, 2) . '/includes/helpers/init_session.php';
 
 error_log("========== LOGIN PAGE DEBUG ==========");
 error_log("Login page loaded!");
@@ -168,8 +168,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // Login successful for admin
             $_SESSION['user_id'] = $user['id'];
-            $_SESSION['role'] = $user['role'];
-            $_SESSION['full_name'] = $user['full_name'];
+            $_SESSION['role'] = 'admin';
+            $_SESSION['user_role'] = 'admin';
+            $_SESSION['username'] = $user['username'] ?? '';
+            $_SESSION['email'] = $user['email'] ?? '';
+            $_SESSION['full_name'] = $user['full_name'] ?? '';
             $_SESSION['login_time'] = time();
             $_SESSION['last_activity'] = time();
             
@@ -191,9 +194,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             session_regenerate_id(true);
             
             // Login successful for regular user
+            $user_role = $user['role'] ?? 'user';
             $_SESSION['user_id'] = $user['id'];
-            $_SESSION['role'] = $user['role'] ?? 'user';
-            $_SESSION['full_name'] = $user['full_name'];
+            $_SESSION['role'] = $user_role;
+            $_SESSION['user_role'] = $user_role;
+            $_SESSION['username'] = $user['username'] ?? '';
+            $_SESSION['email'] = $user['email'] ?? '';
+            $_SESSION['full_name'] = $user['full_name'] ?? '';
+            $_SESSION['phone'] = $user['phone'] ?? '';
+            $_SESSION['address'] = $user['address'] ?? '';
             $_SESSION['login_time'] = time();
             $_SESSION['last_activity'] = time();
             

@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once dirname(__DIR__, 2) . '/includes/helpers/init_session.php';
 require_once dirname(__DIR__, 2) . '/config/db.php';
 
 // Redirect if already logged in
@@ -14,21 +14,28 @@ $token = $_GET['token'] ?? '';
 
 if (empty($token)) {
     $_SESSION['error'] = 'Invalid reset link';
-    header("Location: forgot-password.php");
+    header("Location: /forgot-password");
     exit();
 }
 
 // Verify token
-$stmt = mysqli_prepare($conn, "SELECT id FROM users WHERE reset_token = ? AND reset_expiry > NOW()");
-mysqli_stmt_bind_param($stmt, "s", $token);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$user = mysqli_fetch_assoc($result);
-mysqli_stmt_close($stmt);
+$user = null;
+if ($conn instanceof PDO) {
+    $stmt = $conn->prepare("SELECT id FROM users WHERE reset_token = ? AND reset_expiry > NOW() LIMIT 1");
+    $stmt->execute([$token]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+} elseif ($conn instanceof mysqli) {
+    $stmt = mysqli_prepare($conn, "SELECT id FROM users WHERE reset_token = ? AND reset_expiry > NOW()");
+    mysqli_stmt_bind_param($stmt, "s", $token);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $user = mysqli_fetch_assoc($result);
+    mysqli_stmt_close($stmt);
+}
 
 if (!$user) {
     $_SESSION['error'] = 'Invalid or expired reset link';
-    header("Location: forgot-password.php");
+    header("Location: /forgot-password");
     exit();
 }
 
@@ -54,13 +61,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         
         // Update password and clear reset token
-        $stmt = mysqli_prepare($conn, "UPDATE users SET password = ?, reset_token = NULL, reset_expiry = NULL WHERE id = ?");
-        mysqli_stmt_bind_param($stmt, "si", $hashed_password, $user_id);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
+        if ($conn instanceof PDO) {
+            $stmt = $conn->prepare("UPDATE users SET password = ?, reset_token = NULL, reset_expiry = NULL WHERE id = ?");
+            $stmt->execute([$hashed_password, $user_id]);
+        } elseif ($conn instanceof mysqli) {
+            $stmt = mysqli_prepare($conn, "UPDATE users SET password = ?, reset_token = NULL, reset_expiry = NULL WHERE id = ?");
+            mysqli_stmt_bind_param($stmt, "si", $hashed_password, $user_id);
+            mysqli_stmt_execute($stmt);
+            mysqli_stmt_close($stmt);
+        }
         
         $_SESSION['success'] = 'Your password has been reset successfully. You can now login.';
-        header("Location: login.php");
+        header("Location: /login");
         exit();
     }
 }

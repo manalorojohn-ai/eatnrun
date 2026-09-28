@@ -14,7 +14,8 @@ function isLoggedIn() {
  * @return bool True if user is an admin, false otherwise
  */
 function isAdmin() {
-    return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+    $role = $_SESSION['user_role'] ?? $_SESSION['role'] ?? null;
+    return $role === 'admin';
 }
 
 /**
@@ -30,7 +31,7 @@ function getCurrentUserId() {
  * @return string|null User role if logged in, null otherwise
  */
 function getCurrentUserRole() {
-    return $_SESSION['user_role'] ?? null;
+    return $_SESSION['user_role'] ?? $_SESSION['role'] ?? null;
 }
 
 /**

@@ -22,38 +22,8 @@ if (file_exists($envFile)) {
     }
 }
 
-// Session configuration - use a local temp directory
-// IMPORTANT: session_save_path MUST be called BEFORE session_start()
-$sessionDir = dirname(__DIR__) . '/tmp/sessions';
-if (!is_dir($sessionDir)) {
-    mkdir($sessionDir, 0777, true);
-}
-
-// Only set session path if session hasn't started yet
-if (session_status() === PHP_SESSION_NONE) {
-    session_save_path($sessionDir);
-    
-    // Configure session timeout (set to 7 days = 604800 seconds)
-    ini_set('session.gc_maxlifetime', 604800);
-    ini_set('session.cookie_lifetime', 604800);
-    
-    // Configure session cookies for better persistence
-    session_set_cookie_params([
-        'lifetime' => 604800,      // 7 days
-        'path' => '/',
-        'domain' => '',
-        'secure' => false,         // Set to true if using HTTPS
-        'httponly' => true,        // Prevent JavaScript access
-        'samesite' => 'Lax'       // CSRF protection
-    ]);
-    
-    // Regenerate session ID on login for security
-    session_name('EATNRUN_SESSION');
-    session_start();
-    
-    // Register session cleanup for old files
-    register_shutdown_function('session_write_close');
-}
+// Session configuration - standardized via init_session.php
+require_once __DIR__ . '/helpers/init_session.php';
 
 // Database connection
 require_once dirname(__DIR__) . '/config/database/db.php';
@@ -101,12 +71,20 @@ function format_date($date) {
 }
 
 // Initialize login history table - only if using real DB
-if (isset($using_json) && !$using_json) {
+if (isset($using_json) && !$using_json && isset($conn)) {
     $create_login_history_table = "CREATE TABLE IF NOT EXISTS login_history (
         id SERIAL PRIMARY KEY,
         user_id INTEGER NOT NULL REFERENCES users(id),
         login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )";
-    mysqli_query($conn, $create_login_history_table);
+    try {
+        if ($conn instanceof PDO) {
+            $conn->exec($create_login_history_table);
+        } elseif ($conn instanceof mysqli) {
+            mysqli_query($conn, $create_login_history_table);
+        }
+    } catch (Exception $e) {
+        error_log("Failed to create login_history table: " . $e->getMessage());
+    }
 }
 ?> 

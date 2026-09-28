@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once dirname(__DIR__, 2) . '/includes/helpers/init_session.php';
 require_once dirname(__DIR__, 2) . '/config/db.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -52,12 +52,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Username should be 4-20 characters and contain only letters, numbers, and underscores';
     } else {
         // Check if username exists
-        $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as count FROM users WHERE username = ?");
-        mysqli_stmt_bind_param($stmt, "s", $username);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $count = mysqli_fetch_assoc($result)['count'];
-        mysqli_stmt_close($stmt);
+        $count = 0;
+        if ($conn instanceof PDO) {
+            $stmt = $conn->prepare("SELECT COUNT(*) as count FROM users WHERE LOWER(username) = LOWER(?)");
+            $stmt->execute([$username]);
+            $count = (int)$stmt->fetchColumn();
+        } elseif ($conn instanceof mysqli) {
+            $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as count FROM users WHERE LOWER(username) = LOWER(?)");
+            mysqli_stmt_bind_param($stmt, "s", $username);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            $count = (int)(mysqli_fetch_assoc($result)['count'] ?? 0);
+            mysqli_stmt_close($stmt);
+        }
         
         if ($count > 0) {
             $error = 'Username already exists';
@@ -74,12 +81,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Only gmail.com, yahoo.com, or outlook.com emails are allowed';
     } else {
         // Check if email exists
-        $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as count FROM users WHERE email = ?");
-        mysqli_stmt_bind_param($stmt, "s", $email);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $count = mysqli_fetch_assoc($result)['count'];
-        mysqli_stmt_close($stmt);
+        $count = 0;
+        if ($conn instanceof PDO) {
+            $stmt = $conn->prepare("SELECT COUNT(*) as count FROM users WHERE LOWER(email) = LOWER(?)");
+            $stmt->execute([$email]);
+            $count = (int)$stmt->fetchColumn();
+        } elseif ($conn instanceof mysqli) {
+            $stmt = mysqli_prepare($conn, "SELECT COUNT(*) as count FROM users WHERE LOWER(email) = LOWER(?)");
+            mysqli_stmt_bind_param($stmt, "s", $email);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            $count = (int)(mysqli_fetch_assoc($result)['count'] ?? 0);
+            mysqli_stmt_close($stmt);
+        }
         
         if ($count > 0) {
             $error = 'Email already exists';
@@ -110,25 +124,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // If no errors, proceed with registration and OTP
     if (empty($error)) {
-        $conn->begin_transaction();
-        
         try {
+            $inTransaction = false;
+            if ($conn instanceof PDO) {
+                $conn->beginTransaction();
+                $inTransaction = true;
+            } elseif ($conn instanceof mysqli) {
+                $conn->begin_transaction();
+                $inTransaction = true;
+            }
+            
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $otp = generateOTP();
             $otp_expiry = date('Y-m-d H:i:s', strtotime('+10 minutes'));
+            $user_id = 0;
             
             // Insert user
-            $stmt = mysqli_prepare($conn, "INSERT INTO users (full_name, username, email, phone, password, is_verified) VALUES (?, ?, ?, ?, ?, 0)");
-            mysqli_stmt_bind_param($stmt, "sssss", $full_name, $username, $email, $phone, $hashed_password);
-            mysqli_stmt_execute($stmt);
-            $user_id = mysqli_insert_id($conn);
-            mysqli_stmt_close($stmt);
+            if ($conn instanceof PDO) {
+                // If PostgreSQL (Neon), RETURNING id is preferred and foolproof
+                $driver = $conn->getAttribute(PDO::ATTR_DRIVER_NAME);
+                if ($driver === 'pgsql') {
+                    $insertUser = "INSERT INTO users (full_name, username, email, phone, password, role, is_verified) VALUES (?, ?, ?, ?, ?, 'user', 0) RETURNING id";
+                    $stmt = $conn->prepare($insertUser);
+                    $stmt->execute([$full_name, $username, $email, $phone, $hashed_password]);
+                    $user_id = (int)$stmt->fetchColumn();
+                } else {
+                    $insertUser = "INSERT INTO users (full_name, username, email, phone, password, role, is_verified) VALUES (?, ?, ?, ?, ?, 'user', 0)";
+                    $stmt = $conn->prepare($insertUser);
+                    $stmt->execute([$full_name, $username, $email, $phone, $hashed_password]);
+                    $user_id = (int)$conn->lastInsertId();
+                }
 
-            // Store OTP
-            $stmt = mysqli_prepare($conn, "INSERT INTO email_verifications (user_id, email, otp, expiry) VALUES (?, ?, ?, ?)");
-            mysqli_stmt_bind_param($stmt, "isss", $user_id, $email, $otp, $otp_expiry);
-            mysqli_stmt_execute($stmt);
-            mysqli_stmt_close($stmt);
+                // Store OTP
+                $insertOtp = "INSERT INTO email_verifications (user_id, email, otp, expiry) VALUES (?, ?, ?, ?)";
+                $stmtOtp = $conn->prepare($insertOtp);
+                $stmtOtp->execute([$user_id, $email, $otp, $otp_expiry]);
+            } elseif ($conn instanceof mysqli) {
+                $stmt = mysqli_prepare($conn, "INSERT INTO users (full_name, username, email, phone, password, role, is_verified) VALUES (?, ?, ?, ?, ?, 'user', 0)");
+                mysqli_stmt_bind_param($stmt, "sssss", $full_name, $username, $email, $phone, $hashed_password);
+                mysqli_stmt_execute($stmt);
+                $user_id = (int)mysqli_insert_id($conn);
+                mysqli_stmt_close($stmt);
+
+                // Store OTP
+                $stmt = mysqli_prepare($conn, "INSERT INTO email_verifications (user_id, email, otp, expiry) VALUES (?, ?, ?, ?)");
+                mysqli_stmt_bind_param($stmt, "isss", $user_id, $email, $otp, $otp_expiry);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_close($stmt);
+            }
 
             // Send verification email
             $mail = new PHPMailer(true);
@@ -168,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mail->Body = "
                     <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>
                         <h2 style='color: #006C3B; text-align: center;'>Welcome to Eat&Run!</h2>
-                        <p>Dear {$full_name},</p>
+                        <p>Dear " . htmlspecialchars($full_name) . ",</p>
                         <p>Thank you for registering with Eat&Run. To complete your registration, please use the following OTP code:</p>
                         <div style='background: #f4f4f4; padding: 20px; text-align: center; font-size: 24px; letter-spacing: 5px; margin: 20px 0;'>
                             {$otp}
@@ -179,21 +222,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>";
 
                 $mail->send();
-                $conn->commit();
+
+                if ($conn instanceof PDO && $conn->inTransaction()) {
+                    $conn->commit();
+                } elseif ($conn instanceof mysqli) {
+                    $conn->commit();
+                }
 
                 // Store user data in session for verification
                 $_SESSION['temp_user_id'] = $user_id;
                 $_SESSION['temp_email'] = $email;
+                $_SESSION['temp_full_name'] = $full_name;
                 
                 header("Location: verify-email");
                 exit();
             } catch (Exception $e) {
-                $conn->rollback();
-                error_log("Email error: " . $mail->ErrorInfo);
+                if ($conn instanceof PDO && $conn->inTransaction()) {
+                    $conn->rollBack();
+                } elseif ($conn instanceof mysqli) {
+                    $conn->rollback();
+                }
+                error_log("Email error: " . ($mail->ErrorInfo ?? $e->getMessage()));
                 $error = "Failed to send verification email. Details: " . ($mail->ErrorInfo ?: $e->getMessage());
             }
         } catch (Exception $e) {
-            $conn->rollback();
+            if ($conn instanceof PDO && $conn->inTransaction()) {
+                $conn->rollBack();
+            } elseif ($conn instanceof mysqli) {
+                $conn->rollback();
+            }
             error_log("Registration error: " . $e->getMessage());
             $error = "Registration failed. Please try again.";
         }

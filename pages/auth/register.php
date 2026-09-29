@@ -177,8 +177,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mail = new PHPMailer(true);
             
             try {
-                $smtp_user = getenv('MAIL_USERNAME') ?: 'eatnrun70@gmail.com';
-                $smtp_pass = getenv('MAIL_PASSWORD') ?: 'xeyf snnt dvnq bqpb';
+                $smtp_user = trim(getenv('MAIL_USERNAME') ?: 'eatnrun70@gmail.com');
+                $smtp_pass = trim(str_replace(' ', '', getenv('MAIL_PASSWORD') ?: 'xeyfsnntdvnqbqpb'));
                 $smtp_port = (int)(getenv('MAIL_PORT') ?: 465);
 
                 $mail->isSMTP();
@@ -192,7 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 }
                 $mail->Port = $smtp_port;
-                $mail->Timeout = 5; // Fast timeout for web response
+                $mail->Timeout = 10;
 
                 // Stream context options for SSL
                 $mail->SMTPOptions = [
@@ -207,34 +207,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $mail->addAddress($email, $full_name);
 
                 $mail->isHTML(true);
-                $mail->Subject = 'Welcome to Eat&Run!';
+                $mail->Subject = 'Eat&Run Verification Code: ' . $otp;
                 $mail->Body = "
-                    <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;'>
-                        <h2 style='color: #006C3B; text-align: center;'>Welcome to Eat&Run!</h2>
-                        <p>Dear " . htmlspecialchars($full_name) . ",</p>
-                        <p>Thank you for registering with Eat&Run. To complete your registration, please use the following OTP code:</p>
-                        <div style='background: #f4f4f4; padding: 20px; text-align: center; font-size: 24px; letter-spacing: 5px; margin: 20px 0;'>
+                    <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;'>
+                        <h2 style='color: #006C3B; text-align: center;'>Eat&Run Account Verification</h2>
+                        <p>Hi <strong>" . htmlspecialchars($full_name) . "</strong>,</p>
+                        <p>Your verification code is:</p>
+                        <div style='background: #f4fdf8; border: 2px dashed #006C3B; padding: 15px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #006C3B; margin: 20px 0;'>
                             {$otp}
                         </div>
-                        <p>This code will expire in 10 minutes.</p>
-                        <p>If you didn't request this verification, please ignore this email.</p>
-                        <p>Best regards,<br>The Eat&Run Team</p>
+                        <p>Enter this code on the verification screen to activate your account. This code will expire in 15 minutes.</p>
+                        <p style='color: #888; font-size: 12px; margin-top: 30px;'>If you did not create an account with Eat&Run, please ignore this email.</p>
                     </div>";
+                $mail->AltBody = "Your Eat&Run verification code is: {$otp}";
 
                 $email_sent = false;
                 try {
                     $email_sent = $mail->send();
                 } catch (Exception $mail_ex) {
-                    error_log("Primary SMTP send failed: " . $mail_ex->getMessage());
-                    // Try alternative port 587 if 465 timed out
-                    if ($smtp_port == 465) {
-                        try {
-                            $mail->Port = 587;
-                            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                            $email_sent = $mail->send();
-                        } catch (Exception $mail_ex2) {
-                            error_log("Fallback SMTP port 587 also failed: " . $mail_ex2->getMessage());
-                        }
+                    error_log("Primary SMTP (port $smtp_port) failed: " . $mail_ex->getMessage());
+                    // Fallback to port 587 STARTTLS if 465 was blocked
+                    try {
+                        $mail->clearAllRecipients();
+                        $mail->addAddress($email, $full_name);
+                        $mail->Port = 587;
+                        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                        $email_sent = $mail->send();
+                    } catch (Exception $mail_ex2) {
+                        error_log("Fallback SMTP port 587 also failed: " . $mail_ex2->getMessage());
                     }
                 }
 

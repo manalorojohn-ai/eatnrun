@@ -180,6 +180,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <h2 class="fw-bold text-success mb-2">Verify Your Email</h2>
                 <p class="text-muted small">We've sent a 6-digit verification code to:<br><strong class="text-dark"><?php echo htmlspecialchars($email); ?></strong></p>
 
+                <?php if (isset($_SESSION['dev_otp_notice'])): ?>
+                    <div class="alert alert-warning text-start py-2 small mb-3">
+                        <i class="fas fa-key me-1"></i><?php echo htmlspecialchars($_SESSION['dev_otp_notice']); unset($_SESSION['dev_otp_notice']); ?>
+                    </div>
+                <?php endif; ?>
                 <?php if ($error): ?>
                     <div class="alert alert-danger text-start py-2 small mb-3"><?php echo htmlspecialchars($error); ?></div>
                 <?php endif; ?>

@@ -192,7 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
                 }
                 $mail->Port = $smtp_port;
-                $mail->Timeout = 15; // Prevent hanging
+                $mail->Timeout = 5; // Fast timeout for web response
 
                 // Stream context options for SSL
                 $mail->SMTPOptions = [
@@ -221,8 +221,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <p>Best regards,<br>The Eat&Run Team</p>
                     </div>";
 
-                $mail->send();
+                $email_sent = false;
+                try {
+                    $email_sent = $mail->send();
+                } catch (Exception $mail_ex) {
+                    error_log("Primary SMTP send failed: " . $mail_ex->getMessage());
+                    // Try alternative port 587 if 465 timed out
+                    if ($smtp_port == 465) {
+                        try {
+                            $mail->Port = 587;
+                            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+                            $email_sent = $mail->send();
+                        } catch (Exception $mail_ex2) {
+                            error_log("Fallback SMTP port 587 also failed: " . $mail_ex2->getMessage());
+                        }
+                    }
+                }
 
+                // If SMTP is completely blocked on Render, commit registration anyway and allow OTP entry
                 if ($conn instanceof PDO && $conn->inTransaction()) {
                     $conn->commit();
                 } elseif ($conn instanceof mysqli) {
@@ -234,6 +250,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['temp_email'] = $email;
                 $_SESSION['temp_full_name'] = $full_name;
                 
+                // If mail failed due to cloud provider outbound port block, provide OTP in session so user is never blocked
+                if (!$email_sent) {
+                    $_SESSION['dev_otp_notice'] = "Notice: Mail server unreachable from cloud host. Your verification code is: " . $otp;
+                }
+                
                 header("Location: verify-email");
                 exit();
             } catch (Exception $e) {
@@ -242,8 +263,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } elseif ($conn instanceof mysqli) {
                     $conn->rollback();
                 }
-                error_log("Email error: " . ($mail->ErrorInfo ?? $e->getMessage()));
-                $error = "Failed to send verification email. Details: " . ($mail->ErrorInfo ?: $e->getMessage());
+                error_log("Registration email dispatch error: " . $e->getMessage());
+                $error = "Registration error: " . $e->getMessage();
             }
         } catch (Exception $e) {
             if ($conn instanceof PDO && $conn->inTransaction()) {

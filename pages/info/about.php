@@ -160,37 +160,200 @@ ob_start(); ?>
     @media (max-width: 992px) { .team-grid { grid-template-columns: repeat(2, 1fr); } }
     @media (max-width: 576px) { .team-grid { grid-template-columns: 1fr; } }
 
-    /* Form Styles */
+    /* Contact & Map Styles */
     .contact-section {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 3rem;
-        margin: 5rem 0;
+        gap: 2.5rem;
+        margin: 4rem 0 6rem;
         opacity: 0;
         transform: translateY(30px);
         animation: fadeInUp 0.8s var(--transition-bounce) 0.6s forwards;
     }
 
-    @media (max-width: 992px) { .contact-section { grid-template-columns: 1fr; } }
+    @media (max-width: 992px) { 
+        .contact-section { grid-template-columns: 1fr; gap: 2rem; } 
+    }
 
-    .contact-form {
-        padding: 2rem;
+    .location-card, .message-card {
         background: #ffffff;
-        border-radius: 15px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        border-radius: 20px;
+        padding: 2.2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+        border: 1px solid #eef2f6;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .form-group { margin-bottom: 1.5rem; position: relative; }
-    .form-group input, .form-group textarea {
-        width: 100%; padding: 12px 16px; border: 2px solid #e0e0e0;
-        border-radius: 10px; background: #f8f9fa; transition: all 0.3s ease;
+    .location-card:hover, .message-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 16px 36px rgba(0, 108, 59, 0.12);
     }
-    .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); background: #fff; outline: none; }
 
-    .btn-send {
-        width: 100%; padding: 14px 24px; background: var(--primary); color: #fff;
-        border: none; border-radius: 10px; font-weight: 600; cursor: pointer;
-        transition: all 0.3s ease;
+    .card-header-styled {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 1.6rem;
+    }
+
+    .card-header-styled .icon-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        background: var(--primary-light);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        flex-shrink: 0;
+    }
+
+    .card-header-styled .section-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .card-header-styled .section-subtitle {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin: 2px 0 0;
+    }
+
+    /* Map Styling */
+    .map-wrapper {
+        position: relative;
+        height: 270px;
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1.5px solid #e2e8f0;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .map-wrapper iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    .map-floating-badge {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        background: #ffffff;
+        color: #006C3B;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 6px 14px;
+        border-radius: 30px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        z-index: 5;
+    }
+
+    .map-floating-badge:hover {
+        background: #006C3B;
+        color: #ffffff;
+        transform: translateY(-2px);
+    }
+
+    .location-details-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .loc-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .loc-item .loc-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #e8f5e9;
+        color: #006C3B;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .loc-item strong {
+        display: block;
+        font-size: 0.88rem;
+        color: #0f172a;
+        margin-bottom: 2px;
+    }
+
+    .loc-item p {
+        font-size: 0.84rem;
+        color: #64748b;
+        margin: 0;
+    }
+
+    /* Modern Contact Form */
+    .form-floating-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-floating-group label {
+        display: block;
+        font-size: 0.86rem;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 6px;
+    }
+
+    .modern-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        background: #f8fafc;
+        font-size: 0.92rem;
+        color: #1e293b;
+        transition: all 0.25s ease;
+    }
+
+    .modern-input:focus {
+        border-color: #006C3B;
+        background: #ffffff;
+        box-shadow: 0 0 0 3.5px rgba(0, 108, 59, 0.12);
+        outline: none;
+    }
+
+    .btn-send-modern {
+        width: 100%;
+        padding: 14px 24px;
+        background: linear-gradient(135deg, #006C3B 0%, #008749 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.96rem;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        box-shadow: 0 6px 18px rgba(0, 108, 59, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .btn-send-modern:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 24px rgba(0, 108, 59, 0.35);
+        color: #ffffff;
     }
 
     /* Learn More Button */
@@ -265,39 +428,84 @@ include 'includes/ui/navbar.php';
             </div>
         </section>
 
-        <!-- Contact Section -->
+        <!-- Contact & Location Section -->
         <div class="contact-section">
-            <div class="location-section">
-                <h2 class="section-title">Visit Us</h2>
-                <div class="map-container rounded-4 overflow-hidden shadow-sm" style="height: 350px;">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d965.6697706894911!2d121.40925692840576!3d14.282423989826446!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397e3d8ded519df%3A0x9c59944f57e731f9!2s518%20E%20Taleon%20St%2C%20Santa%20Cruz%2C%20Calabarzon!5e0!3m2!1sen!2sph!4v1648883811479!5m2!1sen!2sph" class="w-100 h-100 border-0"></iframe>
+            <!-- Location & Map Card -->
+            <div class="location-card">
+                <div class="card-header-styled">
+                    <div class="icon-circle"><i class="fas fa-location-dot"></i></div>
+                    <div>
+                        <h2 class="section-title mb-0">Visit Us</h2>
+                        <p class="section-subtitle">Drop by our main branch or find us on Google Maps</p>
+                    </div>
                 </div>
-                <div class="mt-4">
-                    <p><i class="fas fa-map-marker-alt text-success me-2"></i> E. Taleon st, Santisima Cruz, Philippines</p>
-                    <p><i class="fas fa-phone text-success me-2"></i> 0912 345 6789</p>
-                    <p><i class="fas fa-envelope text-success me-2"></i> eat&run@example.com</p>
+
+                <div class="map-wrapper">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d965.6697706894911!2d121.40925692840576!3d14.282423989826446!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397e3d8ded519df%3A0x9c59944f57e731f9!2s518%20E%20Taleon%20St%2C%20Santa%20Cruz%2C%20Calabarzon!5e0!3m2!1sen!2sph!4v1648883811479!5m2!1sen!2sph" 
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade"
+                        title="Eat&Run Location Map">
+                    </iframe>
+                    <a href="https://maps.google.com/?q=14.282423989826446,121.40925692840576" target="_blank" rel="noopener" class="map-floating-badge">
+                        <i class="fas fa-arrow-up-right-from-square"></i> Open in Maps
+                    </a>
+                </div>
+
+                <div class="location-details-list">
+                    <div class="loc-item">
+                        <div class="loc-icon"><i class="fas fa-map-pin"></i></div>
+                        <div>
+                            <strong>Main Kitchen & Office</strong>
+                            <p>E. Taleon St, Santisima Cruz, Santa Cruz, Laguna, Philippines</p>
+                        </div>
+                    </div>
+                    <div class="loc-item">
+                        <div class="loc-icon"><i class="fas fa-phone"></i></div>
+                        <div>
+                            <strong>Contact Hotline</strong>
+                            <p>0912 345 6789 / (049) 501-2345</p>
+                        </div>
+                    </div>
+                    <div class="loc-item">
+                        <div class="loc-icon"><i class="fas fa-envelope"></i></div>
+                        <div>
+                            <strong>Customer Support</strong>
+                            <p>eat&run@example.com</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="message-section">
-                <h2 class="section-title">Send us a Message</h2>
-                <div class="contact-form">
-                    <form id="contactForm">
-                        <div class="form-group">
-                            <input type="text" name="name" placeholder="Your Name" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="email" name="email" placeholder="Your Email" required>
-                        </div>
-                        <div class="form-group">
-                            <textarea name="message" placeholder="Your Message" rows="4" required></textarea>
-                        </div>
-                        <button type="submit" class="btn-send">
-                            <i class="fas fa-paper-plane me-2"></i> Send Message
-                        </button>
-                    </form>
-                    <div id="formResponse" class="mt-3 text-center" style="display: none;"></div>
+            <!-- Message Form Card -->
+            <div class="message-card">
+                <div class="card-header-styled">
+                    <div class="icon-circle"><i class="fas fa-paper-plane"></i></div>
+                    <div>
+                        <h2 class="section-title mb-0">Send us a Message</h2>
+                        <p class="section-subtitle">We would love to hear feedback, questions, or inquiries</p>
+                    </div>
                 </div>
+
+                <form id="contactForm" class="modern-contact-form">
+                    <div class="form-floating-group">
+                        <label><i class="fas fa-user me-2 text-success"></i> Your Full Name</label>
+                        <input type="text" name="name" class="modern-input" placeholder="e.g. Maria Santos" required>
+                    </div>
+                    <div class="form-floating-group">
+                        <label><i class="fas fa-envelope me-2 text-success"></i> Email Address</label>
+                        <input type="email" name="email" class="modern-input" placeholder="e.g. maria@example.com" required>
+                    </div>
+                    <div class="form-floating-group">
+                        <label><i class="fas fa-comment-dots me-2 text-success"></i> Your Message</label>
+                        <textarea name="message" class="modern-input" placeholder="Write your inquiry or feedback here..." rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-send-modern">
+                        <i class="fas fa-paper-plane me-2"></i> Send Message
+                    </button>
+                </form>
+                <div id="formResponse" class="mt-3 text-center" style="display: none;"></div>
             </div>
         </div>
     </div>

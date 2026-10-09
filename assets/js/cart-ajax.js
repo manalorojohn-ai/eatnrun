@@ -26,7 +26,7 @@ async function addToCart(itemId, quantity = 1) {
     }
 
     try {
-        const result = await ajax.request('actions/cart/add_to_cart.php', {
+        const result = await ajax.request('/actions/cart/add_to_cart.php', {
             method: 'POST',
             data: {
                 item_id: itemId,

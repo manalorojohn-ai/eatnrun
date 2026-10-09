@@ -81,7 +81,7 @@ try {
         ]);
         exit;
 
-    } elseif ($conn instanceof mysqli) {
+    } elseif ($conn instanceof mysqli || $conn instanceof JSONDatabase || (is_object($conn) && method_exists($conn, 'prepare'))) {
         $stmt = mysqli_prepare($conn, "SELECT id, name, price FROM menu_items WHERE id = ?");
         mysqli_stmt_bind_param($stmt, "i", $item_id);
         mysqli_stmt_execute($stmt);

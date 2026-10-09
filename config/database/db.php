@@ -4,9 +4,9 @@
  * Supports: PostgreSQL (PDO), MySQL (MySQLi/PDO), and JSON fallback
  */
 
-if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: 'ep-curly-credit-axiez489-pooler.c-4.us-east-2.aws.neon.tech');
+if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: 'ep-odd-art-apysk1bo-pooler.c-7.us-east-1.aws.neon.tech');
 if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'neondb_owner');
-if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: 'npg_tkMWUe79uGi0');
+if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: 'npg_L3bEXhDZSiK6');
 if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'neondb');
 if (!defined('DB_PORT')) define('DB_PORT', getenv('DB_PORT') ?: 5432);
 
@@ -18,40 +18,67 @@ $conn = null;
 
 // Try PostgreSQL first ONLY if the extension is actually loaded
 if (extension_loaded('pdo_pgsql')) {
-    try {
-        $host = DB_HOST;
-        $password = DB_PASS;
-        $user = DB_USER;
-        
-        // Neon handles authentication via standard user/pass or options=endpoint=<id>
-        $dsn = "pgsql:host=" . $host . ";port=" . DB_PORT . ";dbname=" . DB_NAME . ";sslmode=require";
-        
-        // Try connecting directly first (modern Neon SNI-based routing)
+    $neon_credentials = [
+        [
+            'host' => DB_HOST,
+            'user' => DB_USER,
+            'pass' => DB_PASS,
+            'name' => DB_NAME,
+            'port' => DB_PORT
+        ],
+        [
+            'host' => 'ep-odd-art-apysk1bo-pooler.c-7.us-east-1.aws.neon.tech',
+            'user' => 'neondb_owner',
+            'pass' => 'npg_L3bEXhDZSiK6',
+            'name' => 'neondb',
+            'port' => 5432
+        ],
+        [
+            'host' => 'ep-curly-credit-axiez489-pooler.c-4.us-east-2.aws.neon.tech',
+            'user' => 'neondb_owner',
+            'pass' => 'npg_tkMWUe79uGi0',
+            'name' => 'neondb',
+            'port' => 5432
+        ]
+    ];
+
+    foreach ($neon_credentials as $creds) {
+        if ($conn) break;
         try {
-            $conn = new PDO($dsn, $user, $password, [
-                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_TIMEOUT => 5
-            ]);
-            $using_postgres = true;
-            error_log("PostgreSQL direct connection successful!");
-        } catch (PDOException $e1) {
-            // If host has neon endpoint, try with options parameter
-            if (strpos($host, 'neon') !== false) {
-                $host_parts = explode('.', $host);
-                $endpoint_id = $host_parts[0];
-                $dsn_endpoint = $dsn . ";options='endpoint=" . $endpoint_id . "'";
-                error_log("Trying Neon with options endpoint: " . $endpoint_id);
-                $conn = new PDO($dsn_endpoint, $user, $password, [
+            $host = $creds['host'];
+            $user = $creds['user'];
+            $pass = $creds['pass'];
+            $name = $creds['name'];
+            $port = $creds['port'];
+
+            $dsn = "pgsql:host={$host};port={$port};dbname={$name};sslmode=require";
+
+            try {
+                $conn = new PDO($dsn, $user, $pass, [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_TIMEOUT => 5
+                    PDO::ATTR_TIMEOUT => 4
                 ]);
                 $using_postgres = true;
-                error_log("PostgreSQL Neon options connection successful!");
+                error_log("PostgreSQL connection successful to {$host}!");
+                break;
+            } catch (PDOException $e1) {
+                if (strpos($host, 'neon') !== false) {
+                    $parts = explode('.', $host);
+                    $endpoint_id = $parts[0];
+                    $dsn_endpoint = $dsn . ";options='endpoint={$endpoint_id}'";
+                    $conn = new PDO($dsn_endpoint, $user, $pass, [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_TIMEOUT => 4
+                    ]);
+                    $using_postgres = true;
+                    error_log("PostgreSQL Neon endpoint option connection successful to {$host}!");
+                    break;
+                }
             }
+        } catch (PDOException $e) {
+            error_log("PostgreSQL connection failed for {$host}: " . $e->getMessage());
+            $conn = null;
         }
-    } catch (PDOException $e) {
-        error_log("PostgreSQL connection failed: " . $e->getMessage());
-        $conn = null;
     }
 } else {
     error_log("PostgreSQL PDO extension not loaded, skipping PostgreSQL connection attempt");
@@ -316,6 +343,77 @@ if (!$conn) {
                 ];
                 $this->db->writeTable('email_verifications', $verifications);
                 return true;
+            }
+
+            // CART OPERATIONS IN JSON DB
+            if (strpos($sql_clean, 'cart') !== false && $this->db) {
+                $cart = $this->db->readTable('cart');
+
+                // SELECT id, quantity FROM cart WHERE user_id = ? AND menu_item_id = ?
+                if (strpos($sql_clean, 'select') !== false && strpos($sql_clean, 'menu_item_id') !== false) {
+                    $uId = $this->params[0] ?? 0;
+                    $mId = $this->params[1] ?? 0;
+                    $found = [];
+                    foreach ($cart as $item) {
+                        if (($item['user_id'] ?? 0) == $uId && ($item['menu_item_id'] ?? 0) == $mId) {
+                            $found[] = $item;
+                            break;
+                        }
+                    }
+                    $this->last_result = $found;
+                    return true;
+                }
+
+                // SELECT COUNT / SUM FROM cart WHERE user_id = ?
+                if (strpos($sql_clean, 'select') !== false && (strpos($sql_clean, 'count(*)') !== false || strpos($sql_clean, 'sum(quantity)') !== false)) {
+                    $uId = $this->params[0] ?? 0;
+                    $totalQty = 0;
+                    foreach ($cart as $item) {
+                        if (($item['user_id'] ?? 0) == $uId) {
+                            $totalQty += (int)($item['quantity'] ?? 1);
+                        }
+                    }
+                    $this->last_result = [['count' => $totalQty, 'total' => $totalQty]];
+                    return true;
+                }
+
+                // INSERT INTO cart
+                if (strpos($sql_clean, 'insert into cart') !== false) {
+                    $newCartItem = [
+                        'id' => count($cart) + 1,
+                        'user_id' => $this->params[0] ?? 0,
+                        'menu_item_id' => $this->params[1] ?? 0,
+                        'quantity' => $this->params[2] ?? 1,
+                        'created_at' => date('Y-m-d H:i:s')
+                    ];
+                    $cart[] = $newCartItem;
+                    $this->db->writeTable('cart', $cart);
+                    return true;
+                }
+
+                // UPDATE cart SET quantity
+                if (strpos($sql_clean, 'update cart') !== false) {
+                    $newQty = $this->params[0] ?? 1;
+                    $cId = $this->params[1] ?? 0;
+                    foreach ($cart as &$item) {
+                        if (($item['id'] ?? 0) == $cId) {
+                            $item['quantity'] = $newQty;
+                            break;
+                        }
+                    }
+                    $this->db->writeTable('cart', $cart);
+                    return true;
+                }
+
+                // DELETE FROM cart
+                if (strpos($sql_clean, 'delete from cart') !== false) {
+                    $cId = $this->params[0] ?? 0;
+                    $cart = array_values(array_filter($cart, function($item) use ($cId) {
+                        return ($item['id'] ?? 0) != $cId;
+                    }));
+                    $this->db->writeTable('cart', $cart);
+                    return true;
+                }
             }
 
             return true;

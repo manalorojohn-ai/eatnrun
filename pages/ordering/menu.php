@@ -6,56 +6,88 @@ if (isset($_GET['reorder']) && !empty($_GET['reorder'])) {
     $order_id = intval($_GET['reorder']);
     
     try {
-        mysqli_begin_transaction($conn);
-        $items_query = "SELECT oi.menu_item_id, oi.quantity, mi.name, mi.price, mi.status 
-                       FROM order_items oi 
-                       JOIN menu_items mi ON oi.menu_item_id = mi.id 
-                       WHERE oi.order_id = ?";
-        
-        $stmt = mysqli_prepare($conn, $items_query);
-        mysqli_stmt_bind_param($stmt, "i", $order_id);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        
-        $total_query = "SELECT COUNT(*) as total FROM order_items WHERE order_id = ?";
-        $total_stmt = mysqli_prepare($conn, $total_query);
-        mysqli_stmt_bind_param($total_stmt, "i", $order_id);
-        mysqli_stmt_execute($total_stmt);
-        $total_result = mysqli_stmt_get_result($total_stmt);
-        $total_row = mysqli_fetch_assoc($total_result);
-        $total_items = $total_row['total'];
-        
-        $available_items = 0;
-        while ($item = mysqli_fetch_assoc($result)) {
-            if ($item['status'] === 'available') {
-                $check_cart = "SELECT id, quantity FROM cart WHERE user_id = ? AND menu_item_id = ?";
-                $cart_stmt = mysqli_prepare($conn, $check_cart);
-                mysqli_stmt_bind_param($cart_stmt, "ii", $_SESSION['user_id'], $item['menu_item_id']);
-                mysqli_stmt_execute($cart_stmt);
-                $cart_result = mysqli_stmt_get_result($cart_stmt);
-                $cart_item = mysqli_fetch_assoc($cart_result);
-                mysqli_stmt_close($cart_stmt);
-                
-                if ($cart_item) {
-                    $new_quantity = $cart_item['quantity'] + $item['quantity'];
-                    $update_query = "UPDATE cart SET quantity = ? WHERE id = ?";
-                    $update_stmt = mysqli_prepare($conn, $update_query);
-                    mysqli_stmt_bind_param($update_stmt, "ii", $new_quantity, $cart_item['id']);
-                    mysqli_stmt_execute($update_stmt);
-                    mysqli_stmt_close($update_stmt);
-                } else {
-                    $insert_query = "INSERT INTO cart (user_id, menu_item_id, quantity) VALUES (?, ?, ?)";
-                    $insert_stmt = mysqli_prepare($conn, $insert_query);
-                    mysqli_stmt_bind_param($insert_stmt, "iii", $_SESSION['user_id'], $item['menu_item_id'], $item['quantity']);
-                    mysqli_stmt_execute($insert_stmt);
-                    mysqli_stmt_close($insert_stmt);
+        if ($conn instanceof PDO) {
+            $conn->beginTransaction();
+            $items_stmt = $conn->prepare("SELECT oi.menu_item_id, oi.quantity, mi.name, mi.price, mi.status 
+                                          FROM order_items oi 
+                                          JOIN menu_items mi ON oi.menu_item_id = mi.id 
+                                          WHERE oi.order_id = ?");
+            $items_stmt->execute([$order_id]);
+            $order_items = $items_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $available_items = 0;
+            $total_items = count($order_items);
+
+            foreach ($order_items as $item) {
+                if ($item['status'] === 'available') {
+                    $chk = $conn->prepare("SELECT id, quantity FROM cart WHERE user_id = ? AND menu_item_id = ?");
+                    $chk->execute([$_SESSION['user_id'], $item['menu_item_id']]);
+                    $cart_item = $chk->fetch(PDO::FETCH_ASSOC);
+
+                    if ($cart_item) {
+                        $new_qty = (int)$cart_item['quantity'] + (int)$item['quantity'];
+                        $up = $conn->prepare("UPDATE cart SET quantity = ? WHERE id = ?");
+                        $up->execute([$new_qty, $cart_item['id']]);
+                    } else {
+                        $ins = $conn->prepare("INSERT INTO cart (user_id, menu_item_id, quantity) VALUES (?, ?, ?)");
+                        $ins->execute([$_SESSION['user_id'], $item['menu_item_id'], $item['quantity']]);
+                    }
+                    $available_items++;
                 }
-                $available_items++;
             }
+            $conn->commit();
+        } elseif ($conn instanceof mysqli) {
+            mysqli_begin_transaction($conn);
+            $items_query = "SELECT oi.menu_item_id, oi.quantity, mi.name, mi.price, mi.status 
+                           FROM order_items oi 
+                           JOIN menu_items mi ON oi.menu_item_id = mi.id 
+                           WHERE oi.order_id = ?";
+            
+            $stmt = mysqli_prepare($conn, $items_query);
+            mysqli_stmt_bind_param($stmt, "i", $order_id);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            
+            $total_query = "SELECT COUNT(*) as total FROM order_items WHERE order_id = ?";
+            $total_stmt = mysqli_prepare($conn, $total_query);
+            mysqli_stmt_bind_param($total_stmt, "i", $order_id);
+            mysqli_stmt_execute($total_stmt);
+            $total_result = mysqli_stmt_get_result($total_stmt);
+            $total_row = mysqli_fetch_assoc($total_result);
+            $total_items = $total_row['total'];
+            
+            $available_items = 0;
+            while ($item = mysqli_fetch_assoc($result)) {
+                if ($item['status'] === 'available') {
+                    $check_cart = "SELECT id, quantity FROM cart WHERE user_id = ? AND menu_item_id = ?";
+                    $cart_stmt = mysqli_prepare($conn, $check_cart);
+                    mysqli_stmt_bind_param($cart_stmt, "ii", $_SESSION['user_id'], $item['menu_item_id']);
+                    mysqli_stmt_execute($cart_stmt);
+                    $cart_result = mysqli_stmt_get_result($cart_stmt);
+                    $cart_item = mysqli_fetch_assoc($cart_result);
+                    mysqli_stmt_close($cart_stmt);
+                    
+                    if ($cart_item) {
+                        $new_quantity = $cart_item['quantity'] + $item['quantity'];
+                        $update_query = "UPDATE cart SET quantity = ? WHERE id = ?";
+                        $update_stmt = mysqli_prepare($conn, $update_query);
+                        mysqli_stmt_bind_param($update_stmt, "ii", $new_quantity, $cart_item['id']);
+                        mysqli_stmt_execute($update_stmt);
+                        mysqli_stmt_close($update_stmt);
+                    } else {
+                        $insert_query = "INSERT INTO cart (user_id, menu_item_id, quantity) VALUES (?, ?, ?)";
+                        $insert_stmt = mysqli_prepare($conn, $insert_query);
+                        mysqli_stmt_bind_param($insert_stmt, "iii", $_SESSION['user_id'], $item['menu_item_id'], $item['quantity']);
+                        mysqli_stmt_execute($insert_stmt);
+                        mysqli_stmt_close($insert_stmt);
+                    }
+                    $available_items++;
+                }
+            }
+            mysqli_stmt_close($stmt);
+            mysqli_stmt_close($total_stmt);
+            mysqli_commit($conn);
         }
-        mysqli_stmt_close($stmt);
-        mysqli_stmt_close($total_stmt);
-        mysqli_commit($conn);
         
         if ($available_items === 0) {
             $_SESSION['error'] = "Sorry, none of the items from your previous order are currently available.";
@@ -65,7 +97,11 @@ if (isset($_GET['reorder']) && !empty($_GET['reorder'])) {
             $_SESSION['success'] = "All items from your previous order have been added to your cart!";
         }
     } catch (Exception $e) {
-        mysqli_rollback($conn);
+        if ($conn instanceof PDO && $conn->inTransaction()) {
+            $conn->rollBack();
+        } elseif ($conn instanceof mysqli) {
+            mysqli_rollback($conn);
+        }
         $_SESSION['error'] = "An error occurred while processing your request: " . $e->getMessage();
     }
     header("Location: menu");
@@ -77,38 +113,59 @@ function getCategories($conn) {
     $categories = [];
     $query = "SELECT id, name FROM categories WHERE status = 'active' ORDER BY name";
     try {
-        $result = $conn->query($query);
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $categories[] = $row;
+        if ($conn instanceof PDO) {
+            $stmt = $conn->query($query);
+            $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } elseif ($conn instanceof mysqli) {
+            $result = $conn->query($query);
+            if ($result) {
+                while ($row = $result->fetch_assoc()) {
+                    $categories[] = $row;
+                }
             }
         }
-    } catch (Exception $e) { error_log($e->getMessage()); }
+    } catch (Exception $e) { error_log("getCategories error: " . $e->getMessage()); }
     return $categories;
 }
 
 // Function to get menu items
 function getMenuItems($conn, $category_name = null) {
     $menu_items = [];
-    $escaped_category = $conn->real_escape_string($category_name ?? '');
-    $where_clause = $category_name ? 
-        "WHERE c.name = '" . $escaped_category . "' AND m.status = 'available'" : 
-        "WHERE m.status = 'available'";
-    
-    $query = "SELECT m.*, c.name as category_name,
-              COALESCE(m.image_path, 'assets/images/default-food.jpg') as image_path
-          FROM menu_items m 
-          LEFT JOIN categories c ON m.category_id = c.id 
-          $where_clause 
-          ORDER BY m.name";
     try {
-        $result = $conn->query($query);
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $menu_items[] = $row;
+        if ($conn instanceof PDO) {
+            $query = "SELECT m.*, c.name as category_name,
+                      COALESCE(m.image_path, 'assets/images/default-food.jpg') as image_path
+                      FROM menu_items m 
+                      LEFT JOIN categories c ON m.category_id = c.id";
+            if (!empty($category_name)) {
+                $query .= " WHERE c.name = ? AND m.status = 'available' ORDER BY m.name";
+                $stmt = $conn->prepare($query);
+                $stmt->execute([$category_name]);
+            } else {
+                $query .= " WHERE m.status = 'available' ORDER BY m.name";
+                $stmt = $conn->query($query);
+            }
+            $menu_items = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } elseif ($conn instanceof mysqli) {
+            $escaped_category = $conn->real_escape_string($category_name ?? '');
+            $where_clause = $category_name ? 
+                "WHERE c.name = '" . $escaped_category . "' AND m.status = 'available'" : 
+                "WHERE m.status = 'available'";
+            
+            $query = "SELECT m.*, c.name as category_name,
+                      COALESCE(m.image_path, 'assets/images/default-food.jpg') as image_path
+                      FROM menu_items m 
+                      LEFT JOIN categories c ON m.category_id = c.id 
+                      $where_clause 
+                      ORDER BY m.name";
+            $result = $conn->query($query);
+            if ($result) {
+                while ($row = $result->fetch_assoc()) {
+                    $menu_items[] = $row;
+                }
             }
         }
-    } catch (Exception $e) { error_log($e->getMessage()); }
+    } catch (Exception $e) { error_log("getMenuItems error: " . $e->getMessage()); }
     return $menu_items;
 }
 
@@ -712,5 +769,5 @@ document.addEventListener('DOMContentLoaded', function() {
 <?php 
 $extra_scripts = ob_get_clean();
 include 'includes/ui/footer.php'; 
-?>?>
+?>
 
